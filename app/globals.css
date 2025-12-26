@@ -1,0 +1,26 @@
+@import "tailwindcss";
+
+@theme {
+  --font-nunito: "Nunito", sans-serif;
+  
+  --color-pastel-blue: #A7C7E7;
+  --color-pastel-pink: #F4C2C2;
+  --color-pastel-green: #C1E1C1;
+  --color-pastel-yellow: #FDFD96;
+  --color-pastel-purple: #C3B1E1;
+  --color-pastel-cream: #FDFBF7;
+  
+  --color-primary: #4A90E2;
+  --color-primary-foreground: #FFFFFF;
+}
+
+:root {
+  --background: #FDFBF7;
+  --foreground: #171717;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-nunito);
+}
