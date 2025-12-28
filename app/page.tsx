@@ -2,21 +2,24 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Search } from 'lucide-react';
-import { Destination } from '@/types';
+import { Search, ChevronDown } from 'lucide-react';
+import { Destination, DestinationMetrics } from '@/types';
 import { MOCK_DESTINATIONS } from '@/constants';
 import { DestinationCard } from '@/components/DestinationCard';
-import { Badge } from '@/components/ui';
+import { Badge, Button } from '@/components/ui';
 import { DestinationAutocomplete } from '@/components/DestinationAutocomplete';
 import { useQuery } from 'convex/react';
 import { api } from '@/convex/_generated/api';
 
+const INITIAL_DISPLAY_COUNT = 20;
+
 export default function Home() {
   const router = useRouter();
   const [searchTerm, setSearchTerm] = useState('');
+  const [displayCount, setDisplayCount] = useState(INITIAL_DISPLAY_COUNT);
 
-  // Fetch from Convex
-  const convexDestinations = useQuery(api.destinations.getAllDestinations);
+  // Fetch top-rated destinations from Convex (familyScore >= 80)
+  const convexDestinations = useQuery(api.destinations.getTopRatedDestinations, {});
 
   // Transform Convex data to UI format
   const dbDestinations: Destination[] = (convexDestinations || []).map(d => ({
@@ -28,15 +31,19 @@ export default function Home() {
     image: d.image || "/placeholder.jpg",
     tags: d.tags || [],
     metrics: {
-      accessibility: d.allScores.accessibility / 10,
-      nature: d.allScores.playgrounds / 10, // Proxy
-      playgrounds: d.allScores.playgrounds / 10,
-      healthyFood: d.allScores.healthyFood / 10,
-      safety: d.allScores.safety / 10,
-      walkability: d.allScores.sidewalks / 10,
-      strollerFriendly: d.allScores.strollerFriendly / 10,
-      kidActivities: d.allScores.kidActivities / 10
-    }
+      accessibility: (d.allScores?.accessibility ?? 50) / 10,
+      nature: (d.allScores?.playgrounds ?? 50) / 10, // Proxy
+      playgrounds: (d.allScores?.playgrounds ?? 50) / 10,
+      healthyFood: (d.allScores?.healthyFood ?? 50) / 10,
+      safety: (d.allScores?.safety ?? 50) / 10,
+      walkability: (d.allScores?.sidewalks ?? 50) / 10,
+      strollerFriendly: (d.allScores?.strollerFriendly ?? 50) / 10,
+      kidActivities: (d.allScores?.kidActivities ?? 50) / 10,
+      weatherComfort: (d.allScores?.weatherComfort ?? 50) / 10,
+      costAffordability: (d.allScores?.costAffordability ?? 50) / 10,
+    } as DestinationMetrics,
+    familyScore: d.allScores?.familyScore ?? null,
+    hasReliableScore: d.dataQuality?.hasReliableOverallScore ?? false,
   }));
 
 
@@ -47,12 +54,24 @@ export default function Home() {
     name: `${m.name}, ${m.country}`
   }));
 
-  const allDestinations = [...dbDestinations, ...formattedMocks.filter(m => !dbDestinations.find(d => d.name === m.name))];
+  // Only use dbDestinations (already filtered by rating >= 8 from Convex)
+  // Fall back to mock data only if no convex data available
+  const allDestinations = dbDestinations.length > 0
+    ? dbDestinations
+    : formattedMocks.filter(m => (m.familyScore ?? 0) >= 80);
 
   const filteredDestinations = allDestinations.filter(d =>
     d.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     d.country.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  // Destinations to display (limited by displayCount)
+  const displayedDestinations = filteredDestinations.slice(0, displayCount);
+  const hasMore = filteredDestinations.length > displayCount;
+
+  const handleShowMore = () => {
+    setDisplayCount(prev => prev + 20);
+  };
 
   return (
     <div className="min-h-screen bg-stone-50">
@@ -95,16 +114,29 @@ export default function Home() {
           </div>
         </div>
 
-        {filteredDestinations.length > 0 ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-            {filteredDestinations.map(dest => (
-              <DestinationCard
-                key={dest.id}
-                destination={dest}
-                onClick={() => router.push(`/destination/${encodeURIComponent(dest.id)}`)}
-              />
-            ))}
-          </div>
+        {displayedDestinations.length > 0 ? (
+          <>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+              {displayedDestinations.map(dest => (
+                <DestinationCard
+                  key={dest.id}
+                  destination={dest}
+                  onClick={() => router.push(`/destination/${encodeURIComponent(dest.id)}`)}
+                />
+              ))}
+            </div>
+            {hasMore && (
+              <div className="flex justify-center mt-12">
+                <Button
+                  onClick={handleShowMore}
+                  className="bg-white hover:bg-stone-50 text-stone-700 border border-stone-200 px-8 py-3 rounded-full shadow-sm flex items-center gap-2"
+                >
+                  Show More
+                  <ChevronDown className="w-4 h-4" />
+                </Button>
+              </div>
+            )}
+          </>
         ) : (
           <div className="text-center py-20 bg-white/50 rounded-3xl border border-dashed border-stone-300">
             <div className="bg-stone-50 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">

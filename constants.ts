@@ -17,7 +17,9 @@ export const MOCK_DESTINATIONS: Destination[] = [
       safety: 10,
       walkability: 9,
       strollerFriendly: 7,
-      kidActivities: 10
+      kidActivities: 10,
+      weatherComfort: 7,
+      costAffordability: 5
     }
   },
   {
@@ -36,7 +38,9 @@ export const MOCK_DESTINATIONS: Destination[] = [
       safety: 9,
       walkability: 10,
       strollerFriendly: 10,
-      kidActivities: 9
+      kidActivities: 9,
+      weatherComfort: 6,
+      costAffordability: 4
     }
   },
   {
@@ -55,7 +59,9 @@ export const MOCK_DESTINATIONS: Destination[] = [
       safety: 10,
       walkability: 8,
       strollerFriendly: 10,
-      kidActivities: 10
+      kidActivities: 10,
+      weatherComfort: 8,
+      costAffordability: 5
     }
   },
   {
@@ -74,7 +80,9 @@ export const MOCK_DESTINATIONS: Destination[] = [
       safety: 8,
       walkability: 9,
       strollerFriendly: 8,
-      kidActivities: 8
+      kidActivities: 8,
+      weatherComfort: 7,
+      costAffordability: 6
     }
   },
   {
@@ -93,7 +101,9 @@ export const MOCK_DESTINATIONS: Destination[] = [
       safety: 9,
       walkability: 7,
       strollerFriendly: 8,
-      kidActivities: 10
+      kidActivities: 10,
+      weatherComfort: 9,
+      costAffordability: 7
     }
   },
   {
@@ -112,7 +122,9 @@ export const MOCK_DESTINATIONS: Destination[] = [
       safety: 8,
       walkability: 9,
       strollerFriendly: 7,
-      kidActivities: 9
+      kidActivities: 9,
+      weatherComfort: 6,
+      costAffordability: 6
     }
   }
 ];

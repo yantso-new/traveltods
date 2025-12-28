@@ -10,8 +10,9 @@ export async function getUnsplashCityImage(city: string, country: string): Promi
         return getFallbackImage(city);
     }
 
-    const searchQuery = `${city} ${country} city skyline`;
-    const url = `https://api.unsplash.com/search/photos?query=${encodeURIComponent(searchQuery)}&per_page=1&orientation=landscape&client_id=${apiKey}`;
+    // Search for images focusing on architecture/landscapes without people
+    const searchQuery = `${city} ${country} architecture cityscape landmark`;
+    const url = `https://api.unsplash.com/search/photos?query=${encodeURIComponent(searchQuery)}&per_page=5&orientation=landscape&client_id=${apiKey}`;
 
     try {
         const res = await fetch(url);
@@ -23,7 +24,26 @@ export async function getUnsplashCityImage(city: string, country: string): Promi
         const data = await res.json();
 
         if (data.results && data.results.length > 0) {
-            const photo = data.results[0];
+            // Try to find an image without people by checking description and tags
+            // Prioritize images with architectural/landscape keywords
+            const goodImage = data.results.find((photo: any) => {
+                const desc = (photo.description || '').toLowerCase();
+                const altDesc = (photo.alt_description || '').toLowerCase();
+                const combinedText = desc + ' ' + altDesc;
+
+                // Skip images that likely contain people
+                const hasPeople = combinedText.includes('people') ||
+                                 combinedText.includes('person') ||
+                                 combinedText.includes('crowd') ||
+                                 combinedText.includes('man') ||
+                                 combinedText.includes('woman') ||
+                                 combinedText.includes('tourist');
+
+                return !hasPeople;
+            });
+
+            // Use the filtered image or fall back to the first result
+            const photo = goodImage || data.results[0];
             // Return optimized image URL (800px wide, 80% quality)
             return `${photo.urls.raw}&w=800&q=80&fit=crop`;
         }
@@ -35,13 +55,15 @@ export async function getUnsplashCityImage(city: string, country: string): Promi
     }
 }
 
-// Fallback images - curated list of travel/city images from Unsplash
+// Fallback images - curated list of city/architecture images from Unsplash (no people)
 const FALLBACK_IMAGES = [
     'https://images.unsplash.com/photo-1480714378408-67cf0d13bc1b?w=800&q=80', // NYC skyline
     'https://images.unsplash.com/photo-1477959858617-67f85cf4f1df?w=800&q=80', // City aerial
-    'https://images.unsplash.com/photo-1514565131-fce0801e5785?w=800&q=80', // Urban street
     'https://images.unsplash.com/photo-1449824913935-59a10b8d2000?w=800&q=80', // City buildings
     'https://images.unsplash.com/photo-1444723121867-7a241cacace9?w=800&q=80', // City bridge
+    'https://images.unsplash.com/photo-1519501025264-65ba15a82390?w=800&q=80', // Hong Kong skyline
+    'https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?w=800&q=80', // London architecture
+    'https://images.unsplash.com/photo-1502602898657-3e91760cbb34?w=800&q=80', // Paris architecture
 ];
 
 function getFallbackImage(city: string): string {

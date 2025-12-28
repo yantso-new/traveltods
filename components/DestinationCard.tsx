@@ -9,10 +9,22 @@ interface Props {
 }
 
 export const DestinationCard: React.FC<Props> = ({ destination, onClick }) => {
-  // Calculate average score
-  const metrics: number[] = Object.values(destination.metrics);
-  const avgScore = (metrics.reduce((a: number, b: number) => a + b, 0) / metrics.length).toFixed(1);
-  const scoreNum = parseFloat(avgScore);
+  // Use familyScore if available and reliable, otherwise calculate from metrics
+  const hasFamilyScore = destination.familyScore != null && destination.hasReliableScore;
+
+  let displayScore: string;
+  let scoreNum: number;
+
+  if (hasFamilyScore) {
+    // Use the pre-calculated familyScore (0-100 scale, convert to 0-10)
+    scoreNum = destination.familyScore! / 10;
+    displayScore = scoreNum.toFixed(1);
+  } else {
+    // Fallback: calculate average from metrics (already 0-10 scale)
+    const metrics: number[] = Object.values(destination.metrics);
+    scoreNum = metrics.reduce((a: number, b: number) => a + b, 0) / metrics.length;
+    displayScore = scoreNum.toFixed(1);
+  }
 
   // Dynamic colors based on rating
   const isHighRated = scoreNum >= 7;
@@ -40,7 +52,7 @@ export const DestinationCard: React.FC<Props> = ({ destination, onClick }) => {
           </div>
           <div className={`shrink-0 ${bgColor} px-2.5 py-1 rounded-full text-sm font-bold ${textColor} flex items-center shadow-sm transition-colors duration-300 border border-white/50`}>
             <Star className={`w-3 h-3 mr-1 ${fillColor}`} />
-            {avgScore}
+            {displayScore}
           </div>
         </div>
         <p className="text-stone-600 text-sm line-clamp-2 mb-4 flex-grow font-light">

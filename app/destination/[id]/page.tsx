@@ -223,7 +223,7 @@ export default function DestinationDetails() {
                                 color="bg-emerald-300"
                             />
                             <ProgressBar
-                                value={allScores.weatherComfort}
+                                value={allScores.weatherComfort ?? 50}
                                 max={100}
                                 label="Weather Comfort"
                                 icon={<CloudSun className="w-4 h-4" />}
@@ -237,7 +237,7 @@ export default function DestinationDetails() {
                                 color="bg-green-300"
                             />
                             <ProgressBar
-                                value={allScores.costAffordability}
+                                value={allScores.costAffordability ?? 50}
                                 max={100}
                                 label="Cost Affordability"
                                 icon={<DollarSign className="w-4 h-4" />}

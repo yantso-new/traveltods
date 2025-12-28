@@ -19,9 +19,9 @@ export default defineSchema({
             healthyFood: v.number(),
             strollerFriendly: v.number(),
             accessibility: v.number(),
-            weatherComfort: v.number(),      // NEW
-            costAffordability: v.number(),   // NEW
-            familyScore: v.optional(v.number()), // CHANGED: nullable when data incomplete
+            weatherComfort: v.optional(v.number()),      // NEW (optional for migration)
+            costAffordability: v.optional(v.number()),   // NEW (optional for migration)
+            familyScore: v.optional(v.number()), // nullable when data incomplete
         }),
 
         // Raw API data (for transparency and debugging)

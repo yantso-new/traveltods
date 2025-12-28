@@ -126,6 +126,28 @@ export const getAllDestinations = query({
     },
 });
 
+// Get top-rated destinations (familyScore >= 80, i.e., rating 8+)
+export const getTopRatedDestinations = query({
+    args: {
+        limit: v.optional(v.number()),
+    },
+    handler: async (ctx, args) => {
+        const allDestinations = await ctx.db.query("destinations").collect();
+
+        // Filter for destinations with familyScore >= 80 (rating 8+)
+        const topRated = allDestinations
+            .filter(d => d.allScores?.familyScore != null && d.allScores.familyScore >= 80)
+            .sort((a, b) => (b.allScores?.familyScore || 0) - (a.allScores?.familyScore || 0));
+
+        // Apply limit if provided
+        if (args.limit) {
+            return topRated.slice(0, args.limit);
+        }
+
+        return topRated;
+    },
+});
+
 // Get top 100 destinations by search count
 export const getTop100Destinations = query({
     handler: async (ctx) => {
