@@ -19,9 +19,9 @@ import {
     Info
 } from 'lucide-react';
 import { ChatMessage } from '@/types';
-import { Button, Badge, ProgressBar, Card, LoadingSpinner } from '@/components/ui';
+import { Button, Badge, ProgressBar, Card, LoadingSpinner, Tooltip } from '@/components/ui';
 
-import { ResponsiveContainer, RadarChart, PolarGrid, PolarAngleAxis, Radar, Tooltip } from 'recharts';
+import { ResponsiveContainer, RadarChart, PolarGrid, PolarAngleAxis, Radar, Tooltip as ChartTooltip } from 'recharts';
 
 // Convex Imports
 import { useQuery, useAction, useMutation } from 'convex/react';
@@ -199,7 +199,12 @@ export default function DestinationDetails() {
                     {/* Detailed Metrics Breakdown */}
                     <Card className="p-8 shadow-md">
                         <div className="flex items-center justify-between mb-6">
-                            <h3 className="text-xl font-bold text-stone-800">Family Compatibility Scores</h3>
+                            <div className="flex items-center gap-2">
+                                <h3 className="text-xl font-bold text-stone-800">Family Compatibility Scores</h3>
+                                <Tooltip content="Scores are calculated based on data from OpenStreetMap, OpenTripMap, and other public sources.">
+                                    <Info className="w-4 h-4 text-stone-400 cursor-help" />
+                                </Tooltip>
+                            </div>
                             {allScores.familyScore !== undefined && allScores.familyScore !== null ? (
                                 <div className="flex items-center gap-2">
                                     <span className="text-sm text-stone-500">Overall:</span>
@@ -300,7 +305,7 @@ export default function DestinationDetails() {
                                         fill="#fda4af"
                                         fillOpacity={0.4}
                                     />
-                                    <Tooltip />
+                                    <ChartTooltip />
                                 </RadarChart>
                             </ResponsiveContainer>
                         </div>

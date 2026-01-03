@@ -43,6 +43,7 @@ export function DestinationAutocomplete({
   const [isLoading, setIsLoading] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const [highlightedIndex, setHighlightedIndex] = useState(-1);
+  const [hasValidSelection, setHasValidSelection] = useState(false);
 
   const containerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -124,6 +125,7 @@ export function DestinationAutocomplete({
     const destinationName = `${suggestion.city}, ${suggestion.country}`;
     setQuery(destinationName);
     setIsOpen(false);
+    setHasValidSelection(true);
     onSelect({ name: suggestion.city, country: suggestion.country });
   };
 
@@ -145,7 +147,7 @@ export function DestinationAutocomplete({
         e.preventDefault();
         if (highlightedIndex >= 0 && suggestions[highlightedIndex]) {
           handleSelect(suggestions[highlightedIndex]);
-        } else if (query.trim()) {
+        } else if (query.trim() && hasValidSelection) {
           onSearch(query);
         }
         break;
@@ -157,7 +159,7 @@ export function DestinationAutocomplete({
   };
 
   const handleSearchClick = () => {
-    if (query.trim()) {
+    if (query.trim() && hasValidSelection) {
       setIsOpen(false);
       onSearch(query);
     }
@@ -172,7 +174,10 @@ export function DestinationAutocomplete({
           placeholder={placeholder}
           className="w-full pl-12 pr-28 py-4 rounded-full border border-stone-200 bg-white/80 backdrop-blur focus:border-rose-300 focus:ring-4 focus:ring-rose-100 outline-none shadow-sm text-lg transition-all placeholder:text-stone-300 text-stone-600"
           value={query}
-          onChange={(e) => setQuery(e.target.value)}
+          onChange={(e) => {
+            setQuery(e.target.value);
+            setHasValidSelection(false);
+          }}
           onKeyDown={handleKeyDown}
           onFocus={() => suggestions.length > 0 && setIsOpen(true)}
         />
@@ -184,7 +189,12 @@ export function DestinationAutocomplete({
 
         <button
           onClick={handleSearchClick}
-          className="absolute right-2 top-2 bottom-2 bg-rose-500 hover:bg-rose-600 text-white rounded-full px-5 flex items-center gap-2 transition-colors"
+          disabled={!hasValidSelection}
+          className={`absolute right-2 top-2 bottom-2 rounded-full px-5 flex items-center gap-2 transition-all ${
+            hasValidSelection
+              ? 'bg-rose-500 hover:bg-rose-600 text-white cursor-pointer'
+              : 'bg-stone-200 text-stone-400 cursor-not-allowed'
+          }`}
         >
           Search
         </button>

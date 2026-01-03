@@ -165,7 +165,7 @@ const cities = [
         shortDescription: "Europe's biggest playground and family thermal baths.",
         description: "City Park playground covers 13,000 m² with climbing towers, zip lines, and sensory equipment for disabled children. Széchenyi Thermal Baths welcome kids in warm outdoor pools year-round. Castle District has underground climbing tunnels. Affordable family destination.",
         tags: ["Playgrounds", "Baths", "Historic", "Affordable"],
-        image: "https://images.unsplash.com/photo-1549923746-c502d488b3ea?w=800&q=80",
+        image: "https://images.unsplash.com/photo-1467269204594-9661b134dd2b?w=800&q=80",
         scores: { safety: 78, playgrounds: 95, sidewalks: 75, kidActivities: 88, healthyFood: 72, strollerFriendly: 70, accessibility: 75 }
     },
     {

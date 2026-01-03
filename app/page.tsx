@@ -18,8 +18,8 @@ export default function Home() {
   const [searchTerm, setSearchTerm] = useState('');
   const [displayCount, setDisplayCount] = useState(INITIAL_DISPLAY_COUNT);
 
-  // Fetch top-rated destinations from Convex (familyScore >= 80)
-  const convexDestinations = useQuery(api.destinations.getTopRatedDestinations, {});
+  // Fetch all destinations from Convex
+  const convexDestinations = useQuery(api.destinations.getAllDestinations);
 
   // Transform Convex data to UI format
   const dbDestinations: Destination[] = (convexDestinations || []).map(d => ({

@@ -11,8 +11,8 @@ export async function getUnsplashCityImage(city: string, country: string): Promi
     }
 
     // Search for images focusing on architecture/landscapes without people
-    const searchQuery = `${city} ${country} architecture cityscape landmark`;
-    const url = `https://api.unsplash.com/search/photos?query=${encodeURIComponent(searchQuery)}&per_page=5&orientation=landscape&client_id=${apiKey}`;
+    const searchQuery = `${city} ${country} architecture cityscape landmark -people -person -crowd`;
+    const url = `https://api.unsplash.com/search/photos?query=${encodeURIComponent(searchQuery)}&per_page=10&orientation=landscape&client_id=${apiKey}`;
 
     try {
         const res = await fetch(url);
@@ -24,26 +24,48 @@ export async function getUnsplashCityImage(city: string, country: string): Promi
         const data = await res.json();
 
         if (data.results && data.results.length > 0) {
-            // Try to find an image without people by checking description and tags
-            // Prioritize images with architectural/landscape keywords
-            const goodImage = data.results.find((photo: any) => {
+            // Filter images to find only scenery without people
+            // Check descriptions and tags for people-related keywords
+            const sceneryImages = data.results.filter((photo: any) => {
                 const desc = (photo.description || '').toLowerCase();
                 const altDesc = (photo.alt_description || '').toLowerCase();
                 const combinedText = desc + ' ' + altDesc;
 
-                // Skip images that likely contain people
-                const hasPeople = combinedText.includes('people') ||
-                                 combinedText.includes('person') ||
-                                 combinedText.includes('crowd') ||
-                                 combinedText.includes('man') ||
-                                 combinedText.includes('woman') ||
-                                 combinedText.includes('tourist');
+                // Comprehensive list of keywords that indicate people in photos
+                const peopleKeywords = [
+                    'people', 'person', 'persons', 'crowd', 'crowds',
+                    'man', 'men', 'woman', 'women', 'boy', 'girl',
+                    'tourist', 'tourists', 'traveler', 'travelers',
+                    'pedestrian', 'pedestrians', 'visitor', 'visitors',
+                    'human', 'humans', 'face', 'faces', 'portrait',
+                    'group', 'couple', 'family', 'walking', 'standing',
+                    'sitting', 'street photography', 'candid'
+                ];
+
+                // Check if any people-related keyword is present
+                const hasPeople = peopleKeywords.some(keyword =>
+                    combinedText.includes(keyword)
+                );
 
                 return !hasPeople;
             });
 
-            // Use the filtered image or fall back to the first result
-            const photo = goodImage || data.results[0];
+            // Prioritize scenic images with architectural/landscape keywords
+            const priorityImage = sceneryImages.find((photo: any) => {
+                const desc = (photo.description || '').toLowerCase();
+                const altDesc = (photo.alt_description || '').toLowerCase();
+                const combinedText = desc + ' ' + altDesc;
+
+                return combinedText.includes('architecture') ||
+                       combinedText.includes('building') ||
+                       combinedText.includes('skyline') ||
+                       combinedText.includes('landscape') ||
+                       combinedText.includes('aerial') ||
+                       combinedText.includes('cityscape');
+            });
+
+            // Use priority scenic image, or first scenic image, or fallback to first result
+            const photo = priorityImage || sceneryImages[0] || data.results[0];
             // Return optimized image URL (800px wide, 80% quality)
             return `${photo.urls.raw}&w=800&q=80&fit=crop`;
         }
