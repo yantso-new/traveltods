@@ -167,12 +167,12 @@ export function DestinationAutocomplete({
 
   return (
     <div ref={containerRef} className={`relative ${className}`}>
-      <div className="relative">
+      <div className="relative group">
         <input
           ref={inputRef}
           type="text"
           placeholder={placeholder}
-          className="w-full pl-12 pr-28 py-4 rounded-full border border-stone-200 bg-white/80 backdrop-blur focus:border-rose-300 focus:ring-4 focus:ring-rose-100 outline-none shadow-sm text-lg transition-all placeholder:text-stone-300 text-stone-600"
+          className="w-full pl-12 pr-32 py-4 rounded-full border border-slate-200 bg-white/95 backdrop-blur focus:border-primary/50 focus:ring-4 focus:ring-primary/10 outline-none shadow-xl shadow-black/10 text-lg transition-all placeholder:text-text-sub-light text-text-main-light font-medium"
           value={query}
           onChange={(e) => {
             setQuery(e.target.value);
@@ -181,20 +181,19 @@ export function DestinationAutocomplete({
           onKeyDown={handleKeyDown}
           onFocus={() => suggestions.length > 0 && setIsOpen(true)}
         />
-        <Search className="absolute left-5 top-1/2 -translate-y-1/2 text-stone-400 w-5 h-5" />
+        <Search className="absolute left-5 top-1/2 -translate-y-1/2 text-text-sub-light w-5 h-5 group-hover:text-primary transition-colors" />
 
         {isLoading && (
-          <Loader2 className="absolute right-28 top-1/2 -translate-y-1/2 text-stone-400 w-5 h-5 animate-spin" />
+          <Loader2 className="absolute right-28 top-1/2 -translate-y-1/2 text-primary w-5 h-5 animate-spin" />
         )}
 
         <button
           onClick={handleSearchClick}
           disabled={!hasValidSelection}
-          className={`absolute right-2 top-2 bottom-2 rounded-full px-5 flex items-center gap-2 transition-all ${
-            hasValidSelection
-              ? 'bg-rose-500 hover:bg-rose-600 text-white cursor-pointer'
-              : 'bg-stone-200 text-stone-400 cursor-not-allowed'
-          }`}
+          className={`absolute right-2 top-2 bottom-2 rounded-full px-6 flex items-center gap-2 transition-all font-bold text-sm ${hasValidSelection
+            ? 'bg-primary hover:bg-primary-dark text-white cursor-pointer shadow-md'
+            : 'bg-slate-100 text-slate-400 cursor-not-allowed'
+            }`}
         >
           Search
         </button>
@@ -202,26 +201,25 @@ export function DestinationAutocomplete({
 
       {/* Dropdown */}
       {isOpen && (
-        <div className="absolute z-50 w-full mt-2 bg-white rounded-2xl shadow-lg border border-stone-200 overflow-hidden">
+        <div className="absolute z-50 w-full mt-2 bg-white rounded-2xl shadow-xl shadow-slate-200/50 border border-slate-100 overflow-hidden">
           {suggestions.length > 0 ? (
             <ul className="py-2">
               {suggestions.map((suggestion, index) => (
                 <li
                   key={`${suggestion.city}-${suggestion.country}-${index}`}
-                  className={`px-4 py-3 cursor-pointer flex items-center gap-3 transition-colors ${
-                    index === highlightedIndex
-                      ? 'bg-rose-50'
-                      : 'hover:bg-stone-50'
-                  }`}
+                  className={`px-4 py-3 cursor-pointer flex items-center gap-3 transition-colors ${index === highlightedIndex
+                    ? 'bg-orange-50'
+                    : 'hover:bg-slate-50'
+                    }`}
                   onClick={() => handleSelect(suggestion)}
                   onMouseEnter={() => setHighlightedIndex(index)}
                 >
-                  <MapPin className="w-4 h-4 text-rose-400 flex-shrink-0" />
+                  <MapPin className={`w-4 h-4 flex-shrink-0 ${index === highlightedIndex ? 'text-primary' : 'text-slate-400'}`} />
                   <div>
-                    <span className="font-medium text-stone-700">
+                    <span className="font-bold text-text-main-light">
                       {suggestion.city}
                     </span>
-                    <span className="text-stone-400 ml-1">
+                    <span className="text-text-sub-light ml-1 font-medium">
                       {suggestion.country}
                     </span>
                   </div>
@@ -229,7 +227,7 @@ export function DestinationAutocomplete({
               ))}
             </ul>
           ) : (
-            <div className="px-4 py-3 text-stone-400 text-center">
+            <div className="px-4 py-3 text-text-sub-light text-center">
               No places found
             </div>
           )}

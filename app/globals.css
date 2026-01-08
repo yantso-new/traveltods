@@ -1,26 +1,85 @@
 @import "tailwindcss";
 
 @theme {
+  --font-display: "Plus Jakarta Sans", sans-serif;
   --font-nunito: "Nunito", sans-serif;
-  
-  --color-pastel-blue: #A7C7E7;
-  --color-pastel-pink: #F4C2C2;
-  --color-pastel-green: #C1E1C1;
-  --color-pastel-yellow: #FDFD96;
-  --color-pastel-purple: #C3B1E1;
-  --color-pastel-cream: #FDFBF7;
-  
-  --color-primary: #4A90E2;
+
+  --color-primary: #FF6B6B;
   --color-primary-foreground: #FFFFFF;
+  --color-primary-dark: #EE5253;
+  
+  --color-secondary: #4ECDC4;
+  --color-secondary-foreground: #FFFFFF;
+  
+  --color-accent: #FFE66D;
+  --color-accent-foreground: #101922;
+
+  --color-background-light: #FFFDF9;
+  --color-background-dark: #101922;
+  
+  --color-surface-light: #ffffff;
+  --color-surface-dark: #1c2a36;
+  
+  --color-text-main-light: #2D3436;
+  --color-text-main-dark: #e7edf3;
+  
+  --color-text-sub-light: #636e72;
+  --color-text-sub-dark: #94a3b8;
 }
 
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* Base Styles */
 :root {
-  --background: #FDFBF7;
-  --foreground: #171717;
+  --background: var(--color-background-light);
+  --foreground: var(--color-text-main-light);
+  
+  /* Mapping generic shadcn-like variables to our new palette where applicable */
+  --card: var(--color-surface-light);
+  --card-foreground: var(--color-text-main-light);
+  --popover: var(--color-surface-light);
+  --popover-foreground: var(--color-text-main-light);
+  --muted: #f1f5f9;
+  --muted-foreground: var(--color-text-sub-light);
+  --border: #e2e8f0;
+  --input: #e2e8f0;
+  --ring: var(--color-primary);
+}
+
+.dark {
+  --background: var(--color-background-dark);
+  --foreground: var(--color-text-main-dark);
+  
+  --card: var(--color-surface-dark);
+  --card-foreground: var(--color-text-main-dark);
+  --popover: var(--color-surface-dark);
+  --popover-foreground: var(--color-text-main-dark);
+  --muted: #1e293b;
+  --muted-foreground: var(--color-text-sub-dark);
+  --border: #334155;
+  --input: #334155;
+  --ring: var(--color-primary);
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: var(--font-nunito);
+  font-family: var(--font-display);
+}
+
+.material-symbols-outlined {
+  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
 }

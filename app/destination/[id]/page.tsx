@@ -98,9 +98,9 @@ export default function DestinationDetails() {
     // Show loading if undefined (connecting) or gathering
     if (destination === undefined || isGathering) {
         return (
-            <div className="min-h-screen flex flex-col items-center justify-center space-y-4">
+            <div className="min-h-screen flex flex-col items-center justify-center space-y-4 bg-background-light">
                 <LoadingSpinner />
-                <p className="text-stone-500 font-light animate-pulse">
+                <p className="text-text-sub-light font-light animate-pulse">
                     {isGathering ? `Gathering data for ${id}...` : "Loading..."}
                 </p>
             </div>
@@ -108,7 +108,7 @@ export default function DestinationDetails() {
     }
 
     if (!destination) {
-        return <div className="p-10 text-center">Destination not found and could not be gathered.</div>;
+        return <div className="p-10 text-center text-text-main-light">Destination not found and could not be gathered.</div>;
     }
 
     const { allScores, radarChart, dataQuality } = destination;
@@ -127,46 +127,72 @@ export default function DestinationDetails() {
     };
 
     return (
-        <div className="min-h-screen bg-stone-50 pb-20">
-            {/* Header Image */}
-            <div className="relative h-[40vh] md:h-[50vh] w-full">
-                <img
-                    src={destination.image || "/placeholder.jpg"}
-                    alt={destination.name}
-                    className="w-full h-full object-cover"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-stone-900/60 via-stone-900/10 to-transparent" />
-                <div className="absolute top-6 left-6">
-                    <Button variant="ghost" onClick={() => router.push('/')} className="bg-white/20 hover:bg-white/30 text-white backdrop-blur-md rounded-full px-4">
-                        <ArrowLeft className="w-5 h-5 mr-2" /> Back
-                    </Button>
+        <div className="min-h-screen bg-background-light text-text-main-light transition-colors duration-200 pb-20">
+            {/* Header - Reusing Home Page Header */}
+            <header className="sticky top-0 z-50 w-full border-b border-orange-100 bg-surface-light/90 backdrop-blur-md">
+                <div className="max-w-7xl mx-auto px-4 md:px-10 lg:px-20 py-3">
+                    <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3 cursor-pointer" onClick={() => router.push('/')}>
+                            <div className="flex items-center justify-center size-12 rounded-xl bg-primary text-white shadow-lg shadow-primary/30">
+                                <span className="material-symbols-outlined text-3xl">child_care</span>
+                            </div>
+                            <h2 className="text-2xl font-extrabold tracking-tight text-text-main-light">Traveltods</h2>
+                        </div>
+                        <div className="hidden md:flex flex-1 justify-end items-center gap-8">
+                            <nav className="flex items-center gap-8">
+                                <a className="text-sm font-bold text-text-main-light hover:text-primary transition-colors" href="#">Home</a>
+                                <a className="text-sm font-medium text-text-sub-light hover:text-primary transition-colors" href="#">About Us</a>
+                                <a className="text-sm font-medium text-text-sub-light hover:text-primary transition-colors" href="#">Contact</a>
+                            </nav>
+                            <Button variant="primary" className="rounded-full h-11 px-7">
+                                <span className="truncate">Join Community</span>
+                            </Button>
+                        </div>
+                        <button className="md:hidden p-2 text-text-main-light">
+                            <span className="material-symbols-outlined">menu</span>
+                        </button>
+                    </div>
                 </div>
-                <div className="absolute bottom-8 left-6 md:left-12 max-w-4xl">
-                    <Badge className="bg-rose-500/90 text-white border-none mb-4 shadow-sm text-sm px-3 py-1">{destination.country}</Badge>
-                    <h1 className="text-4xl md:text-6xl font-bold text-white mb-2 shadow-sm">{destination.name}</h1>
-                    <p className="text-white/90 text-lg md:text-xl max-w-2xl shadow-sm font-light">{destination.shortDescription}</p>
+            </header>
+
+            {/* Hero Banner */}
+            <div className="relative h-[40vh] md:h-[50vh] w-full overflow-hidden">
+                <div
+                    className="absolute inset-0 bg-cover bg-center"
+                    style={{ backgroundImage: `url("${destination.image || "/placeholder.jpg"}")` }}
+                ></div>
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
+                <div className="absolute bottom-0 left-0 w-full p-6 md:p-12 lg:p-20">
+                    <div className="max-w-7xl mx-auto w-full">
+                        <div className="inline-flex items-center gap-2 px-3 py-1 mb-4 rounded-full bg-accent text-amber-900 border border-amber-900/10 shadow-lg text-xs font-bold uppercase tracking-wider">
+                            <span className="material-symbols-outlined text-sm">public</span>
+                            {destination.country}
+                        </div>
+                        <h1 className="text-4xl md:text-6xl font-black text-white mb-4 drop-shadow-md tracking-tight leading-none">{destination.name}</h1>
+                        <p className="text-white/90 text-lg md:text-xl max-w-2xl font-medium leading-relaxed drop-shadow-sm">{destination.shortDescription}</p>
+                    </div>
                 </div>
             </div>
 
-            <div className="max-w-7xl mx-auto px-6 -mt-10 relative z-10 grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div className="max-w-7xl mx-auto px-4 md:px-10 lg:px-20 -mt-10 relative z-10 grid grid-cols-1 lg:grid-cols-3 gap-8">
 
                 {/* Left Column: Stats & Description */}
                 <div className="lg:col-span-2 space-y-8">
 
-                    {/* Data Quality Warning (if incomplete) */}
+                    {/* Data Quality Warning */}
                     {dataQuality && !dataQuality.hasReliableOverallScore && (
-                        <Card className="p-4 bg-amber-50 border-amber-200 shadow-sm">
-                            <div className="flex items-start gap-3">
-                                <AlertTriangle className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
+                        <Card className="p-5 border-l-4 border-l-amber-500 bg-amber-50/50">
+                            <div className="flex items-start gap-4">
+                                <div className="p-2 bg-amber-100 rounded-full text-amber-600">
+                                    <AlertTriangle className="w-5 h-5" />
+                                </div>
                                 <div>
-                                    <h4 className="font-medium text-amber-800">Limited Data Available</h4>
-                                    <p className="text-amber-700 text-sm mt-1">
-                                        Not enough verified data to provide an overall family score.
-                                        Individual metrics shown may use estimated values.
+                                    <h4 className="font-bold text-amber-800 text-lg">Limited Data Available</h4>
+                                    <p className="text-amber-700 text-sm mt-1 leading-relaxed">
+                                        We're still collecting verified data for this location. Some scores may be estimated.
                                     </p>
-                                    <p className="text-amber-600 text-xs mt-2">
-                                        Data completeness: {dataQuality.completenessScore}%
-                                        ({dataQuality.completedMetrics.length}/9 metrics verified)
+                                    <p className="text-amber-600 text-xs mt-2 font-mono">
+                                        Completeness: {dataQuality.completenessScore}%
                                     </p>
                                 </div>
                             </div>
@@ -175,113 +201,114 @@ export default function DestinationDetails() {
 
                     {/* Refreshing indicator */}
                     {isRefreshing && (
-                        <Card className="p-3 bg-blue-50 border-blue-200 shadow-sm">
-                            <div className="flex items-center gap-2 text-blue-700">
+                        <Card className="p-4 bg-blue-50 border border-blue-100">
+                            <div className="flex items-center gap-3 text-blue-700">
                                 <LoadingSpinner />
-                                <span className="text-sm">Refreshing data with latest information...</span>
+                                <span className="font-semibold">Refreshing data with latest sources...</span>
                             </div>
                         </Card>
                     )}
 
                     {/* Main Info Card */}
-                    <Card className="p-8 shadow-md">
-                        <h2 className="text-2xl font-bold text-stone-800 mb-4">About this destination</h2>
-                        <p className="text-stone-600 leading-relaxed text-lg mb-6 font-light">
+                    <Card className="p-8">
+                        <div className="flex items-center gap-2 mb-6 text-primary">
+                            <span className="material-symbols-outlined">info</span>
+                            <h2 className="text-xl font-bold uppercase tracking-wide text-text-sub-light">About</h2>
+                        </div>
+                        <p className="text-text-main-light leading-loose text-lg font-light">
                             {destination.description}
                         </p>
-                        <div className="flex flex-wrap gap-2">
+                        <div className="flex flex-wrap gap-2 mt-8">
                             {destination.tags?.map((tag: string) => (
-                                <Badge key={tag} className="text-sm py-1.5 px-3 bg-stone-100 text-stone-600 border-stone-200">{tag}</Badge>
+                                <Badge key={tag} className="px-4 py-2 text-sm">{tag}</Badge>
                             ))}
                         </div>
                     </Card>
 
                     {/* Detailed Metrics Breakdown */}
-                    <Card className="p-8 shadow-md">
-                        <div className="flex items-center justify-between mb-6">
-                            <div className="flex items-center gap-2">
-                                <h3 className="text-xl font-bold text-stone-800">Family Compatibility Scores</h3>
-                                <Tooltip content="Scores are calculated based on data from OpenStreetMap, OpenTripMap, and other public sources.">
-                                    <Info className="w-4 h-4 text-stone-400 cursor-help" />
-                                </Tooltip>
+                    <Card className="p-8">
+                        <div className="flex items-center justify-between mb-8 pb-6 border-b border-gray-100">
+                            <div>
+                                <h3 className="text-2xl font-black text-text-main-light">Family Score</h3>
+                                <p className="text-text-sub-light text-sm mt-1">Based on verifiable safety & amenity data</p>
                             </div>
+
                             {allScores.familyScore !== undefined && allScores.familyScore !== null ? (
-                                <div className="flex items-center gap-2">
-                                    <span className="text-sm text-stone-500">Overall:</span>
-                                    <span className="text-2xl font-bold text-rose-500">{allScores.familyScore}</span>
-                                    <span className="text-sm text-stone-400">/100</span>
+                                <div className="flex items-end gap-1">
+                                    <span className="text-4xl font-black text-primary">{allScores.familyScore}</span>
+                                    <span className="text-base font-bold text-text-sub-light mb-1">/100</span>
                                 </div>
                             ) : (
-                                <div className="flex items-center gap-1 text-stone-400">
-                                    <Info className="w-4 h-4" />
-                                    <span className="text-sm">Score unavailable</span>
+                                <div className="flex items-center gap-2 text-text-sub-light">
+                                    <Info className="w-5 h-5" />
+                                    <span className="font-medium">N/A</span>
                                 </div>
                             )}
                         </div>
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-6">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-8">
                             <ProgressBar
                                 value={allScores.safety}
                                 max={100}
                                 label="Safety & Security"
                                 icon={<ShieldCheck className="w-4 h-4" />}
-                                color="bg-emerald-300"
+                                color="bg-emerald-400"
                             />
                             <ProgressBar
                                 value={allScores.weatherComfort ?? 50}
                                 max={100}
                                 label="Weather Comfort"
                                 icon={<CloudSun className="w-4 h-4" />}
-                                color="bg-sky-300"
+                                color="bg-sky-400"
                             />
                             <ProgressBar
                                 value={allScores.playgrounds}
                                 max={100}
-                                label="Playgrounds & Parks"
+                                label="Playgrounds"
                                 icon={<Trees className="w-4 h-4" />}
-                                color="bg-green-300"
+                                color="bg-green-400"
                             />
                             <ProgressBar
                                 value={allScores.costAffordability ?? 50}
                                 max={100}
-                                label="Cost Affordability"
+                                label="Affordability"
                                 icon={<DollarSign className="w-4 h-4" />}
-                                color="bg-amber-300"
+                                color="bg-amber-400"
                             />
                             <ProgressBar
                                 value={allScores.kidActivities}
                                 max={100}
                                 label="Kid Activities"
                                 icon={<Smile className="w-4 h-4" />}
-                                color="bg-yellow-300"
+                                color="bg-yellow-400"
                             />
                             <ProgressBar
                                 value={allScores.healthyFood}
                                 max={100}
-                                label="Healthy Food Options"
+                                label="Healthy Food"
                                 icon={<Utensils className="w-4 h-4" />}
-                                color="bg-orange-300"
+                                color="bg-orange-400"
                             />
                             <ProgressBar
                                 value={allScores.strollerFriendly}
                                 max={100}
-                                label="Stroller Friendly"
+                                label="Stroller Access"
                                 icon={<Baby className="w-4 h-4" />}
-                                color="bg-pink-300"
+                                color="bg-pink-400"
                             />
                             <ProgressBar
                                 value={allScores.accessibility}
                                 max={100}
-                                label="General Accessibility"
+                                label="Accessibility"
                                 icon={<Accessibility className="w-4 h-4" />}
-                                color="bg-purple-300"
+                                color="bg-purple-400"
                             />
                             <ProgressBar
                                 value={allScores.sidewalks}
                                 max={100}
-                                label="Sidewalk Quality"
+                                label="Walkability"
                                 icon={<Footprints className="w-4 h-4" />}
-                                color="bg-slate-300"
+                                color="bg-indigo-400"
                             />
                         </div>
                     </Card>
@@ -291,19 +318,19 @@ export default function DestinationDetails() {
                 <div className="space-y-8">
 
                     {/* Radar Chart */}
-                    <Card className="p-6 flex flex-col items-center justify-center bg-white shadow-md">
-                        <h3 className="text-lg font-semibold text-stone-800 mb-4 self-start">Visual Breakdown</h3>
+                    <Card className="p-6 flex flex-col items-center justify-center bg-surface-light">
+                        <h3 className="text-sm font-bold uppercase tracking-wider text-text-sub-light mb-6 self-start">Metrics Visualized</h3>
                         <div className="w-full h-[280px]">
                             <ResponsiveContainer width="100%" height="100%">
                                 <RadarChart cx="50%" cy="50%" outerRadius="70%" data={radarChart}>
-                                    <PolarGrid stroke="#f5f5f4" />
-                                    <PolarAngleAxis dataKey="subject" tick={{ fill: '#78716c', fontSize: 11 }} />
+                                    <PolarGrid stroke="#e2e8f0" />
+                                    <PolarAngleAxis dataKey="subject" tick={{ fill: '#94a3b8', fontSize: 10, fontWeight: 600 }} />
                                     <Radar
                                         name={destination.name}
                                         dataKey="A"
-                                        stroke="#fb7185"
-                                        fill="#fda4af"
-                                        fillOpacity={0.4}
+                                        stroke="#FF6B6B"
+                                        fill="#FF6B6B"
+                                        fillOpacity={0.3}
                                     />
                                     <ChartTooltip />
                                 </RadarChart>
@@ -311,29 +338,28 @@ export default function DestinationDetails() {
                         </div>
                     </Card>
 
-                    {/* Local Travel Guide */}
-                    <Card className="p-0 overflow-hidden flex flex-col h-[500px] shadow-md border-rose-100">
-                        <div className="p-4 bg-gradient-to-r from-rose-400 to-rose-300 text-white flex items-center justify-between">
+                    {/* Local Travel Chat */}
+                    <Card className="p-0 overflow-hidden flex flex-col h-[500px] border-none">
+                        <div className="p-5 bg-gradient-to-r from-primary to-primary-dark text-white flex items-center justify-between">
                             <div className="flex items-center gap-2">
                                 <Bot className="w-5 h-5" />
-                                <span className="font-semibold">Local Travel QA</span>
+                                <span className="font-bold">Travel Assistant</span>
                             </div>
-                            <Badge className="bg-white/20 text-white border-none backdrop-blur-sm">Beta</Badge>
+                            <span className="text-[10px] font-bold bg-white/20 px-2 py-0.5 rounded-full">BETA</span>
                         </div>
 
-                        <div className="flex-grow overflow-y-auto p-4 space-y-4 bg-stone-50">
+                        <div className="flex-grow overflow-y-auto p-4 space-y-4 bg-slate-50">
                             {chatMessages.length === 0 && (
-                                <div className="text-center text-stone-400 mt-10 text-sm p-4">
-                                    <p>Ask anything! e.g.</p>
-                                    <p className="italic mt-2">"Where can I buy diapers?"</p>
-                                    <p className="italic">"Is the tap water safe?"</p>
+                                <div className="text-center text-text-sub-light mt-10 text-sm p-4">
+                                    <p className="font-medium">Planning a trip?</p>
+                                    <p className="mt-2 text-xs opacity-70">Ask about baby changing spots, supermarkets, or safe nap areas.</p>
                                 </div>
                             )}
                             {chatMessages.map((msg, idx) => (
                                 <div key={idx} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                                    <div className={`max-w-[85%] rounded-2xl px-4 py-2.5 text-sm ${msg.role === 'user'
-                                        ? 'bg-rose-400 text-white rounded-br-none shadow-sm'
-                                        : 'bg-white border border-stone-100 text-stone-700 rounded-bl-none shadow-sm'
+                                    <div className={`max-w-[85%] rounded-2xl px-4 py-3 text-sm font-medium ${msg.role === 'user'
+                                        ? 'bg-primary text-white rounded-br-none shadow-md shadow-primary/20'
+                                        : 'bg-white border border-slate-100 text-text-main-light rounded-bl-none shadow-sm'
                                         }`}>
                                         {msg.text}
                                     </div>
@@ -341,27 +367,27 @@ export default function DestinationDetails() {
                             ))}
                             {isChatting && (
                                 <div className="flex justify-start">
-                                    <div className="bg-white border border-stone-100 rounded-2xl rounded-bl-none px-4 py-3 shadow-sm">
+                                    <div className="bg-white border border-slate-100 rounded-2xl rounded-bl-none px-4 py-3 shadow-sm">
                                         <LoadingSpinner />
                                     </div>
                                 </div>
                             )}
                         </div>
 
-                        <div className="p-3 bg-white border-t border-stone-100">
+                        <div className="p-3 bg-white border-t border-slate-100">
                             <div className="relative">
                                 <input
                                     type="text"
                                     value={chatInput}
                                     onChange={(e) => setChatInput(e.target.value)}
                                     onKeyDown={(e) => e.key === 'Enter' && handleChat()}
-                                    placeholder="Ask a question..."
-                                    className="w-full pr-10 pl-4 py-3 rounded-xl border border-stone-200 focus:border-rose-300 focus:ring-4 focus:ring-rose-100 outline-none text-sm transition-all text-stone-600"
+                                    placeholder="Ask anything..."
+                                    className="w-full pr-10 pl-4 py-3 rounded-xl bg-slate-50 border-none focus:ring-2 focus:ring-primary/50 outline-none text-sm font-medium text-text-main-light placeholder:text-text-sub-light/50"
                                 />
                                 <button
                                     onClick={handleChat}
                                     disabled={!chatInput.trim() || isChatting}
-                                    className="absolute right-2 top-2 p-1.5 bg-rose-50 hover:bg-rose-100 text-rose-500 rounded-lg transition-colors disabled:opacity-50"
+                                    className="absolute right-2 top-2 p-1.5 bg-primary hover:bg-primary-dark text-white rounded-lg transition-colors disabled:opacity-50 disabled:bg-slate-200"
                                 >
                                     <Send className="w-4 h-4" />
                                 </button>

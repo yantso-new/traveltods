@@ -1,7 +1,6 @@
 import React from 'react';
 import { Destination } from '@/types';
-import { Card, Badge } from '@/components/ui';
-import { MapPin, Star } from 'lucide-react';
+import { Card } from '@/components/ui';
 
 interface Props {
   destination: Destination;
@@ -9,60 +8,73 @@ interface Props {
 }
 
 export const DestinationCard: React.FC<Props> = ({ destination, onClick }) => {
-  // Use familyScore if available and reliable, otherwise calculate from metrics
-  const hasFamilyScore = destination.familyScore != null && destination.hasReliableScore;
-
+  // Use familyScore if available, otherwise calculate from metrics
+  // Fallback logic kept for robustness
   let displayScore: string;
-  let scoreNum: number;
 
-  if (hasFamilyScore) {
-    // Use the pre-calculated familyScore (0-100 scale, convert to 0-10)
-    scoreNum = destination.familyScore! / 10;
-    displayScore = scoreNum.toFixed(1);
+  if (destination.familyScore != null) {
+    displayScore = (destination.familyScore / 10).toFixed(1);
   } else {
-    // Fallback: calculate average from metrics (already 0-10 scale)
     const metrics: number[] = Object.values(destination.metrics);
-    scoreNum = metrics.reduce((a: number, b: number) => a + b, 0) / metrics.length;
+    const scoreNum = metrics.reduce((a: number, b: number) => a + b, 0) / metrics.length;
     displayScore = scoreNum.toFixed(1);
   }
 
-  // Dynamic colors based on rating
-  const isHighRated = scoreNum >= 7;
-  const textColor = isHighRated ? 'text-violet-600' : 'text-rose-500';
-  const fillColor = isHighRated ? 'fill-violet-600' : 'fill-rose-500';
-  const bgColor = isHighRated ? 'bg-violet-50' : 'bg-rose-50';
-
   return (
-    <Card onClick={onClick} className="overflow-hidden group flex flex-col h-full hover:border-rose-200 hover:shadow-lg transition-all duration-300">
-      <div className="relative aspect-[4/3] overflow-hidden">
-        <img
-          src={destination.image}
-          alt={destination.name}
-          className="object-cover w-full h-full transition-transform duration-700 group-hover:scale-105"
-        />
+    <Card
+      onClick={onClick}
+      noHoverLift={true}
+      className="group flex flex-col overflow-hidden h-full border-2 border-transparent"
+    >
+      <div className="relative h-64 overflow-hidden">
+        <div className="absolute top-4 right-4 z-10 bg-white/95 backdrop-blur-md px-3 py-1.5 rounded-full flex items-center gap-1.5 shadow-md">
+          <span className="material-symbols-outlined text-accent text-lg" style={{ fontVariationSettings: "'FILL' 1" }}>star</span>
+          <span className="text-text-main-light font-bold text-sm">{displayScore}</span>
+        </div>
+        <div
+          className="w-full h-full bg-cover bg-center"
+          style={{ backgroundImage: `url("${destination.image}")` }}
+        >
+        </div>
       </div>
-      <div className="p-5 flex flex-col flex-grow">
-        <div className="flex items-start justify-between mb-3 gap-4">
-          <div className="flex-grow">
-            <h3 className="text-xl font-bold text-stone-800 leading-tight group-hover:text-rose-600 transition-colors">{destination.name}</h3>
-            <p className="text-sm text-stone-500 flex items-center mt-1">
-              <MapPin className="w-3 h-3 mr-1" />
-              {destination.country}
-            </p>
-          </div>
-          <div className={`shrink-0 ${bgColor} px-2.5 py-1 rounded-full text-sm font-bold ${textColor} flex items-center shadow-sm transition-colors duration-300 border border-white/50`}>
-            <Star className={`w-3 h-3 mr-1 ${fillColor}`} />
-            {displayScore}
+
+      <div className="flex flex-col flex-1 p-6 gap-4 bg-surface-light">
+        <div>
+          <h3 className="text-xl font-bold text-text-main-light group-hover:text-primary transition-colors">
+            {destination.name}
+          </h3>
+          <div className="flex items-center gap-1 text-text-sub-light mt-1">
+            <span className="material-symbols-outlined text-lg">location_on</span>
+            <span className="text-sm font-medium">{destination.country}</span>
           </div>
         </div>
-        <p className="text-stone-600 text-sm line-clamp-2 mb-4 flex-grow font-light">
+
+        <p className="text-text-sub-light leading-relaxed line-clamp-2">
           {destination.shortDescription}
         </p>
-        <div className="flex flex-wrap gap-2 mt-auto">
-          {destination.tags.slice(0, 3).map(tag => (
-            <Badge key={tag}>{tag}</Badge>
-          ))}
+
+        <div className="flex flex-wrap gap-2 mt-auto pt-2">
+          {destination.tags.slice(0, 2).map((tag, i) => {
+            // Assign different colors based on index/random for variety if needed, 
+            // or use a consistent style map. For now using a rotation of styles based on user design.
+            const colors = [
+              "bg-blue-100 text-blue-700",
+              "bg-pink-100 text-pink-700",
+              "bg-green-100 text-green-700",
+              "bg-purple-100 text-purple-700"
+            ];
+            const colorClass = colors[i % colors.length];
+            return (
+              <span key={tag} className={`px-3 py-1.5 rounded-lg text-xs font-bold ${colorClass}`}>
+                {tag}
+              </span>
+            )
+          })}
         </div>
+
+        <button className="mt-2 w-full py-3 rounded-xl bg-slate-50 hover:bg-primary text-text-main-light hover:text-white font-bold text-sm transition-all duration-300 border border-slate-100 hover:border-primary shadow-sm hover:shadow-lg hover:shadow-primary/30">
+          View Details
+        </button>
       </div>
     </Card>
   );
