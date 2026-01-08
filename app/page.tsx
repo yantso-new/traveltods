@@ -20,7 +20,7 @@ export default function Home() {
   const [displayCount, setDisplayCount] = useState(INITIAL_DISPLAY_COUNT);
 
   // Fetch all destinations from Convex
-  const convexDestinations = useQuery(api.destinations.getAllDestinations);
+  const convexDestinations = useQuery(api.destinations.getTopRatedDestinations, {});
 
   // Transform Convex data to UI format
   const dbDestinations: Destination[] = (convexDestinations || []).map(d => ({

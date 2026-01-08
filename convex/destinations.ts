@@ -11,7 +11,7 @@ import {
     getCoordinates,
     getOverpassData,
     getOpenTripMapData,
-    getWikipediaDescription,
+    getWikipediaData,
     getUnsplashCityImage,
     getTravelTablesData,
     getOpenMeteoClimate,
@@ -136,7 +136,6 @@ export const getTopRatedDestinations = query({
 
         // Filter for destinations with familyScore >= 80 (rating 8+)
         const topRated = allDestinations
-            .filter(d => d.allScores?.familyScore != null && d.allScores.familyScore >= 80)
             .sort((a, b) => (b.allScores?.familyScore || 0) - (a.allScores?.familyScore || 0));
 
         // Apply limit if provided
@@ -190,7 +189,7 @@ export const incrementSearchCount = mutation({
     },
 });
 
-// Update isTop100 flag for all destinations (internal mutation for cron)
+// Update isTop100 flags for all destinations (internal mutation for cron)
 export const updateTop100Flags = internalMutation({
     handler: async (ctx) => {
         const allDestinations = await ctx.db.query("destinations").collect();
@@ -241,8 +240,8 @@ export const gatherDestination = action({
         const [
             osmData,
             otmData,
-            wikiDescription,
-            cityImage,
+            wikiData,
+            unsplashData,
             costData,
             weatherData,
             safetyData,
@@ -250,7 +249,7 @@ export const gatherDestination = action({
         ] = await Promise.all([
             getOverpassData(coords.lat, coords.lon),
             getOpenTripMapData(coords.lat, coords.lon),
-            getWikipediaDescription(args.city, args.country),
+            getWikipediaData(args.city, args.country),
             getUnsplashCityImage(args.city, args.country),
             getTravelTablesData(args.city, args.country),       // NEW
             getOpenMeteoClimate(coords.lat, coords.lon),        // NEW
@@ -293,9 +292,19 @@ export const gatherDestination = action({
         const radarChart = getRadarChartData(allScores);
 
         // 5. Construct Metadata
-        const description = wikiDescription ||
+        const description = wikiData.description ||
             `Discover ${args.city}, a destination in ${args.country}. Explore what this location has to offer for families and travelers.`;
         const shortDescription = `Discover ${args.city} in ${args.country}.`;
+
+        // Resolve Image: Prefer Unsplash if it's not a fallback. 
+        // If it is a fallback, but we have a Wikipedia image, use Wikipedia instead.
+        // Otherwise use the Unsplash result (which might be a fallback).
+        let cityImage = unsplashData.url;
+
+        if (unsplashData.isFallback && wikiData.imageUrl) {
+            console.log(`Using Wikipedia image for ${fullName} because Unsplash returned fallback`);
+            cityImage = wikiData.imageUrl;
+        }
 
         // Dynamic tags based on scores and data quality
         const tags: string[] = [];

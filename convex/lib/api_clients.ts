@@ -1,13 +1,19 @@
 import { Attraction } from "./scores";
 
 // Fetch a city image from Unsplash API
-export async function getUnsplashCityImage(city: string, country: string): Promise<string> {
+export interface UnsplashImageResult {
+    url: string;
+    isFallback: boolean;
+}
+
+// Fetch a city image from Unsplash API
+export async function getUnsplashCityImage(city: string, country: string): Promise<UnsplashImageResult> {
     const apiKey = process.env.UNSPLASH_ACCESS_KEY;
 
     // If no API key, return a generic travel image from Unsplash CDN
     if (!apiKey) {
         console.log("No UNSPLASH_ACCESS_KEY found, using fallback image");
-        return getFallbackImage(city);
+        return { url: getFallbackImage(city), isFallback: true };
     }
 
     // Search for images focusing on architecture/landscapes without people
@@ -18,7 +24,7 @@ export async function getUnsplashCityImage(city: string, country: string): Promi
         const res = await fetch(url);
         if (!res.ok) {
             console.error("Unsplash API error:", res.status, await res.text());
-            return getFallbackImage(city);
+            return { url: getFallbackImage(city), isFallback: true };
         }
 
         const data = await res.json();
@@ -57,23 +63,26 @@ export async function getUnsplashCityImage(city: string, country: string): Promi
                 const combinedText = desc + ' ' + altDesc;
 
                 return combinedText.includes('architecture') ||
-                       combinedText.includes('building') ||
-                       combinedText.includes('skyline') ||
-                       combinedText.includes('landscape') ||
-                       combinedText.includes('aerial') ||
-                       combinedText.includes('cityscape');
+                    combinedText.includes('building') ||
+                    combinedText.includes('skyline') ||
+                    combinedText.includes('landscape') ||
+                    combinedText.includes('aerial') ||
+                    combinedText.includes('cityscape');
             });
 
             // Use priority scenic image, or first scenic image, or fallback to first result
             const photo = priorityImage || sceneryImages[0] || data.results[0];
             // Return optimized image URL (800px wide, 80% quality)
-            return `${photo.urls.raw}&w=800&q=80&fit=crop`;
+            return {
+                url: `${photo.urls.raw}&w=800&q=80&fit=crop`,
+                isFallback: false
+            };
         }
 
-        return getFallbackImage(city);
+        return { url: getFallbackImage(city), isFallback: true };
     } catch (e) {
         console.error("Unsplash fetch error:", e);
-        return getFallbackImage(city);
+        return { url: getFallbackImage(city), isFallback: true };
     }
 }
 
@@ -94,7 +103,12 @@ function getFallbackImage(city: string): string {
     return FALLBACK_IMAGES[hash % FALLBACK_IMAGES.length];
 }
 
-export async function getWikipediaDescription(city: string, country: string): Promise<string | null> {
+export interface WikipediaData {
+    description: string | null;
+    imageUrl: string | null;
+}
+
+export async function getWikipediaData(city: string, country: string): Promise<WikipediaData> {
     const searchQuery = country === "Unknown" ? city : `${city} ${country}`;
     const searchUrl = `https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(searchQuery)}&format=json&origin=*`;
 
@@ -103,36 +117,39 @@ export async function getWikipediaDescription(city: string, country: string): Pr
         const searchData = await searchRes.json();
 
         if (!searchData.query?.search?.length) {
-            return null;
+            return { description: null, imageUrl: null };
         }
 
         const pageTitle = searchData.query.search[0].title;
-        const extractUrl = `https://en.wikipedia.org/w/api.php?action=query&titles=${encodeURIComponent(pageTitle)}&prop=extracts&exintro=true&explaintext=true&format=json&origin=*`;
+        const extractUrl = `https://en.wikipedia.org/w/api.php?action=query&titles=${encodeURIComponent(pageTitle)}&prop=extracts|pageimages&exintro=true&explaintext=true&pithumbsize=1000&format=json&origin=*`;
 
         const extractRes = await fetch(extractUrl);
         const extractData = await extractRes.json();
 
         const pages = extractData.query?.pages;
-        if (!pages) return null;
+        if (!pages) return { description: null, imageUrl: null };
 
         const pageId = Object.keys(pages)[0];
-        const extract = pages[pageId]?.extract;
+        const page = pages[pageId];
+        const extract = page?.extract;
+        const thumbnail = page?.thumbnail?.source;
 
-        if (!extract) return null;
+        if (!extract) return { description: null, imageUrl: thumbnail || null };
 
         // Get first 2-3 sentences for a concise description
         const sentences = extract.split(/(?<=[.!?])\s+/);
         const description = sentences.slice(0, 3).join(' ').trim();
 
         // Limit to reasonable length
-        if (description.length > 500) {
-            return description.substring(0, 497) + '...';
-        }
+        const finalDescription = description.length > 500 ? description.substring(0, 497) + '...' : description;
 
-        return description;
+        return {
+            description: finalDescription,
+            imageUrl: thumbnail || null
+        };
     } catch (e) {
         console.error("Wikipedia API error:", e);
-        return null;
+        return { description: null, imageUrl: null };
     }
 }
 

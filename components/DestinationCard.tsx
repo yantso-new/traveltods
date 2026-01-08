@@ -54,22 +54,46 @@ export const DestinationCard: React.FC<Props> = ({ destination, onClick }) => {
         </p>
 
         <div className="flex flex-wrap gap-2 mt-auto pt-2">
-          {destination.tags.slice(0, 2).map((tag, i) => {
-            // Assign different colors based on index/random for variety if needed, 
-            // or use a consistent style map. For now using a rotation of styles based on user design.
-            const colors = [
-              "bg-blue-100 text-blue-700",
-              "bg-pink-100 text-pink-700",
-              "bg-green-100 text-green-700",
-              "bg-purple-100 text-purple-700"
-            ];
-            const colorClass = colors[i % colors.length];
-            return (
-              <span key={tag} className={`px-3 py-1.5 rounded-lg text-xs font-bold ${colorClass}`}>
-                {tag}
-              </span>
-            )
-          })}
+          {(() => {
+            // Map metrics to display labels
+            const metricLabels: Record<string, string> = {
+              safety: "Safe Area",
+              playgrounds: "Great Playgrounds",
+              kidActivities: "Fun Activities",
+              weatherComfort: "Great Weather",
+              costAffordability: "Affordable",
+              walkability: "Walkable",
+              strollerFriendly: "Stroller Friendly",
+              accessibility: "Accessible",
+              healthyFood: "Healthy Food",
+            };
+
+            // Calculate top tags from metrics
+            const topTags = Object.entries(destination.metrics)
+              .filter(([key, value]) => {
+                // Filter out 'nature' as it duplicates playgrounds in current data mapping
+                // Check if score is > 8.5 (equivalent to 85 in 0-100 scale)
+                return key !== 'nature' && metricLabels[key] && value > 8.5;
+              })
+              .sort(([, a], [, b]) => b - a) // Sort by score descending
+              .slice(0, 3) // Take top 3
+              .map(([key]) => metricLabels[key]);
+
+            return topTags.map((tag, i) => {
+              const colors = [
+                "bg-blue-100 text-blue-700",
+                "bg-pink-100 text-pink-700",
+                "bg-green-100 text-green-700",
+                "bg-purple-100 text-purple-700"
+              ];
+              const colorClass = colors[i % colors.length];
+              return (
+                <span key={tag} className={`px-3 py-1.5 rounded-lg text-xs font-bold ${colorClass}`}>
+                  {tag}
+                </span>
+              );
+            });
+          })()}
         </div>
 
         <button className="mt-2 w-full py-3 rounded-xl bg-slate-50 hover:bg-primary text-text-main-light hover:text-white font-bold text-sm transition-all duration-300 border border-slate-100 hover:border-primary shadow-sm hover:shadow-lg hover:shadow-primary/30">
