@@ -9,8 +9,8 @@ export function Navbar() {
 
     return (
         <header className="sticky top-0 z-50 w-full border-b border-orange-100 bg-surface-light/90 backdrop-blur-md">
-            <div className="max-w-7xl mx-auto px-4 md:px-10 lg:px-20 py-3">
-                <div className="flex items-center justify-between">
+            <div className="px-4 md:px-20 py-3 flex justify-center">
+                <div className="w-full max-w-7xl flex items-center justify-between">
                     <div className="flex items-center gap-3 cursor-pointer" onClick={() => router.push('/')}>
                         <div className="flex items-center justify-center size-12 rounded-xl bg-primary text-white shadow-lg shadow-primary/30">
                             <span className="material-symbols-outlined text-3xl">child_care</span>
