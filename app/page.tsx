@@ -23,7 +23,7 @@ export default function Home() {
   const convexDestinations = useQuery(api.destinations.getTopRatedDestinations, {});
 
   // Transform Convex data to UI format
-  const dbDestinations: Destination[] = (convexDestinations || []).map(d => ({
+  const dbDestinations: Destination[] = (convexDestinations || []).map((d: any) => ({
     id: d.name,
     name: d.name,
     country: d.country,

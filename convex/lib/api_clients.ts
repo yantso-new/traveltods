@@ -87,7 +87,7 @@ export async function getUnsplashCityImage(city: string, country: string): Promi
 }
 
 // Fallback images - curated list of city/architecture images from Unsplash (no people)
-const FALLBACK_IMAGES = [
+export const FALLBACK_IMAGES = [
     'https://images.unsplash.com/photo-1480714378408-67cf0d13bc1b?w=800&q=80', // NYC skyline
     'https://images.unsplash.com/photo-1477959858617-67f85cf4f1df?w=800&q=80', // City aerial
     'https://images.unsplash.com/photo-1449824913935-59a10b8d2000?w=800&q=80', // City buildings
@@ -139,13 +139,69 @@ export async function getWikipediaData(city: string, country: string): Promise<W
         // Get first 2-3 sentences for a concise description
         const sentences = extract.split(/(?<=[.!?])\s+/);
         const description = sentences.slice(0, 3).join(' ').trim();
-
-        // Limit to reasonable length
         const finalDescription = description.length > 500 ? description.substring(0, 497) + '...' : description;
+
+        // Image Selection Logic
+        let imageUrl = thumbnail || null;
+
+        // Helper to check if an image is likely a flag, map, or icon
+        const isInvalidImage = (url: string | null) => {
+            if (!url) return true;
+            const lower = url.toLowerCase();
+            return lower.endsWith('.svg') ||
+                lower.endsWith('.png') ||
+                lower.includes('flag') ||
+                lower.includes('coat_of_arms') ||
+                lower.includes('map') ||
+                lower.includes('logo') ||
+                lower.includes('icon') ||
+                lower.includes('stub');
+        };
+
+        // If main image is invalid (e.g. flag), try to find a better one on the page
+        if (isInvalidImage(imageUrl)) {
+            console.log(`Main wiki image rejected: ${imageUrl}, searching page for better images...`);
+            try {
+                const imagesUrl = `https://en.wikipedia.org/w/api.php?action=query&titles=${encodeURIComponent(pageTitle)}&generator=images&gimlimit=20&prop=imageinfo&iiprop=url|mime&format=json&origin=*`;
+                const imgRes = await fetch(imagesUrl);
+                const imgData = await imgRes.json();
+                const pages = imgData.query?.pages;
+
+                if (pages) {
+                    const candidates = Object.values(pages)
+                        .map((p: any) => ({
+                            title: p.title || "",
+                            url: p.imageinfo?.[0]?.url,
+                            mime: p.imageinfo?.[0]?.mime
+                        }))
+                        .filter(img =>
+                            img.url &&
+                            img.mime === 'image/jpeg' &&
+                            !isInvalidImage(img.url) &&
+                            !img.title.toLowerCase().includes('portrait') &&
+                            !img.title.toLowerCase().includes('person')
+                        );
+
+                    // Prefer scenic keywords
+                    const best = candidates.find(img => {
+                        const t = img.title.toLowerCase();
+                        return t.includes('view') || t.includes('skyline') || t.includes('panorama') || t.includes('landscape') || t.includes('mount') || t.includes('lake') || t.includes('city');
+                    });
+
+                    if (best) {
+                        imageUrl = best.url;
+                    } else if (candidates.length > 0) {
+                        imageUrl = candidates[0].url;
+                    }
+                }
+            } catch (e) {
+                console.error("Error fetching extra wiki images:", e);
+            }
+        }
 
         return {
             description: finalDescription,
-            imageUrl: thumbnail || null
+            imageUrl: imageUrl
         };
     } catch (e) {
         console.error("Wikipedia API error:", e);

@@ -1,6 +1,7 @@
 import { v } from "convex/values";
 import { action, internalAction } from "./_generated/server";
 import { api, internal } from "./_generated/api";
+import { FALLBACK_IMAGES } from "./lib/api_clients";
 
 // Staleness threshold: 90 days in milliseconds
 const STALE_THRESHOLD_MS = 90 * 24 * 60 * 60 * 1000;
@@ -66,7 +67,7 @@ export const checkAndRefreshIfStale = action({
     args: {
         name: v.string(),
     },
-    handler: async (ctx, args) => {
+    handler: async (ctx, args): Promise<{ needsRefresh: boolean; reason: string }> => {
         const destination = await ctx.runQuery(api.destinations.getDestination, { name: args.name });
 
         if (!destination) {
@@ -80,8 +81,16 @@ export const checkAndRefreshIfStale = action({
         }
 
         // Check staleness for non-top destinations
-        if (isStale(destination.lastUpdated)) {
-            console.log(`Destination ${args.name} is stale (last updated: ${new Date(destination.lastUpdated).toISOString()}), triggering lazy refresh`);
+        const currentImage = destination.image || "";
+        const isGenericImage =
+            FALLBACK_IMAGES.includes(currentImage) ||
+            currentImage.includes("Flag") ||
+            currentImage.endsWith(".svg") ||
+            currentImage.includes("Coat_of_arms");
+
+        if (isStale(destination.lastUpdated) || isGenericImage) {
+            const reason = isGenericImage ? "quality_improvement_generic_image" : "stale_data_refreshed";
+            console.log(`Destination ${args.name} needs refresh (Reason: ${reason}), triggering lazy refresh`);
 
             const [city, country] = args.name.split(',').map((s: string) => s.trim());
 
@@ -90,7 +99,7 @@ export const checkAndRefreshIfStale = action({
                 country: country || destination.country || "Unknown"
             });
 
-            return { needsRefresh: true, reason: "stale_data_refreshed" };
+            return { needsRefresh: true, reason };
         }
 
         return { needsRefresh: false, reason: "data_fresh" };

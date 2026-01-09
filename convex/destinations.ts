@@ -374,3 +374,118 @@ export const gatherDestination = action({
         };
     },
 });
+
+// Mutation to update just the image for a destination
+export const updateDestinationImage = mutation({
+    args: {
+        name: v.string(),
+        image: v.string(),
+    },
+    handler: async (ctx, args) => {
+        const destination = await ctx.db
+            .query("destinations")
+            .withIndex("by_name", (q) => q.eq("name", args.name))
+            .first();
+
+        if (destination) {
+            await ctx.db.patch(destination._id, {
+                image: args.image,
+                lastUpdated: Date.now(),
+            });
+            return { success: true };
+        }
+        return { success: false, error: "Destination not found" };
+    },
+});
+
+// Known fallback image IDs that indicate generic/incorrect images
+const FALLBACK_IMAGE_IDS = [
+    'photo-1480714378408-67cf0d13bc1b', // NYC skyline
+    'photo-1477959858617-67f85cf4f1df', // City aerial
+    'photo-1449824913935-59a10b8d2000', // City buildings
+    'photo-1444723121867-7a241cacace9', // City bridge
+    'photo-1519501025264-65ba15a82390', // Hong Kong skyline
+    'photo-1513635269975-59663e0ac1ad', // London architecture
+    'photo-1502602898657-3e91760cbb34', // Paris architecture
+];
+
+// Action to refresh images for destinations with fallback images
+export const refreshDestinationImages = action({
+    args: {
+        destinationNames: v.optional(v.array(v.string())), // If empty, refresh all with fallbacks
+    },
+    handler: async (ctx, args) => {
+        // Get all destinations
+        const allDestinations = await ctx.runQuery(api.destinations.getAllDestinations);
+
+        // Filter to those with fallback images (or specified names)
+        let toRefresh = allDestinations;
+
+        if (args.destinationNames && args.destinationNames.length > 0) {
+            toRefresh = allDestinations.filter(d => args.destinationNames!.includes(d.name));
+        } else {
+            // Filter to destinations with fallback images
+            toRefresh = allDestinations.filter(d => {
+                if (!d.image) return true;
+                return FALLBACK_IMAGE_IDS.some(id => d.image?.includes(id));
+            });
+        }
+
+        console.log(`Refreshing images for ${toRefresh.length} destinations`);
+
+        const results: { name: string; success: boolean; newImage?: string; error?: string }[] = [];
+
+        for (const dest of toRefresh) {
+            try {
+                // Extract city and country from name (format: "City, Country")
+                const parts = dest.name.split(', ');
+                const city = parts[0];
+                const country = dest.country || (parts.length > 1 ? parts[1] : "Unknown");
+
+                console.log(`Fetching new image for ${city}, ${country}...`);
+
+                // Fetch new image from Unsplash
+                const unsplashResult = await getUnsplashCityImage(city, country);
+
+                // Also try Wikipedia as fallback
+                let finalImage = unsplashResult.url;
+                if (unsplashResult.isFallback) {
+                    const wikiData = await getWikipediaData(city, country);
+                    if (wikiData.imageUrl) {
+                        finalImage = wikiData.imageUrl;
+                        console.log(`Using Wikipedia image for ${dest.name}`);
+                    }
+                }
+
+                // Update the image
+                await ctx.runMutation(api.destinations.updateDestinationImage, {
+                    name: dest.name,
+                    image: finalImage,
+                });
+
+                results.push({
+                    name: dest.name,
+                    success: true,
+                    newImage: finalImage,
+                });
+
+                // Small delay to avoid rate limiting
+                await new Promise(resolve => setTimeout(resolve, 500));
+
+            } catch (error) {
+                console.error(`Error refreshing image for ${dest.name}:`, error);
+                results.push({
+                    name: dest.name,
+                    success: false,
+                    error: String(error),
+                });
+            }
+        }
+
+        return {
+            refreshed: results.filter(r => r.success).length,
+            failed: results.filter(r => !r.success).length,
+            results,
+        };
+    },
+});

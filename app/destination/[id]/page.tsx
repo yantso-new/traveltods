@@ -159,7 +159,7 @@ export default function DestinationDetails() {
             <div className="relative h-[40vh] md:h-[50vh] w-full overflow-hidden">
                 <div
                     className="absolute inset-0 bg-cover bg-center"
-                    style={{ backgroundImage: `url("${destination.image || "/placeholder.jpg"}")` }}
+                    style={{ backgroundImage: `url("${destination.image || '/placeholder.jpg'}")` }}
                 ></div>
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
                 <div className="absolute bottom-0 left-0 w-full p-6 md:p-12 lg:p-20">

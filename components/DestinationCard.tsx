@@ -33,7 +33,7 @@ export const DestinationCard: React.FC<Props> = ({ destination, onClick }) => {
         </div>
         <div
           className="w-full h-full bg-cover bg-center"
-          style={{ backgroundImage: `url("${destination.image}")` }}
+          style={{ backgroundImage: `url("${destination.image || '/placeholder.jpg'}")` }}
         >
         </div>
       </div>
@@ -53,30 +53,26 @@ export const DestinationCard: React.FC<Props> = ({ destination, onClick }) => {
           {destination.shortDescription}
         </p>
 
-        <div className="flex flex-wrap gap-2 mt-auto pt-2">
+        <div className="flex flex-nowrap gap-2 mt-auto pt-2 overflow-hidden mask-linear-fade-right">
           {(() => {
             // Map metrics to display labels
             const metricLabels: Record<string, string> = {
               safety: "Safe Area",
-              playgrounds: "Great Playgrounds",
-              kidActivities: "Fun Activities",
-              weatherComfort: "Great Weather",
+              playgrounds: "Playgrounds",
+              kidActivities: "Activities",
+              weatherComfort: "Weather",
               costAffordability: "Affordable",
               walkability: "Walkable",
-              strollerFriendly: "Stroller Friendly",
+              strollerFriendly: "Stroller",
               accessibility: "Accessible",
               healthyFood: "Healthy Food",
             };
 
             // Calculate top tags from metrics
             const topTags = Object.entries(destination.metrics)
-              .filter(([key, value]) => {
-                // Filter out 'nature' as it duplicates playgrounds in current data mapping
-                // Check if score is > 8.5 (equivalent to 85 in 0-100 scale)
-                return key !== 'nature' && metricLabels[key] && value > 8.5;
-              })
-              .sort(([, a], [, b]) => b - a) // Sort by score descending
-              .slice(0, 3) // Take top 3
+              .filter(([key, value]) => key !== 'nature' && metricLabels[key] && value > 8.5)
+              .sort(([, a], [, b]) => b - a)
+              .slice(0, 3)
               .map(([key]) => metricLabels[key]);
 
             return topTags.map((tag, i) => {
@@ -88,7 +84,7 @@ export const DestinationCard: React.FC<Props> = ({ destination, onClick }) => {
               ];
               const colorClass = colors[i % colors.length];
               return (
-                <span key={tag} className={`px-3 py-1.5 rounded-lg text-xs font-bold ${colorClass}`}>
+                <span key={tag} className={`px-3 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap ${colorClass}`}>
                   {tag}
                 </span>
               );
