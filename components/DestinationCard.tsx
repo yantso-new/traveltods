@@ -40,11 +40,11 @@ export const DestinationCard: React.FC<Props> = ({ destination, onClick }) => {
 
       <div className="flex flex-col flex-1 p-6 gap-4 bg-surface-light">
         <div>
-          <h3 className="text-xl font-bold text-text-main-light group-hover:text-primary transition-colors">
-            {destination.name}
+          <h3 className="text-xl font-bold text-text-main-light group-hover:text-primary transition-colors capitalize">
+            {destination.name.split(',')[0].trim()}
           </h3>
           <div className="flex items-center gap-1 text-text-sub-light mt-1">
-            <span className="material-symbols-outlined text-lg">location_on</span>
+            {/* <span className="material-symbols-outlined text-lg">location_on</span> */}
             <span className="text-sm font-medium">{destination.country}</span>
           </div>
         </div>

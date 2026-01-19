@@ -130,6 +130,11 @@ export default function DestinationDetails() {
     }
 
     const { allScores, radarChart, dataQuality } = destination;
+    const isUnreliable = dataQuality && !dataQuality.hasReliableOverallScore;
+
+    const handleGoHome = () => {
+        router.push('/');
+    };
 
 
     return (
@@ -162,25 +167,7 @@ export default function DestinationDetails() {
                     {/* Left Column: Stats & Description */}
                     <div className="lg:col-span-2 space-y-8">
 
-                        {/* Data Quality Warning */}
-                        {dataQuality && !dataQuality.hasReliableOverallScore && (
-                            <Card className="p-5 border-l-4 border-l-amber-500 bg-amber-50/50">
-                                <div className="flex items-start gap-4">
-                                    <div className="p-2 bg-amber-100 rounded-full text-amber-600">
-                                        <AlertTriangle className="w-5 h-5" />
-                                    </div>
-                                    <div>
-                                        <h4 className="font-bold text-amber-800 text-lg">Limited Data Available</h4>
-                                        <p className="text-amber-700 text-sm mt-1 leading-relaxed">
-                                            We're still collecting verified data for this location. Some scores may be estimated.
-                                        </p>
-                                        <p className="text-amber-600 text-xs mt-2 font-mono">
-                                            Completeness: {dataQuality.completenessScore}%
-                                        </p>
-                                    </div>
-                                </div>
-                            </Card>
-                        )}
+
 
                         {/* Refreshing indicator */}
                         {isRefreshing && (
@@ -421,6 +408,26 @@ export default function DestinationDetails() {
                     </div>
                 </div>
             </div>
+            {/* Unreliable Data Blocking Modal */}
+            {isUnreliable && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-in fade-in duration-300">
+                    <Card className="max-w-md w-full p-8 text-center space-y-6 shadow-2xl scale-100">
+                        <div className="mx-auto w-20 h-20 bg-amber-50 rounded-full flex items-center justify-center text-amber-500 mb-2">
+                            <AlertTriangle className="w-10 h-10" />
+                        </div>
+                        <div>
+                            <h2 className="text-2xl font-black text-text-main-light mb-3">Data Unavailable</h2>
+                            <p className="text-text-sub-light leading-relaxed">
+                                We currently don't have enough verified information for <strong>{destination.name}</strong>.
+                                Please try searching for another popular destination.
+                            </p>
+                        </div>
+                        <Button onClick={handleGoHome} className="w-full h-12 text-base">
+                            Back to Home
+                        </Button>
+                    </Card>
+                </div>
+            )}
         </div>
     );
 }
