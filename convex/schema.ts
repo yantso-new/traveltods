@@ -75,6 +75,7 @@ export default defineSchema({
         shortDescription: v.optional(v.string()),
         tags: v.optional(v.array(v.string())),
         image: v.optional(v.string()),
+        viatorDestinationId: v.optional(v.number()),
         lastUpdated: v.number(),
     })
         .index("by_name", ["name"])
