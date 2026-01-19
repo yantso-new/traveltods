@@ -132,6 +132,12 @@ export default function DestinationDetails() {
     const { allScores, radarChart, dataQuality } = destination;
     const isUnreliable = dataQuality && !dataQuality.hasReliableOverallScore;
 
+    // Transform radar chart to 1-10 scale
+    const radarData = radarChart?.map((item: any) => ({
+        ...item,
+        A: Math.round(item.A / 10)
+    }));
+
     const handleGoHome = () => {
         router.push('/');
     };
@@ -205,8 +211,8 @@ export default function DestinationDetails() {
 
                                 {allScores.familyScore !== undefined && allScores.familyScore !== null ? (
                                     <div className="flex items-end gap-1">
-                                        <span className="text-4xl font-black text-primary">{allScores.familyScore}</span>
-                                        <span className="text-base font-bold text-text-sub-light mb-1">/100</span>
+                                        <span className="text-4xl font-black text-primary">{Math.round(allScores.familyScore / 10)}</span>
+                                        <span className="text-base font-bold text-text-sub-light mb-1">/10</span>
                                     </div>
                                 ) : (
                                     <div className="flex items-center gap-2 text-text-sub-light">
@@ -218,51 +224,51 @@ export default function DestinationDetails() {
 
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-6">
                                 <ProgressBar
-                                    value={allScores.safety}
-                                    max={100}
+                                    value={Math.round(allScores.safety / 10)}
+                                    max={10}
                                     label="Safety & Security"
                                     icon={<ShieldCheck className="w-4 h-4" />}
                                     color="bg-emerald-400"
                                 />
                                 <ProgressBar
-                                    value={allScores.kidActivities}
-                                    max={100}
+                                    value={Math.round(allScores.kidActivities / 10)}
+                                    max={10}
                                     label="Kid Activities"
                                     icon={<Smile className="w-4 h-4" />}
                                     color="bg-yellow-400"
                                 />
                                 <ProgressBar
-                                    value={allScores.weatherComfort ?? 50}
-                                    max={100}
+                                    value={Math.round((allScores.weatherComfort ?? 50) / 10)}
+                                    max={10}
                                     label="Weather Comfort"
                                     icon={<CloudSun className="w-4 h-4" />}
                                     color="bg-sky-400"
                                 />
                                 <ProgressBar
-                                    value={allScores.costAffordability ?? 50}
-                                    max={100}
+                                    value={Math.round((allScores.costAffordability ?? 50) / 10)}
+                                    max={10}
                                     label="Affordability"
                                     icon={<DollarSign className="w-4 h-4" />}
                                     color="bg-amber-400"
                                 />
                                 <ProgressBar
-                                    value={allScores.playgrounds}
-                                    max={100}
+                                    value={Math.round(allScores.playgrounds / 10)}
+                                    max={10}
                                     label="Playgrounds"
                                     icon={<Trees className="w-4 h-4" />}
                                     color="bg-green-400"
                                 />
                                 <ProgressBar
-                                    value={allScores.healthyFood}
-                                    max={100}
+                                    value={Math.round(allScores.healthyFood / 10)}
+                                    max={10}
                                     label="Healthy Food"
                                     icon={<Utensils className="w-4 h-4" />}
                                     color="bg-orange-400"
                                 />
                                 {/* Consolidated Walkability & Access */}
                                 <ProgressBar
-                                    value={Math.round(((allScores.strollerFriendly || 0) + (allScores.accessibility || 0) + (allScores.sidewalks || 0)) / 3)}
-                                    max={100}
+                                    value={Math.round(((allScores.strollerFriendly || 0) + (allScores.accessibility || 0) + (allScores.sidewalks || 0)) / 30)}
+                                    max={10}
                                     label="Walkability & Access"
                                     icon={<Accessibility className="w-4 h-4" />}
                                     color="bg-purple-400"
@@ -279,7 +285,7 @@ export default function DestinationDetails() {
                             <h3 className="text-sm font-bold uppercase tracking-wider text-text-sub-light mb-6 self-start">Metrics Visualized</h3>
                             <div className="w-full h-[280px]">
                                 <ResponsiveContainer width="100%" height="100%">
-                                    <RadarChart cx="50%" cy="50%" outerRadius="70%" data={radarChart}>
+                                    <RadarChart cx="50%" cy="50%" outerRadius="70%" data={radarData}>
                                         <PolarGrid stroke="#e2e8f0" />
                                         <PolarAngleAxis dataKey="subject" tick={{ fill: '#94a3b8', fontSize: 10, fontWeight: 600 }} />
                                         <Radar
