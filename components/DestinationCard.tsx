@@ -92,9 +92,9 @@ export const DestinationCard: React.FC<Props> = ({ destination, onClick }) => {
           })()}
         </div>
 
-        <button className="mt-2 w-full py-3 rounded-xl bg-slate-50 hover:bg-primary text-text-main-light hover:text-white font-bold text-sm transition-all duration-300 border border-slate-100 hover:border-primary shadow-sm hover:shadow-lg hover:shadow-primary/30">
+        {/* <button className="mt-2 w-full py-3 rounded-xl bg-slate-50 hover:bg-primary text-text-main-light hover:text-white font-bold text-sm transition-all duration-300 border border-slate-100 hover:border-primary shadow-sm hover:shadow-lg hover:shadow-primary/30">
           View Details
-        </button>
+        </button> */}
       </div>
     </Card>
   );
