@@ -76,7 +76,7 @@ export default function Home() {
   };
 
   return (
-    <div className="relative flex min-h-screen flex-col overflow-x-hidden bg-background-light text-text-main-light transition-colors duration-200">
+    <div className="relative flex min-h-screen flex-col bg-background-light text-text-main-light transition-colors duration-200">
       <Navbar />
 
       <main className="flex-1">

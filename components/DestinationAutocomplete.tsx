@@ -30,6 +30,7 @@ interface DestinationAutocompleteProps {
   onSearch: (query: string) => void;
   placeholder?: string;
   className?: string;
+  variant?: 'default' | 'minimal';
 }
 
 export function DestinationAutocomplete({
@@ -37,6 +38,7 @@ export function DestinationAutocomplete({
   onSearch,
   placeholder = "Search destinations (e.g., 'Kyoto', 'Paris')...",
   className = "",
+  variant = 'default',
 }: DestinationAutocompleteProps) {
   const [query, setQuery] = useState('');
   const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
@@ -147,8 +149,10 @@ export function DestinationAutocomplete({
         e.preventDefault();
         if (highlightedIndex >= 0 && suggestions[highlightedIndex]) {
           handleSelect(suggestions[highlightedIndex]);
-        } else if (query.trim() && hasValidSelection) {
+        } else if (query.trim()) {
+          // Allow search even if not selected from list (free text) regarding user intent
           onSearch(query);
+          setIsOpen(false);
         }
         break;
       case 'Escape':
@@ -159,11 +163,13 @@ export function DestinationAutocomplete({
   };
 
   const handleSearchClick = () => {
-    if (query.trim() && hasValidSelection) {
+    if (query.trim()) {
       setIsOpen(false);
       onSearch(query);
     }
   };
+
+  const isMinimal = variant === 'minimal';
 
   return (
     <div ref={containerRef} className={`relative ${className}`}>
@@ -172,7 +178,11 @@ export function DestinationAutocomplete({
           ref={inputRef}
           type="text"
           placeholder={placeholder}
-          className="w-full pl-12 pr-32 py-4 rounded-full border border-slate-200 bg-white/95 backdrop-blur focus:border-primary/50 focus:ring-4 focus:ring-primary/10 outline-none shadow-xl shadow-black/10 text-lg transition-all placeholder:text-text-sub-light text-text-main-light font-medium"
+          className={
+            isMinimal
+              ? "w-full pl-10 pr-10 py-2.5 rounded-full border border-orange-100 bg-white/80 focus:bg-white focus:border-primary/50 focus:ring-2 focus:ring-primary/10 outline-none shadow-sm text-sm transition-all placeholder:text-text-sub-light text-text-main-light font-medium"
+              : "w-full pl-12 pr-32 py-4 rounded-full border border-slate-200 bg-white/95 backdrop-blur focus:border-primary/50 focus:ring-4 focus:ring-primary/10 outline-none shadow-xl shadow-black/10 text-lg transition-all placeholder:text-text-sub-light text-text-main-light font-medium"
+          }
           value={query}
           onChange={(e) => {
             setQuery(e.target.value);
@@ -181,22 +191,38 @@ export function DestinationAutocomplete({
           onKeyDown={handleKeyDown}
           onFocus={() => suggestions.length > 0 && setIsOpen(true)}
         />
-        <Search className="absolute left-5 top-1/2 -translate-y-1/2 text-text-sub-light w-5 h-5 group-hover:text-primary transition-colors" />
+
+        <Search
+          className={
+            isMinimal
+              ? "absolute left-3.5 top-1/2 -translate-y-1/2 text-orange-400 w-4 h-4"
+              : "absolute left-5 top-1/2 -translate-y-1/2 text-text-sub-light w-5 h-5 group-hover:text-primary transition-colors"
+          }
+        />
 
         {isLoading && (
-          <Loader2 className="absolute right-28 top-1/2 -translate-y-1/2 text-primary w-5 h-5 animate-spin" />
+          <Loader2
+            className={
+              isMinimal
+                ? "absolute right-3 top-1/2 -translate-y-1/2 text-primary w-4 h-4 animate-spin"
+                : "absolute right-28 top-1/2 -translate-y-1/2 text-primary w-5 h-5 animate-spin"
+            }
+          />
         )}
 
-        <button
-          onClick={handleSearchClick}
-          disabled={!hasValidSelection}
-          className={`absolute right-2 top-2 bottom-2 rounded-full px-6 flex items-center gap-2 transition-all font-bold text-sm ${hasValidSelection
-            ? 'bg-primary hover:bg-primary-dark text-white cursor-pointer shadow-md'
-            : 'bg-slate-100 text-slate-400 cursor-not-allowed'
-            }`}
-        >
-          Search
-        </button>
+        {/* Only show the big search button in default (hero) mode */}
+        {!isMinimal && (
+          <button
+            onClick={handleSearchClick}
+            disabled={!hasValidSelection && !query.trim()}
+            className={`absolute right-2 top-2 bottom-2 rounded-full px-6 flex items-center gap-2 transition-all font-bold text-sm ${(hasValidSelection || query.trim())
+              ? 'bg-primary hover:bg-primary-dark text-white cursor-pointer shadow-md'
+              : 'bg-slate-100 text-slate-400 cursor-not-allowed'
+              }`}
+          >
+            Search
+          </button>
+        )}
       </div>
 
       {/* Dropdown */}

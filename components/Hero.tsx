@@ -52,7 +52,7 @@ export function Hero({ onSearchTermChange }: HeroProps) {
 
                             <div
                                 className="w-full max-w-lg mt-2 transition-all duration-300"
-                                style={{ opacity: searchOpacity, transform: `translateY(${(1 - searchOpacity) * 20}px)` }}
+                                style={{ opacity: searchOpacity, transform: `translateY(${(1 - searchOpacity) * -40}px)` }}
                             >
                                 <div className="relative max-w-2xl mx-auto rounded-full group">
                                     <DestinationAutocomplete

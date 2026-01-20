@@ -18,14 +18,15 @@ export function Navbar() {
         }
 
         const handleScroll = () => {
-            if (window.scrollY > 400) {
+            const scrollY = window.scrollY;
+            if (scrollY > 380) { // Threshold to show
                 setShowSearch(true);
-            } else {
+            } else if (scrollY < 340) { // Threshold to hide (hysteresis)
                 setShowSearch(false);
             }
         };
 
-        window.addEventListener('scroll', handleScroll);
+        window.addEventListener('scroll', handleScroll, { passive: true });
         return () => window.removeEventListener('scroll', handleScroll);
     }, [pathname]);
 
@@ -43,11 +44,12 @@ export function Navbar() {
                         </div>
 
                         {/* Desktop Search Bar */}
-                        <div className={`hidden lg:block flex-1 max-w-xl transition-all duration-500 ease-in-out transform ${showSearch ? 'opacity-100 translate-y-0 scale-100' : 'opacity-0 -translate-y-4 scale-95 pointer-events-none'}`}>
+                        <div className={`hidden lg:block flex-1 max-w-xl transition-all duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)] ${showSearch ? 'opacity-100 translate-y-0 scale-100' : 'opacity-0 translate-y-12 scale-90 pointer-events-none'}`}>
                             <div className="relative group">
                                 <DestinationAutocomplete
                                     placeholder="Search destinations..."
-                                    className="w-full py-2 pl-10 pr-4 bg-white/50 border-orange-100 focus:bg-white shadow-sm rounded-full text-sm h-11"
+                                    className="w-full"
+                                    variant="minimal"
                                     onSelect={(dest) => {
                                         const destinationName = `${dest.name}, ${dest.country}`;
                                         router.push(`/destination/${encodeURIComponent(destinationName)}`);
@@ -56,9 +58,6 @@ export function Navbar() {
                                         router.push(`/destination/${encodeURIComponent(query)}`);
                                     }}
                                 />
-                                <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-orange-400">
-                                    <Search className="w-4 h-4" />
-                                </div>
                             </div>
                         </div>
 
