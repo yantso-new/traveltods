@@ -11,7 +11,7 @@ const plusJakartaSans = Plus_Jakarta_Sans({
 });
 
 export const metadata: Metadata = {
-  title: "Traveltods - Family Travel Made Easy",
+  title: "TravelTods - Family Travel Made Easy",
   description: "Discover top-rated, safe, and engaging destinations perfect for kids under 10.",
 };
 

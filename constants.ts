@@ -6,7 +6,7 @@ export const MOCK_DESTINATIONS: Destination[] = [
     name: 'Tokyo',
     country: 'Japan',
     shortDescription: 'World\'s safest major city with exceptional transit and theme parks.',
-    description: 'Ranked the world\'s safest city in 2024 by World Population Review, and 6th safest for families by Berkshire Hathaway. Home to Tokyo Disneyland, DisneySea, and teamLab digital art museums. The metro system arrives every few minutes with exceptional punctuality. Crime index of just 20.8/100 despite 37 million metro residents.',
+    description: 'Ranked the world\'s safest city in 2026 by World Population Review, and 6th safest for families by Berkshire Hathaway. Home to Tokyo Disneyland, DisneySea, and teamLab digital art museums. The metro system arrives every few minutes with exceptional punctuality. Crime index of just 20.8/100 despite 37 million metro residents.',
     image: 'https://images.unsplash.com/photo-1540959733332-eab4deabeeaf?w=800&q=80',
     tags: ['Urban', 'Safe', 'Theme Parks', 'Clean'],
     metrics: {
@@ -19,7 +19,8 @@ export const MOCK_DESTINATIONS: Destination[] = [
       strollerFriendly: 7,
       kidActivities: 10,
       weatherComfort: 7,
-      costAffordability: 5
+      costAffordability: 5,
+      sidewalks: 9
     }
   },
   {
@@ -27,7 +28,7 @@ export const MOCK_DESTINATIONS: Destination[] = [
     name: 'Copenhagen',
     country: 'Denmark',
     shortDescription: 'Record-breaking cycling infrastructure with Tivoli Gardens.',
-    description: 'In 2025, approved DKK 600 million for cycling infrastructure - the city\'s largest ever. Famous for Christiania cargo bikes with front compartments for children. Home to Tivoli Gardens (opened 1843) and the Children\'s Traffic Playground in Fælledparken where kids learn road safety. Kids under 12 ride public transit free.',
+    description: 'In 2026, approved DKK 600 million for cycling infrastructure - the city\'s largest ever. Famous for Christiania cargo bikes with front compartments for children. Home to Tivoli Gardens (opened 1843) and the Children\'s Traffic Playground in Fælledparken where kids learn road safety. Kids under 12 ride public transit free.',
     image: 'https://images.unsplash.com/photo-1513622470522-26c3c8a854bc?w=800&q=80',
     tags: ['Walkable', 'Historic', 'Cycling', 'Hygge'],
     metrics: {
@@ -40,7 +41,8 @@ export const MOCK_DESTINATIONS: Destination[] = [
       strollerFriendly: 10,
       kidActivities: 9,
       weatherComfort: 6,
-      costAffordability: 4
+      costAffordability: 4,
+      sidewalks: 10
     }
   },
   {
@@ -48,7 +50,7 @@ export const MOCK_DESTINATIONS: Destination[] = [
     name: 'Singapore',
     country: 'Singapore',
     shortDescription: 'Asia\'s safest destination with Gardens by the Bay.',
-    description: 'Ranked safest country in Asia for 2025 and 6th globally by Global Peace Index. Features Gardens by the Bay with iconic Supertrees, Singapore Zoo with open-concept design, and Universal Studios on Sentosa Island. The MRT is clean, reliable, and safe at all hours. Welcomed nearly 17 million visitors in 2024.',
+    description: 'Ranked safest country in Asia for 2026 and 6th globally by Global Peace Index. Features Gardens by the Bay with iconic Supertrees, Singapore Zoo with open-concept design, and Universal Studios on Sentosa Island. The MRT is clean, reliable, and safe at all hours. Welcomed nearly 17 million visitors in 2025.',
     image: 'https://images.unsplash.com/photo-1525625293386-3f8f99389edd?w=800&q=80',
     tags: ['Modern', 'Tropical', 'Clean', 'Gardens'],
     metrics: {
@@ -61,7 +63,8 @@ export const MOCK_DESTINATIONS: Destination[] = [
       strollerFriendly: 10,
       kidActivities: 10,
       weatherComfort: 8,
-      costAffordability: 5
+      costAffordability: 5,
+      sidewalks: 10
     }
   },
   {
@@ -82,7 +85,8 @@ export const MOCK_DESTINATIONS: Destination[] = [
       strollerFriendly: 8,
       kidActivities: 8,
       weatherComfort: 7,
-      costAffordability: 6
+      costAffordability: 6,
+      sidewalks: 9
     }
   },
   {
@@ -90,7 +94,7 @@ export const MOCK_DESTINATIONS: Destination[] = [
     name: 'Gold Coast',
     country: 'Australia',
     shortDescription: 'Australia\'s largest theme park collection with patrolled beaches.',
-    description: 'Home to Dreamworld (Australia\'s largest with 40+ rides including new Jungle Rush coaster Dec 2024), Movie World (new Wizard of Oz precinct Dec 2024), Sea World, and Wet\'n\'Wild with Australia\'s tallest water slide. 800km of cycling paths and the largest professional lifeguard service in Australia. Currumbin Wildlife Sanctuary for koala encounters.',
+    description: 'Home to Dreamworld (Australia\'s largest with 40+ rides including new Jungle Rush coaster Dec 2025), Movie World (new Wizard of Oz precinct Dec 2025), Sea World, and Wet\'n\'Wild with Australia\'s tallest water slide. 800km of cycling paths and the largest professional lifeguard service in Australia. Currumbin Wildlife Sanctuary for koala encounters.',
     image: 'https://images.unsplash.com/photo-1506973035872-a4ec16b8e8d9?w=800&q=80',
     tags: ['Beach', 'Sunny', 'Wildlife', 'Theme Parks'],
     metrics: {
@@ -103,7 +107,8 @@ export const MOCK_DESTINATIONS: Destination[] = [
       strollerFriendly: 8,
       kidActivities: 10,
       weatherComfort: 9,
-      costAffordability: 7
+      costAffordability: 7,
+      sidewalks: 8
     }
   },
   {
@@ -124,7 +129,8 @@ export const MOCK_DESTINATIONS: Destination[] = [
       strollerFriendly: 7,
       kidActivities: 9,
       weatherComfort: 6,
-      costAffordability: 6
+      costAffordability: 6,
+      sidewalks: 8
     }
   }
 ];

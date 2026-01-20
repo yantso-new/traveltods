@@ -9,10 +9,10 @@ export const Footer: React.FC = () => {
           {/* Brand Info */}
           <div className="col-span-1 md:col-span-1">
             <div className="flex items-center gap-2 mb-4">
-              <div className="w-8 h-8 bg-rose-400 rounded-lg flex items-center justify-center">
-                <Globe className="w-5 h-5 text-white" />
+              <div className="w-10 h-10 bg-white rounded-lg flex items-center justify-center overflow-hidden border border-stone-100 shadow-sm">
+                <img src="/logo.png" alt="TravelTods Logo" className="w-full h-full object-cover" />
               </div>
-              <span className="text-xl font-bold text-stone-800 tracking-tight">LittleExplorer</span>
+              <span className="text-xl font-bold text-stone-800 tracking-tight">TravelTods</span>
             </div>
             <p className="text-stone-500 text-sm font-light leading-relaxed">
               Making family travel stress-free with data-driven compatibility metrics and AI-powered local insights.
@@ -56,7 +56,7 @@ export const Footer: React.FC = () => {
         {/* Bottom Bar */}
         <div className="pt-8 border-t border-stone-100 flex flex-col md:flex-row items-center justify-between gap-4">
           <p className="text-stone-400 text-xs font-light">
-            © 2025 LittleExplorer. All rights reserved. Built with <Heart className="w-3 h-3 inline text-rose-400 fill-rose-400" /> for families.
+            © 2026 TravelTods. All rights reserved. Built with <Heart className="w-3 h-3 inline text-rose-400 fill-rose-400" /> for families.
           </p>
           <div className="flex items-center gap-6">
             <Instagram className="w-5 h-5 text-stone-400 hover:text-rose-400 cursor-pointer transition-colors" />

@@ -1,6 +1,6 @@
 "use client";
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { DestinationAutocomplete } from '@/components/DestinationAutocomplete';
 
@@ -10,12 +10,27 @@ interface HeroProps {
 
 export function Hero({ onSearchTermChange }: HeroProps) {
     const router = useRouter();
+    const [searchOpacity, setSearchOpacity] = useState(1);
+
+    useEffect(() => {
+        const handleScroll = () => {
+            const scrollPos = window.scrollY;
+            // Transition between 200px and 400px scroll
+            const newOpacity = Math.max(0, 1 - (scrollPos - 200) / 200);
+            if (scrollPos < 200) setSearchOpacity(1);
+            else if (scrollPos > 400) setSearchOpacity(0);
+            else setSearchOpacity(newOpacity);
+        };
+
+        window.addEventListener('scroll', handleScroll);
+        return () => window.removeEventListener('scroll', handleScroll);
+    }, []);
 
     return (
         <section className="relative">
             <div className="px-4 py-6 md:px-20 md:py-10 flex justify-center">
                 <div className="w-full max-w-7xl">
-                    <div className="relative rounded-3xl bg-slate-900 shadow-2xl shadow-primary/10">
+                    <div className="relative rounded-3xl bg-slate-900 shadow-2xl shadow-primary/10 transition-all duration-700">
                         <div className="absolute inset-0 z-0 overflow-hidden rounded-3xl">
                             <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-black/30 to-transparent z-10"></div>
                             <div className="w-full h-full bg-cover bg-center" style={{ backgroundImage: 'url("/hero-family.png")' }}>
@@ -35,7 +50,10 @@ export function Hero({ onSearchTermChange }: HeroProps) {
                                 </h2>
                             </div>
 
-                            <div className="w-full max-w-lg mt-2">
+                            <div
+                                className="w-full max-w-lg mt-2 transition-all duration-300"
+                                style={{ opacity: searchOpacity, transform: `translateY(${(1 - searchOpacity) * 20}px)` }}
+                            >
                                 <div className="relative max-w-2xl mx-auto rounded-full group">
                                     <DestinationAutocomplete
                                         placeholder="Where to next? (e.g. Tokyo, Paris)"
