@@ -23,7 +23,8 @@ const mockDestination: Destination = {
         strollerFriendly: 10,
         kidActivities: 9,
         weatherComfort: 7,
-        costAffordability: 5
+        costAffordability: 5,
+        sidewalks: 10
     },
     tags: ["Safe", "Playgrounds", "Walkable"],
     familyScore: 8.8,
