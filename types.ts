@@ -9,6 +9,7 @@ export interface DestinationMetrics {
   kidActivities: number;
   weatherComfort: number;     // NEW: 0-10
   costAffordability: number;  // NEW: 0-10
+  sidewalks: number;
 }
 
 export interface Destination {

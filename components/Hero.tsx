@@ -18,7 +18,7 @@ export function Hero({ onSearchTermChange }: HeroProps) {
                     <div className="relative rounded-3xl bg-slate-900 shadow-2xl shadow-primary/10">
                         <div className="absolute inset-0 z-0 overflow-hidden rounded-3xl">
                             <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-black/30 to-transparent z-10"></div>
-                            <div className="w-full h-full bg-cover bg-center" style={{ backgroundImage: 'url("https://lh3.googleusercontent.com/aida-public/AB6AXuCB7gpLzlOmof9T41t9mEly-B-yV1RNfpVYd5WdFsuIhlB9mzNbwtKL9CYDLlZWZjLHcootCrcGQsMpRQw77BaL56pVEIulPmRrM8AsOGxwYU8Fgum0xTA-W9fZM7AcvgXfGnhEIhKq-hkc7-Mkwg9aa6xnQDIaBBSjd5YsU_p5FlZ75I1piBRbFtuKFoDHFPuorLB0AraxpK41cdwIJXchHSNrpDo6PV-TpHs71MFF5H7wo4r-a-WryspGvIGvvcK5LTfNpUBnIfM")' }}>
+                            <div className="w-full h-full bg-cover bg-center" style={{ backgroundImage: 'url("/hero-family.png")' }}>
                             </div>
                         </div>
                         <div className="relative z-20 flex flex-col items-start justify-center min-h-[500px] p-6 md:p-16 max-w-3xl gap-8">

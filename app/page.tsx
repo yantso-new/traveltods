@@ -98,7 +98,7 @@ export default function Home() {
 
             {displayedDestinations.length > 0 ? (
               <>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 md:gap-10">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 md:gap-8">
                   {displayedDestinations.map(dest => (
                     <DestinationCard
                       key={dest.id}
