@@ -3,6 +3,7 @@ import { Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
 import { Footer } from "@/components/Footer";
 import ConvexClientProvider from "./ConvexClientProvider";
+import { Analytics } from "@vercel/analytics/next";
 
 const plusJakartaSans = Plus_Jakarta_Sans({
   variable: "--font-display",
@@ -42,6 +43,7 @@ export default function RootLayout({
               Let's keep the <main> wrapper. structure consistent. 
           */}
           <Footer />
+          <Analytics />
         </ConvexClientProvider>
       </body>
     </html>
