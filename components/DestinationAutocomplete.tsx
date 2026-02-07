@@ -180,7 +180,7 @@ export function DestinationAutocomplete({
           placeholder={placeholder}
           className={
             isMinimal
-              ? "w-full pl-10 pr-10 py-2.5 rounded-full border border-orange-100 bg-white/80 focus:bg-white focus:border-primary/50 focus:ring-2 focus:ring-primary/10 outline-none shadow-sm text-sm transition-all placeholder:text-text-sub-light text-text-main-light font-medium"
+              ? "w-full pl-10 pr-10 py-2.5 rounded-full border border-slate-200 bg-surface-light/80 focus:bg-surface-light focus:border-primary/50 focus:ring-2 focus:ring-primary/10 outline-none shadow-sm text-sm transition-all duration-200 placeholder:text-text-sub-light text-text-main-light font-medium"
               : "w-full pl-12 pr-32 py-4 rounded-full border border-slate-200 bg-white/95 backdrop-blur focus:border-primary/50 focus:ring-4 focus:ring-primary/10 outline-none shadow-xl shadow-black/10 text-lg transition-all placeholder:text-text-sub-light text-text-main-light font-medium"
           }
           value={query}
@@ -195,8 +195,8 @@ export function DestinationAutocomplete({
         <Search
           className={
             isMinimal
-              ? "absolute left-3.5 top-1/2 -translate-y-1/2 text-orange-400 w-4 h-4"
-              : "absolute left-5 top-1/2 -translate-y-1/2 text-text-sub-light w-5 h-5 group-hover:text-primary transition-colors"
+              ? "absolute left-3.5 top-1/2 -translate-y-1/2 text-primary w-4 h-4"
+              : "absolute left-5 top-1/2 -translate-y-1/2 text-text-sub-light w-5 h-5 group-hover:text-primary transition-colors duration-200"
           }
         />
 
@@ -215,9 +215,9 @@ export function DestinationAutocomplete({
           <button
             onClick={handleSearchClick}
             disabled={!hasValidSelection && !query.trim()}
-            className={`absolute right-2 top-2 bottom-2 rounded-full px-6 flex items-center gap-2 transition-all font-bold text-sm ${(hasValidSelection || query.trim())
-              ? 'bg-primary hover:bg-primary-dark text-white cursor-pointer shadow-md'
-              : 'bg-slate-100 text-slate-400 cursor-not-allowed'
+            className={`absolute right-2 top-2 bottom-2 rounded-full px-6 flex items-center gap-2 transition-all duration-200 font-bold text-sm ${(hasValidSelection || query.trim())
+              ? 'bg-primary hover:bg-primary-dark text-primary-foreground cursor-pointer shadow-md active:scale-[0.98]'
+              : 'bg-muted text-muted-foreground cursor-not-allowed'
               }`}
           >
             Search
@@ -233,9 +233,9 @@ export function DestinationAutocomplete({
               {suggestions.map((suggestion, index) => (
                 <li
                   key={`${suggestion.city}-${suggestion.country}-${index}`}
-                  className={`px-4 py-3 cursor-pointer flex items-center gap-3 transition-colors ${index === highlightedIndex
-                    ? 'bg-orange-50'
-                    : 'hover:bg-slate-50'
+                  className={`px-4 py-3 cursor-pointer flex items-center gap-3 transition-colors duration-200 ${index === highlightedIndex
+                    ? 'bg-primary/10'
+                    : 'hover:bg-muted'
                     }`}
                   onClick={() => handleSelect(suggestion)}
                   onMouseEnter={() => setHighlightedIndex(index)}

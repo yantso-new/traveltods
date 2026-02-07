@@ -38,7 +38,7 @@ export function Hero({ onSearchTermChange }: HeroProps) {
                         </div>
                         <div className="relative z-20 flex flex-col items-start justify-center min-h-[500px] p-6 md:p-16 max-w-3xl gap-8">
                             <div className="space-y-4">
-                                <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-accent text-amber-900 shadow-lg shadow-black/10 text-xs font-extrabold uppercase tracking-wider transform -rotate-1">
+                                <div className="inline-flex items-center gap-2 px-3 py-1 mb-4 rounded-full bg-gradient-to-r from-primary to-primary-dark text-white border border-white/10 shadow-lg shadow-primary/40 backdrop-blur-md text-xs font-extrabold uppercase tracking-wider transform -rotate-1">
                                     <span className="material-symbols-outlined text-base">verified</span>
                                     Parent Verified
                                 </div>

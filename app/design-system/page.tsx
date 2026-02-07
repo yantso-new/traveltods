@@ -35,7 +35,18 @@ export default function DesignSystemPage() {
     return (
         <div className="min-h-screen bg-background p-10 font-display">
             <header className="mb-16">
-                <Badge className="mb-4">Internal Tools</Badge>
+                <h3 className="text-xl font-bold text-text-main-light mb-4">Badge Variants</h3>
+                <div className="flex flex-wrap gap-3 mb-6">
+                    <Badge variant="solid-primary">Solid Primary</Badge>
+                    <Badge variant="solid-secondary">Solid Secondary</Badge>
+                    <Badge variant="solid-accent">Solid Accent</Badge>
+                    <Badge variant="gradient-primary">Gradient Primary</Badge>
+                    <Badge variant="gradient-secondary">Gradient Secondary</Badge>
+                    <Badge variant="gradient-accent">Gradient Accent</Badge>
+                    <Badge variant="subtle-primary">Subtle Primary</Badge>
+                    <Badge variant="subtle-secondary">Subtle Secondary</Badge>
+                    <Badge variant="subtle-accent">Subtle Accent</Badge>
+                </div>
                 <h1 className="text-5xl font-black tracking-tight text-text-main-light mb-4">Design System</h1>
                 <p className="text-xl text-text-sub-light max-w-2xl">
                     A comprehensive guide to the components, tokens, and primitives used throughout the TravelTods application.
@@ -187,14 +198,14 @@ export default function DesignSystemPage() {
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
                         <Card className="p-6 h-64 flex flex-col justify-between">
                             <div>
-                                <Badge className="mb-2">New</Badge>
+                                <Badge variant="solid-primary" className="mb-2">New</Badge>
                                 <h3 className="text-xl font-bold">Standard Card</h3>
                             </div>
                             <p className="text-text-sub-light text-sm">A simple card component with hover effects suitable for most content.</p>
                         </Card>
                         <Card className="p-6 h-64 flex flex-col justify-between bg-surface-light border-primary/20 shadow-xl">
                             <div>
-                                <Badge className="mb-2 bg-primary text-white border-transparent">Featured</Badge>
+                                <Badge variant="gradient-accent" className="mb-2">Featured</Badge>
                                 <h3 className="text-xl font-bold text-primary">Highlighted Card</h3>
                             </div>
                             <Button className="w-full" variant="primary">Action</Button>
@@ -238,19 +249,19 @@ export default function DesignSystemPage() {
 
 function ColorCard({ name, variable, hex, textColor = "text-white", border = false }: { name: string, variable: string, hex: string, textColor?: string, border?: boolean }) {
     return (
-        <div className={`rounded-2xl overflow-hidden shadow-sm transition-transform hover:-translate-y-1 ${border ? 'border border-slate-100' : ''}`}>
+        <div className={`rounded-2xl overflow-hidden shadow-sm transition-transform duration-200 hover:-translate-y-1 ${border ? 'border border-slate-200' : ''}`}>
             <div
                 className={`h-32 flex items-center justify-center ${textColor} font-bold text-lg`}
                 style={{ backgroundColor: `var(${variable})` }}
             >
                 {name}
             </div>
-            <div className="p-4 bg-white">
+            <div className="p-4 bg-surface-light">
                 <div className="flex justify-between items-center mb-1">
-                    <code className="text-xs font-mono text-slate-500">{variable}</code>
+                    <code className="text-xs font-mono text-text-sub-light">{variable}</code>
                 </div>
                 <div className="flex justify-between items-center">
-                    <span className="text-sm font-bold text-slate-800">{hex}</span>
+                    <span className="text-sm font-bold text-text-main-light">{hex}</span>
                 </div>
             </div>
         </div>

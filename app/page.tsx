@@ -11,6 +11,7 @@ import { useQuery } from 'convex/react';
 import { api } from '@/convex/_generated/api';
 import { Navbar } from '@/components/Navbar';
 import { Hero } from '@/components/Hero';
+import { BlogSection } from '@/components/BlogSection';
 
 const INITIAL_DISPLAY_COUNT = 12;
 
@@ -121,18 +122,21 @@ export default function Home() {
                 )}
               </>
             ) : (
-              <div className="text-center py-20 bg-white/50 rounded-3xl border border-dashed border-stone-300">
-                <div className="bg-stone-50 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <span className="material-symbols-outlined text-3xl text-stone-300">search_off</span>
+              <div className="text-center py-20 bg-surface-light/50 rounded-3xl border border-dashed border-slate-300">
+                <div className="bg-muted w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <span className="material-symbols-outlined text-3xl text-text-sub-light">search_off</span>
                 </div>
-                <h3 className="text-xl font-semibold text-stone-700">No destinations found</h3>
-                <p className="text-stone-400 mt-2">
+                <h3 className="text-xl font-semibold text-text-main-light">No destinations found</h3>
+                <p className="text-text-sub-light mt-2">
                   Try adjusting your search for "{searchTerm}".
                 </p>
               </div>
             )}
           </div>
         </section>
+
+        {/* Blog Section */}
+        <BlogSection />
       </main>
     </div>
   );

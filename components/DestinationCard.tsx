@@ -48,8 +48,17 @@ export const DestinationCard: React.FC<Props> = ({ destination, onClick }) => {
   };
 
   const bestTag = getBestTag(destination.metrics);
-  const colors = ["bg-blue-100/90 text-blue-700", "bg-pink-100/90 text-pink-700", "bg-green-100/90 text-green-700", "bg-purple-100/90 text-purple-700", "bg-orange-100/90 text-orange-700", "bg-teal-100/90 text-teal-700"];
-  const colorClass = colors[bestTag.length % colors.length];
+
+  // Solid, high-contrast pill colors with better visibility
+  const pillVariants = [
+    "bg-primary text-white shadow-lg shadow-primary/30",
+    "bg-secondary text-white shadow-lg shadow-secondary/30",
+    "bg-accent text-accent-foreground shadow-lg shadow-accent/40",
+    "bg-gradient-to-r from-primary to-primary-dark text-white shadow-lg shadow-primary/40",
+    "bg-gradient-to-r from-secondary to-teal-500 text-white shadow-lg shadow-secondary/40",
+    "bg-gradient-to-r from-amber-400 to-accent text-accent-foreground shadow-lg shadow-accent/50"
+  ];
+  const pillClass = pillVariants[bestTag.length % pillVariants.length];
 
   return (
     <Card
@@ -58,7 +67,7 @@ export const DestinationCard: React.FC<Props> = ({ destination, onClick }) => {
       className="group flex flex-col overflow-hidden h-full md:h-[22rem] border-2 border-transparent"
     >
       <div className="relative h-48 md:h-[11rem] overflow-hidden">
-        <div className={`absolute top-4 left-4 z-10 px-3 py-1.5 rounded-lg text-xs font-bold backdrop-blur-sm ${colorClass}`}>
+        <div className={`absolute top-4 left-4 z-10 px-3 py-1.5 rounded-lg text-xs font-extrabold backdrop-blur-md border border-white/20 ${pillClass}`}>
           {bestTag}
         </div>
         <div

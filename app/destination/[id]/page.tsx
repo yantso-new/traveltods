@@ -157,7 +157,7 @@ export default function DestinationDetails() {
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
                 <div className="absolute bottom-0 left-0 w-full px-4 md:px-20 pb-20 flex justify-center">
                     <div className="max-w-7xl w-full">
-                        <div className="inline-flex items-center gap-2 px-3 py-1 mb-4 rounded-full bg-accent text-amber-900 border border-amber-900/10 shadow-lg text-xs font-bold uppercase tracking-wider">
+                        <div className="inline-flex items-center gap-2 px-3 py-1 mb-4 rounded-full bg-gradient-to-r from-primary to-primary-dark text-white border border-white/10 shadow-lg shadow-primary/40 backdrop-blur-md text-xs font-extrabold uppercase tracking-wider">
                             <span className="material-symbols-outlined text-sm">public</span>
                             {destination.country}
                         </div>
@@ -177,8 +177,8 @@ export default function DestinationDetails() {
 
                         {/* Refreshing indicator */}
                         {isRefreshing && (
-                            <Card className="p-4 bg-blue-50 border border-blue-100">
-                                <div className="flex items-center gap-3 text-blue-700">
+                            <Card className="p-4 bg-secondary/10 border border-secondary/20">
+                                <div className="flex items-center gap-3 text-secondary">
                                     <LoadingSpinner />
                                     <span className="font-semibold">Refreshing data with latest sources...</span>
                                 </div>
@@ -196,14 +196,14 @@ export default function DestinationDetails() {
                             </p>
                             <div className="flex flex-wrap gap-2 mt-8">
                                 {destination.tags?.map((tag: string) => (
-                                    <Badge key={tag} className="px-4 py-2 text-sm">{tag}</Badge>
+                                    <Badge key={tag} variant="subtle-primary" className="px-4 py-2 text-sm">{tag}</Badge>
                                 ))}
                             </div>
                         </Card>
 
                         {/* Detailed Metrics Breakdown */}
                         <Card className="p-8">
-                            <div className="flex items-center justify-between mb-8 pb-6 border-b border-gray-100">
+                            <div className="flex items-center justify-between mb-8 pb-6 border-b border-slate-100">
                                 <div>
                                     <h3 className="text-2xl font-black text-text-main-light">Family Score</h3>
                                     <p className="text-text-sub-light text-sm mt-1">Based on verifiable safety & amenity data</p>
@@ -305,7 +305,7 @@ export default function DestinationDetails() {
                         <Card className="overflow-hidden border-2 border-transparent hover:border-sky-200 transition-all duration-300">
                             <div className="p-6 space-y-4">
                                 <div className="flex items-center gap-3">
-                                    <div className="p-2.5 bg-sky-100 rounded-xl text-sky-700">
+                                    <div className="p-2.5 bg-secondary/15 rounded-xl text-secondary">
                                         <Baby className="w-6 h-6" />
                                     </div>
                                     <div>
@@ -317,7 +317,7 @@ export default function DestinationDetails() {
                                     Travel light! Rent strollers, cribs, and car seats delivered to your location.
                                 </p>
                                 <Button
-                                    className="w-full bg-sky-400 hover:bg-sky-500 text-white border-none group"
+                                    className="w-full bg-secondary hover:bg-secondary/90 text-secondary-foreground border-none group"
                                     onClick={() => window.open('https://www.babyquip.com', '_blank')}
                                 >
                                     <span className="font-bold">View Rental Equipment</span>
@@ -338,7 +338,7 @@ export default function DestinationDetails() {
                             <h2 className="text-3xl font-black text-text-main-light mb-2">Book Activities</h2>
                             <p className="text-text-sub-light text-lg">Top rated experiences for families with kids under 10</p>
                         </div>
-                        <div className="hidden md:flex items-center gap-2 text-sm text-text-sub-light bg-surface-light px-4 py-2 rounded-full border border-gray-100">
+                        <div className="hidden md:flex items-center gap-2 text-sm text-text-sub-light bg-surface-light px-4 py-2 rounded-full border border-slate-100">
                             <span className="font-semibold text-primary">Powered by Viator</span>
                             <ExternalLink className="w-4 h-4" />
                         </div>
@@ -364,15 +364,15 @@ export default function DestinationDetails() {
                                             {activity.duration}
                                         </div>
                                         {activity.badge && (
-                                            <div className="absolute top-2 left-2 bg-yellow-400 text-yellow-900 px-2 py-1 rounded-md text-xs font-bold shadow-sm">
+                                            <div className="absolute top-2 left-2 bg-accent text-accent-foreground px-2 py-1 rounded-md text-xs font-bold shadow-sm">
                                                 {activity.badge}
                                             </div>
                                         )}
                                     </div>
                                     <div className="p-5 flex flex-col flex-grow">
-                                        <div className="flex items-center gap-1 mb-2 text-amber-500">
+                                        <div className="flex items-center gap-1 mb-2 text-accent">
                                             {[...Array(5)].map((_, i) => (
-                                                <svg key={i} className={`w-3 h-3 ${i < Math.floor(activity.rating) ? 'fill-current' : 'text-gray-300'}`} fill="currentColor" viewBox="0 0 20 20">
+                                                <svg key={i} className={`w-3 h-3 ${i < Math.floor(activity.rating) ? 'fill-current' : 'text-slate-300'}`} fill="currentColor" viewBox="0 0 20 20">
                                                     <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
                                                 </svg>
                                             ))}
@@ -384,7 +384,7 @@ export default function DestinationDetails() {
                                             Family Friendly
                                         </p>
 
-                                        <div className="mt-auto flex items-center justify-between pt-4 border-t border-gray-50">
+                                        <div className="mt-auto flex items-center justify-between pt-4 border-t border-slate-50">
                                             <div>
                                                 <p className="text-xs text-text-sub-light">From</p>
                                                 <p className="font-black text-lg text-primary">${activity.price?.toFixed(2)}</p>
@@ -405,7 +405,7 @@ export default function DestinationDetails() {
 
                     <div className="mt-10 text-center">
                         <Button
-                            className="bg-yellow-400 hover:bg-yellow-500 text-yellow-900 font-bold px-8 py-6 h-auto text-lg hover:shadow-lg transition-all"
+                            className="bg-accent hover:bg-accent/90 text-accent-foreground font-bold px-8 py-6 h-auto text-lg hover:shadow-lg transition-all duration-200"
                             onClick={() => window.open('https://www.viator.com', '_blank')}
                         >
                             View All Family Activities
@@ -418,7 +418,7 @@ export default function DestinationDetails() {
             {isUnreliable && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-in fade-in duration-300">
                     <Card className="max-w-md w-full p-8 text-center space-y-6 shadow-2xl scale-100">
-                        <div className="mx-auto w-20 h-20 bg-amber-50 rounded-full flex items-center justify-center text-amber-500 mb-2">
+                        <div className="mx-auto w-20 h-20 bg-accent/20 rounded-full flex items-center justify-center text-accent mb-2">
                             <AlertTriangle className="w-10 h-10" />
                         </div>
                         <div>
@@ -437,3 +437,4 @@ export default function DestinationDetails() {
         </div>
     );
 }
+

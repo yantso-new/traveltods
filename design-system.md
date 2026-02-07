@@ -43,7 +43,7 @@ We utilize clean, modern sans-serif typefaces to ensure readability and a profes
 ### Type Scale
 | Level | Size | Weight | Line Height | Usage |
 |-------|------|--------|-------------|-------|
-| **Display / 5XL** | `3rem` (48px) | 900 (Black) | 1.1 | Main Hero Headings |
+| **Display / 5XL** | `3rem` (48px) | 800 (Extrabold) | 1.1 | Main Hero Headings |
 | **Display / 4XL** | `2.25rem` (36px) | 700 (Bold) | 1.2 | Page Title Sections |
 | **Display / 3XL** | `1.875rem` (30px) | 700 (Bold) | 1.2 | Section Headings |
 | **Body / XL** | `1.25rem` (20px) | 400 (Regular) | 1.5 | Subheadings / Intro text |
@@ -76,8 +76,33 @@ We use a standard 4px or 8px grid system for spacing.
 - **Highlighted:** High contrast border or accent color background for featured items.
 
 ### 🏷️ Badges & Tags
-- Used for metadata (e.g., "Internal Tools", "Safe", "Playgrounds").
-- Backgrounds mapping to Primary, Secondary, or Accent depending on context.
+Used for metadata, categories, and status indicators. **High visibility is critical** - badges must be readable against any background.
+
+#### Variants
+- **Solid Primary:** `bg-primary text-white shadow-lg shadow-primary/30 backdrop-blur-md border border-white/20`
+- **Solid Secondary:** `bg-secondary text-white shadow-lg shadow-secondary/30 backdrop-blur-md border border-white/20`
+- **Solid Accent:** `bg-accent text-accent-foreground shadow-lg shadow-accent/40 backdrop-blur-md border border-white/20`
+- **Gradient Primary:** `bg-gradient-to-r from-primary to-primary-dark text-white shadow-lg shadow-primary/40`
+- **Gradient Secondary:** `bg-gradient-to-r from-secondary to-teal-500 text-white shadow-lg shadow-secondary/40`
+- **Gradient Accent:** `bg-gradient-to-r from-amber-400 to-accent text-accent-foreground shadow-lg shadow-accent/50`
+
+#### Typography
+- **Font Weight:** `font-extrabold` (800) for maximum readability
+- **Font Size:** `text-xs` (12px)
+- **Letter Spacing:** Default or `tracking-wide` for all-caps text
+
+#### Effects
+- **Backdrop Blur:** `backdrop-blur-md` for glassmorphism depth
+- **Border:** `border border-white/20` for definition against images
+- **Shadow:** `shadow-lg shadow-{color}/30-50` for elevation
+- **Border Radius:** `rounded-lg` (0.5rem)
+
+#### Usage Rules
+1. Use **solid backgrounds** for critical information (categories, status)
+2. Use **gradients** for featured or premium items
+3. Always include `backdrop-blur-md` when overlaying images
+4. Ensure text contrast ratio ≥ 4.5:1 (WCAG AA)
+5. Add white border for definition on busy backgrounds
 
 ### ⌨️ Form Elements
 - **Inputs & Textareas:** Clean borders (`#e2e8f0`), rounded-xl, focal focus rings using `--color-primary`.
