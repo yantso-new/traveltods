@@ -12,6 +12,7 @@ export function Navbar() {
     const pathname = usePathname();
     const [showSearch, setShowSearch] = useState(false);
     const [isWaitlistOpen, setIsWaitlistOpen] = useState(false);
+    const [isMenuOpen, setIsMenuOpen] = useState(false);
 
     useEffect(() => {
         if (pathname !== '/') {
@@ -30,6 +31,11 @@ export function Navbar() {
 
         window.addEventListener('scroll', handleScroll, { passive: true });
         return () => window.removeEventListener('scroll', handleScroll);
+    }, [pathname]);
+
+    // Close menu when navigating
+    useEffect(() => {
+        setIsMenuOpen(false);
     }, [pathname]);
 
     return (
@@ -67,7 +73,6 @@ export function Navbar() {
                         <div className="hidden lg:flex items-center gap-8 flex-shrink-0">
                             <nav className="flex items-center gap-8">
                                 <a className="text-sm font-bold text-text-main-light hover:text-primary transition-colors" href="/">Home</a>
-                                <a className="text-sm font-medium text-text-sub-light hover:text-primary transition-colors" href="#">About</a>
                             </nav>
                             <Button variant="primary" className="rounded-full h-11 px-7" onClick={() => setIsWaitlistOpen(true)}>
                                 <span className="truncate">Join Community</span>
@@ -78,13 +83,19 @@ export function Navbar() {
                         <div className="flex items-center gap-2 lg:hidden">
                             <Button
                                 variant="outline"
+                                aria-label="Toggle search"
                                 className={`rounded-full border-slate-200 !p-2 !w-10 !h-10 transition-colors duration-200 ${showSearch ? 'bg-primary/10' : ''}`}
                                 onClick={() => setShowSearch(!showSearch)}
                             >
                                 <Search className="w-4 h-4 ml-0" />
                             </Button>
-                            <button className="p-2 text-text-main-light">
-                                <span className="material-symbols-outlined">menu</span>
+                            <button
+                                className="p-2 text-text-main-light transition-transform active:scale-95"
+                                onClick={() => setIsMenuOpen(!isMenuOpen)}
+                                aria-label={isMenuOpen ? "Close menu" : "Open menu"}
+                                aria-expanded={isMenuOpen}
+                            >
+                                <span className="material-symbols-outlined">{isMenuOpen ? 'close' : 'menu'}</span>
                             </button>
                         </div>
                     </div>
@@ -110,11 +121,27 @@ export function Navbar() {
                             </div>
                         </div>
                     </div>
+
+                    {/* Mobile Menu Dropdown */}
+                    <div className={`lg:hidden overflow-hidden transition-all duration-300 ease-in-out bg-surface-light border-t border-slate-100 mt-2 ${isMenuOpen ? 'max-h-64 opacity-100 py-4' : 'max-h-0 opacity-0'}`}>
+                        <nav className="flex flex-col gap-4 px-2">
+                            <a className="text-base font-bold text-text-main-light px-4 py-2 rounded-xl hover:bg-slate-50 transition-colors" href="/">Home</a>
+                            <div className="px-4 pt-2">
+                                <Button variant="primary" className="w-full rounded-2xl h-12" onClick={() => {
+                                    setIsMenuOpen(false);
+                                    setIsWaitlistOpen(true);
+                                }}>
+                                    Join Pioneers
+                                </Button>
+                            </div>
+                        </nav>
+                    </div>
                 </div>
             </div>
 
             {/* Waitlist Modal */}
             <WaitlistModal isOpen={isWaitlistOpen} onClose={() => setIsWaitlistOpen(false)} />
         </header>
+
     );
 }

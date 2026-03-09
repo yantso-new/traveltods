@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Destination, DestinationMetrics } from '@/types';
 import { Card } from '@/components/ui';
+import { Heart } from 'lucide-react';
 
 interface Props {
   destination: Destination;
@@ -8,6 +9,20 @@ interface Props {
 }
 
 export const DestinationCard: React.FC<Props> = ({ destination, onClick }) => {
+  const [isSaved, setIsSaved] = useState(false);
+
+  useEffect(() => {
+    const saved = localStorage.getItem(`saved_${destination.id}`);
+    if (saved === 'true') setIsSaved(true);
+  }, [destination.id]);
+
+  const toggleSave = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    const newState = !isSaved;
+    setIsSaved(newState);
+    localStorage.setItem(`saved_${destination.id}`, String(newState));
+  };
+
   // Use familyScore if available, otherwise calculate from metrics
   let displayScore: string;
 
@@ -64,20 +79,31 @@ export const DestinationCard: React.FC<Props> = ({ destination, onClick }) => {
     <Card
       onClick={onClick}
       noHoverLift={true}
-      className="group flex flex-col overflow-hidden h-full md:h-[22rem] border-2 border-transparent"
+      className="group flex flex-col overflow-hidden h-full md:h-[22rem] border-2 border-transparent transition-all duration-300"
     >
       <div className="relative h-48 md:h-[11rem] overflow-hidden">
         <div className={`absolute top-4 left-4 z-10 px-3 py-1.5 rounded-lg text-xs font-extrabold backdrop-blur-md border border-white/20 ${pillClass}`}>
           {bestTag}
         </div>
+
+        {/* Save Toggle */}
+        <button
+          onClick={toggleSave}
+          className={`absolute top-4 right-4 z-20 p-2 rounded-full backdrop-blur-md border border-white/20 transition-all duration-300 hover:scale-110 active:scale-95 ${isSaved ? 'bg-primary border-primary' : 'bg-black/20 text-white hover:bg-black/40'
+            }`}
+          aria-label={isSaved ? "Remove from favorites" : "Add to favorites"}
+        >
+          <Heart className={`w-4 h-4 ${isSaved ? 'fill-white text-white' : ''}`} />
+        </button>
+
         <div
-          className="w-full h-full bg-cover bg-center"
+          className="w-full h-full bg-cover bg-center group-hover:scale-105 transition-transform duration-500"
           style={{ backgroundImage: `url("${destination.image || '/placeholder.jpg'}")` }}
         >
         </div>
       </div>
 
-      <div className="flex flex-col p-6 gap-4 bg-surface-light">
+      <div className="flex flex-col p-6 gap-4 bg-surface-light border-t border-slate-50 flex-grow">
         <div>
           <div className="flex justify-between items-start w-full">
             <h3 className="text-xl font-bold text-text-main-light group-hover:text-primary transition-colors capitalize">
@@ -93,7 +119,7 @@ export const DestinationCard: React.FC<Props> = ({ destination, onClick }) => {
           </div>
         </div>
 
-        <p className="text-text-sub-light leading-relaxed line-clamp-2">
+        <p className="text-text-sub-light text-sm leading-relaxed line-clamp-2">
           {destination.shortDescription}
         </p>
       </div>

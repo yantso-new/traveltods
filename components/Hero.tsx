@@ -70,12 +70,15 @@ export function Hero({ onSearchTermChange }: HeroProps) {
                                     />
                                 </div>
 
-                                <div className="mt-4 flex gap-3 overflow-x-auto pb-2 scrollbar-hide items-center">
+                                <div className="mt-4 flex gap-3 flex-wrap items-center">
                                     <span className="text-sm text-white/90 font-bold whitespace-nowrap">Popular:</span>
-                                    {['Barcelona', 'Lisbon', 'Tossa de Mar'].map(city => (
+                                    {['Tokyo', 'Copenhagen', 'Singapore', 'Barcelona', 'Paris'].map(city => (
                                         <button
                                             key={city}
-                                            onClick={() => onSearchTermChange(city)}
+                                            onClick={() => {
+                                                onSearchTermChange(city);
+                                                router.push(`/destination/${encodeURIComponent(city)}`);
+                                            }}
                                             className="px-4 py-1.5 rounded-full bg-white/20 hover:bg-white/30 text-white text-xs font-semibold backdrop-blur-sm border border-white/20 transition-colors whitespace-nowrap cursor-pointer"
                                         >
                                             {city}

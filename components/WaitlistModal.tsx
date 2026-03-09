@@ -35,15 +35,41 @@ export function WaitlistModal({ isOpen, onClose }: WaitlistModalProps) {
         };
     }, [isOpen]);
 
-    // Close on escape key
+    // Close on escape key and handle focus trapping
     useEffect(() => {
-        const handleEscape = (e: KeyboardEvent) => {
+        const handleKeyDown = (e: KeyboardEvent) => {
             if (e.key === 'Escape') onClose();
+
+            // Basic focus trap
+            if (e.key === 'Tab' && modalRef.current) {
+                const focusableElements = modalRef.current.querySelectorAll(
+                    'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+                );
+                const firstElement = focusableElements[0] as HTMLElement;
+                const lastElement = focusableElements[focusableElements.length - 1] as HTMLElement;
+
+                if (e.shiftKey) { // shift + tab
+                    if (document.activeElement === firstElement) {
+                        lastElement.focus();
+                        e.preventDefault();
+                    }
+                } else { // tab
+                    if (document.activeElement === lastElement) {
+                        firstElement.focus();
+                        e.preventDefault();
+                    }
+                }
+            }
         };
         if (isOpen) {
-            window.addEventListener('keydown', handleEscape);
+            window.addEventListener('keydown', handleKeyDown);
+            // Focus internal element on open
+            setTimeout(() => {
+                const firstInput = modalRef.current?.querySelector('input');
+                if (firstInput) firstInput.focus();
+            }, 100);
         }
-        return () => window.removeEventListener('keydown', handleEscape);
+        return () => window.removeEventListener('keydown', handleKeyDown);
     }, [isOpen, onClose]);
 
     // Close on backdrop click
@@ -118,18 +144,18 @@ export function WaitlistModal({ isOpen, onClose }: WaitlistModalProps) {
                             <div className="text-center mb-6">
                                 <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-accent text-accent-foreground shadow-lg shadow-accent/40 border border-white/20 backdrop-blur-md text-xs font-extrabold mb-3">
                                     <Sparkles className="w-3 h-3" />
-                                    Coming Soon
+                                    Join 1,240+ parents
                                 </div>
                                 <h2
                                     id="waitlist-modal-title"
                                     className="text-2xl md:text-3xl font-black text-text-main-light mb-2"
                                 >
-                                    Join the Waitlist
+                                    Join the Community
                                 </h2>
                                 <p className="text-text-sub-light text-sm leading-relaxed">
-                                    Our community is launching soon! Be among the first{' '}
+                                    Be among the first{' '}
                                     <span className="font-bold text-primary">Pioneer Members</span>{' '}
-                                    to get exclusive early access when we start rolling out invites.
+                                    to get exclusive early access and family travel perks.
                                 </p>
                             </div>
 
@@ -163,15 +189,27 @@ export function WaitlistModal({ isOpen, onClose }: WaitlistModalProps) {
                                     ) : (
                                         <span className="flex items-center justify-center gap-2">
                                             <Rocket className="w-5 h-5" />
-                                            Join the Pioneers
+                                            Join Community
                                         </span>
                                     )}
                                 </Button>
                             </form>
 
+                            {/* Member benefits proof */}
+                            <div className="mt-8 pt-6 border-t border-slate-100 grid grid-cols-2 gap-4">
+                                <div className="flex flex-col items-center text-center">
+                                    <div className="text-primary font-black text-xl mb-0.5">850+</div>
+                                    <div className="text-[10px] text-text-sub-light uppercase tracking-wider font-bold">Safe Spots</div>
+                                </div>
+                                <div className="flex flex-col items-center text-center">
+                                    <div className="text-secondary font-black text-xl mb-0.5">12k+</div>
+                                    <div className="text-[10px] text-text-sub-light uppercase tracking-wider font-bold">Parent Tips</div>
+                                </div>
+                            </div>
+
                             {/* Footer note */}
-                            <p className="text-center text-xs text-text-sub-light mt-4">
-                                We&apos;ll send you an invite once we start rolling out access. No spam, ever.
+                            <p className="text-center text-xs text-text-sub-light mt-6">
+                                Join our community of explorers. No spam, ever.
                             </p>
                         </>
                     ) : (

@@ -19,6 +19,23 @@ export default function Home() {
   const router = useRouter();
   const [searchTerm, setSearchTerm] = useState('');
   const [displayCount, setDisplayCount] = useState(INITIAL_DISPLAY_COUNT);
+  const [activeFilter, setActiveFilter] = useState('All');
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
+
+  const filters = [
+    { name: 'All', icon: 'explore' },
+    { name: 'Safe', icon: 'health_and_safety' },
+    { name: 'Outdoors', icon: 'landscape' },
+    { name: 'Culture', icon: 'museum' },
+    { name: 'Budget', icon: 'savings' },
+  ];
+
+  const handleFilterChange = (name: string) => {
+    setActiveFilter(name);
+    setIsFilterOpen(false);
+  };
+
+  const selectedFilter = filters.find(f => f.name === activeFilter) || filters[0];
 
   // Fetch all destinations from Convex
   const convexDestinations = useQuery(api.destinations.getTopRatedDestinations, {});
@@ -58,22 +75,27 @@ export default function Home() {
     ? dbDestinations
     : formattedMocks.filter(m => (m.familyScore ?? 0) >= 80);
 
-  const filteredDestinations = allDestinations.filter(d =>
-    d.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    d.country.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    d.tags.some(t => t.toLowerCase().includes(searchTerm.toLowerCase()))
-  );
+  const filteredDestinations = allDestinations.filter(d => {
+    const matchesSearch = d.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      d.country.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      d.tags.some(t => t.toLowerCase().includes(searchTerm.toLowerCase()));
+
+    if (!matchesSearch) return false;
+
+    if (activeFilter === 'All') return true;
+    if (activeFilter === 'Safe') return d.metrics.safety >= 8;
+    if (activeFilter === 'Outdoors') return d.tags.some(t => ['Nature', 'Parks', 'Islands', 'Coastal'].includes(t));
+    if (activeFilter === 'Culture') return d.tags.some(t => ['Culture', 'Museums', 'History', 'Historic', 'Art'].includes(t));
+    if (activeFilter === 'Budget') return d.metrics.costAffordability >= 7;
+
+    return true;
+  });
 
   const displayedDestinations = filteredDestinations.slice(0, displayCount);
   const hasMore = filteredDestinations.length > displayCount;
 
   const handleShowMore = () => {
     setDisplayCount(prev => prev + 12);
-  };
-
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    // Search is reactive already via searchTerm state, but this handles Enter key
   };
 
   return (
@@ -86,7 +108,7 @@ export default function Home() {
         {/* Listings Section */}
         <section className="py-16 px-4 md:px-20 flex justify-center bg-gradient-to-b from-transparent to-orange-50/50">
           <div className="w-full max-w-7xl flex flex-col gap-10">
-            <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
+            <div className="flex flex-col md:flex-row md:items-end justify-between gap-8">
               <div className="relative">
                 <div className="absolute -top-6 -left-6 size-16 bg-accent/30 rounded-full blur-xl animate-pulse"></div>
                 <h2 className="relative text-text-main-light text-3xl md:text-5xl font-black leading-tight tracking-tight">Top Picks for Families</h2>
@@ -94,10 +116,55 @@ export default function Home() {
                   Curated destinations with the highest <span className="text-primary font-bold">toddler happiness</span> ratings.
                 </p>
               </div>
-              {/* Pagination / Show More is handled at bottom, but maybe a view all link here? */}
+
+              {/* Category Dropdown */}
+              <div className="relative min-w-[200px]">
+                <button
+                  onClick={() => setIsFilterOpen(!isFilterOpen)}
+                  className="flex items-center justify-between w-full gap-3 px-6 py-4 bg-white rounded-2xl shadow-sm border border-slate-100 font-bold text-text-main-light hover:border-primary/30 transition-all active:scale-[0.98]"
+                >
+                  <div className="flex items-center gap-2">
+                    <span className="material-symbols-outlined text-primary">{selectedFilter.icon}</span>
+                    <span>{selectedFilter.name}</span>
+                  </div>
+                  <span className={`material-symbols-outlined transition-transform duration-300 ${isFilterOpen ? 'rotate-180' : ''}`}>expand_more</span>
+                </button>
+
+                {isFilterOpen && (
+                  <>
+                    <div
+                      className="fixed inset-0 z-30"
+                      onClick={() => setIsFilterOpen(false)}
+                    />
+                    <div className="absolute right-0 mt-3 w-full bg-white rounded-2xl shadow-2xl border border-slate-100 overflow-hidden z-40 animate-scaleIn origin-top-right">
+                      <div className="p-2">
+                        {filters.map(filter => (
+                          <button
+                            key={filter.name}
+                            onClick={() => handleFilterChange(filter.name)}
+                            className={`flex items-center gap-3 w-full px-4 py-3 rounded-xl text-sm font-bold transition-all ${activeFilter === filter.name
+                              ? 'bg-primary/10 text-primary'
+                              : 'text-text-sub-light hover:bg-slate-50'
+                              }`}
+                          >
+                            <span className="material-symbols-outlined text-xl">{filter.icon}</span>
+                            {filter.name}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  </>
+                )}
+              </div>
             </div>
 
-            {displayedDestinations.length > 0 ? (
+            {convexDestinations === undefined && dbDestinations.length === 0 ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 md:gap-8">
+                {Array.from({ length: 8 }).map((_, i) => (
+                  <div key={i} className="h-[400px] rounded-3xl bg-slate-100 animate-pulse" />
+                ))}
+              </div>
+            ) : displayedDestinations.length > 0 ? (
               <>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 md:gap-8">
                   {displayedDestinations.map(dest => (
@@ -122,14 +189,27 @@ export default function Home() {
                 )}
               </>
             ) : (
-              <div className="text-center py-20 bg-surface-light/50 rounded-3xl border border-dashed border-slate-300">
-                <div className="bg-muted w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <span className="material-symbols-outlined text-3xl text-text-sub-light">search_off</span>
+              <div className="text-center py-20 bg-white/40 backdrop-blur-sm rounded-[3rem] border-2 border-dashed border-slate-200 transition-all">
+                <div className="bg-slate-100 w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-6">
+                  <span className="material-symbols-outlined text-5xl text-slate-400">search_off</span>
                 </div>
-                <h3 className="text-xl font-semibold text-text-main-light">No destinations found</h3>
-                <p className="text-text-sub-light mt-2">
-                  Try adjusting your search for "{searchTerm}".
+                <h3 className="text-2xl font-black text-text-main-light">No matches found</h3>
+                <p className="text-text-sub-light mt-3 max-w-md mx-auto leading-relaxed">
+                  We couldn&apos;t find any {activeFilter !== 'All' ? activeFilter.toLowerCase() + ' ' : ''}destinations matching <span className="font-bold text-primary">&quot;{searchTerm}&quot;</span>.
+                  Try another search or reset filters.
                 </p>
+                <div className="mt-8 flex justify-center gap-4">
+                  <Button
+                    variant="primary"
+                    onClick={() => {
+                      setSearchTerm('');
+                      setActiveFilter('All');
+                    }}
+                    className="rounded-2xl"
+                  >
+                    Reset Everything
+                  </Button>
+                </div>
               </div>
             )}
           </div>

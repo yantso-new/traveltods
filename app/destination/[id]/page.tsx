@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useRouter } from 'next/navigation';
+import Link from 'next/link';
 import {
     ArrowLeft,
     Baby,
@@ -113,14 +114,42 @@ export default function DestinationDetails() {
             .catch(console.error);
     }, [id, destination, checkAndRefreshIfStale, incrementSearchCount]);
 
-    // Show loading if undefined (connecting) or gathering
+    // Show skeleton if undefined (connecting) or gathering
     if (destination === undefined || isGathering) {
         return (
-            <div className="min-h-screen flex flex-col items-center justify-center space-y-4 bg-background-light">
-                <LoadingSpinner />
-                <p className="text-text-sub-light font-light animate-pulse">
-                    {isGathering ? `Gathering data for ${id}...` : "Loading..."}
-                </p>
+            <div className="min-h-screen bg-background-light">
+                <Navbar />
+                {/* Hero Skeleton */}
+                <div className="h-[40vh] md:h-[50vh] bg-slate-200 animate-pulse relative">
+                    <div className="absolute bottom-20 left-4 md:left-20 w-1/3 h-12 bg-white/20 rounded-lg" />
+                </div>
+
+                <div className="px-4 md:px-20 -mt-10 relative z-10 flex justify-center">
+                    <div className="w-full max-w-7xl grid grid-cols-1 lg:grid-cols-3 gap-8">
+                        <div className="lg:col-span-2 space-y-8">
+                            <Card className="p-8 h-64 bg-white animate-pulse">
+                                <div className="h-full w-full" />
+                            </Card>
+                            <Card className="p-8 h-96 bg-white animate-pulse">
+                                <div className="h-full w-full" />
+                            </Card>
+                        </div>
+                        <div className="space-y-8">
+                            <Card className="p-6 h-80 bg-white animate-pulse">
+                                <div className="h-full w-full" />
+                            </Card>
+                            <Card className="p-6 h-48 bg-white animate-pulse">
+                                <div className="h-full w-full" />
+                            </Card>
+                        </div>
+                    </div>
+                </div>
+                {isGathering && (
+                    <div className="fixed bottom-10 left-1/2 -translate-x-1/2 bg-primary text-white px-6 py-3 rounded-full shadow-2xl flex items-center gap-3 z-50">
+                        <LoadingSpinner />
+                        <span className="font-bold">Locating data for {id}...</span>
+                    </div>
+                )}
             </div>
         );
     }
@@ -157,6 +186,13 @@ export default function DestinationDetails() {
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
                 <div className="absolute bottom-0 left-0 w-full px-4 md:px-20 pb-20 flex justify-center">
                     <div className="max-w-7xl w-full">
+                        {/* Breadcrumbs */}
+                        <div className="flex items-center gap-2 mb-6 text-white/80 text-sm font-bold uppercase tracking-widest backdrop-blur-sm w-fit px-3 py-1 rounded-lg bg-black/10 border border-white/10">
+                            <Link href="/" className="hover:text-primary transition-colors cursor-pointer">Home</Link>
+                            <span className="text-white/40">/</span>
+                            <span className="text-white">Destination</span>
+                        </div>
+
                         <div className="inline-flex items-center gap-2 px-3 py-1 mb-4 rounded-full bg-gradient-to-r from-primary to-primary-dark text-white border border-white/10 shadow-lg shadow-primary/40 backdrop-blur-md text-xs font-extrabold uppercase tracking-wider">
                             <span className="material-symbols-outlined text-sm">public</span>
                             {destination.country}
@@ -204,9 +240,18 @@ export default function DestinationDetails() {
                         {/* Detailed Metrics Breakdown */}
                         <Card className="p-8">
                             <div className="flex items-center justify-between mb-8 pb-6 border-b border-slate-100">
-                                <div>
-                                    <h3 className="text-2xl font-black text-text-main-light">Family Score</h3>
-                                    <p className="text-text-sub-light text-sm mt-1">Based on verifiable safety & amenity data</p>
+                                <div className="flex items-center gap-3">
+                                    <div>
+                                        <div className="flex items-center gap-2">
+                                            <h3 className="text-2xl font-black text-text-main-light">Family Score</h3>
+                                            <Tooltip content="We aggregate safety data, playground density, walkability, and kid-specific amenities to calculate this score.">
+                                                <div className="cursor-help text-text-sub-light/60 hover:text-primary transition-colors">
+                                                    <Info className="w-4 h-4" />
+                                                </div>
+                                            </Tooltip>
+                                        </div>
+                                        <p className="text-text-sub-light text-sm mt-1">Detailed breakdown of destination features</p>
+                                    </div>
                                 </div>
 
                                 {allScores.familyScore !== undefined && allScores.familyScore !== null ? (
@@ -222,57 +267,62 @@ export default function DestinationDetails() {
                                 )}
                             </div>
 
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-6">
-                                <ProgressBar
-                                    value={Math.round(allScores.safety / 10)}
-                                    max={10}
-                                    label="Safety & Security"
-                                    icon={<ShieldCheck className="w-4 h-4" />}
-                                    color="bg-emerald-400"
-                                />
-                                <ProgressBar
-                                    value={Math.round(allScores.kidActivities / 10)}
-                                    max={10}
-                                    label="Kid Activities"
-                                    icon={<Smile className="w-4 h-4" />}
-                                    color="bg-yellow-400"
-                                />
-                                <ProgressBar
-                                    value={Math.round((allScores.weatherComfort ?? 50) / 10)}
-                                    max={10}
-                                    label="Weather Comfort"
-                                    icon={<CloudSun className="w-4 h-4" />}
-                                    color="bg-sky-400"
-                                />
-                                <ProgressBar
-                                    value={Math.round((allScores.costAffordability ?? 50) / 10)}
-                                    max={10}
-                                    label="Affordability"
-                                    icon={<DollarSign className="w-4 h-4" />}
-                                    color="bg-amber-400"
-                                />
-                                <ProgressBar
-                                    value={Math.round(allScores.playgrounds / 10)}
-                                    max={10}
-                                    label="Playgrounds"
-                                    icon={<Trees className="w-4 h-4" />}
-                                    color="bg-green-400"
-                                />
-                                <ProgressBar
-                                    value={Math.round(allScores.healthyFood / 10)}
-                                    max={10}
-                                    label="Healthy Food"
-                                    icon={<Utensils className="w-4 h-4" />}
-                                    color="bg-orange-400"
-                                />
-                                {/* Consolidated Walkability & Access */}
-                                <ProgressBar
-                                    value={Math.round(((allScores.strollerFriendly || 0) + (allScores.accessibility || 0) + (allScores.sidewalks || 0)) / 30)}
-                                    max={10}
-                                    label="Walkability & Access"
-                                    icon={<Accessibility className="w-4 h-4" />}
-                                    color="bg-purple-400"
-                                />
+                            <div className="space-y-10">
+                                {/* Group: Safety & Well-being */}
+                                <div className="space-y-4">
+                                    <h4 className="text-xs font-black uppercase tracking-widest text-text-sub-light/70 border-l-2 border-primary pl-3">Safety & Comfort</h4>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-6">
+                                        <ProgressBar
+                                            value={Math.round(allScores.safety / 10)}
+                                            max={10}
+                                            label="Crime & Security"
+                                            icon={<ShieldCheck className="w-4 h-4" />}
+                                            color="bg-emerald-400"
+                                        />
+                                        <ProgressBar
+                                            value={Math.round((allScores.weatherComfort ?? 50) / 10)}
+                                            max={10}
+                                            label="Climate Suitability"
+                                            icon={<CloudSun className="w-4 h-4" />}
+                                            color="bg-sky-400"
+                                        />
+                                    </div>
+                                </div>
+
+                                {/* Group: Entertainment & Logistics */}
+                                <div className="space-y-4">
+                                    <h4 className="text-xs font-black uppercase tracking-widest text-text-sub-light/70 border-l-2 border-secondary pl-3">Activities & Access</h4>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-6">
+                                        <ProgressBar
+                                            value={Math.round(allScores.kidActivities / 10)}
+                                            max={10}
+                                            label="Kid Attractions"
+                                            icon={<Smile className="w-4 h-4" />}
+                                            color="bg-yellow-400"
+                                        />
+                                        <ProgressBar
+                                            value={Math.round(allScores.playgrounds / 10)}
+                                            max={10}
+                                            label="Playground Density"
+                                            icon={<Trees className="w-4 h-4" />}
+                                            color="bg-green-400"
+                                        />
+                                        <ProgressBar
+                                            value={Math.round(((allScores.strollerFriendly || 0) + (allScores.accessibility || 0) + (allScores.sidewalks || 0)) / 30)}
+                                            max={10}
+                                            label="Stroller/Wheelchair Access"
+                                            icon={<Accessibility className="w-4 h-4" />}
+                                            color="bg-purple-400"
+                                        />
+                                        <ProgressBar
+                                            value={Math.round(allScores.healthyFood / 10)}
+                                            max={10}
+                                            label="Healthy Options"
+                                            icon={<Utensils className="w-4 h-4" />}
+                                            color="bg-orange-400"
+                                        />
+                                    </div>
+                                </div>
                             </div>
                         </Card>
                     </div>
@@ -335,8 +385,12 @@ export default function DestinationDetails() {
                 <div className="w-full max-w-7xl">
                     <div className="flex items-center justify-between mb-8">
                         <div>
+                            <div className="inline-flex items-center gap-1.5 px-3 py-1 mb-4 rounded-full bg-secondary/10 text-secondary border border-secondary/20 text-[10px] font-black uppercase tracking-widest">
+                                <Baby className="w-3 h-3" />
+                                Expert Picks
+                            </div>
                             <h2 className="text-3xl font-black text-text-main-light mb-2">Book Activities</h2>
-                            <p className="text-text-sub-light text-lg">Top rated experiences for families with kids under 10</p>
+                            <p className="text-text-sub-light text-lg">Hand-picked for under-10s in <span className="text-primary font-bold">{destination.name}</span></p>
                         </div>
                         <div className="hidden md:flex items-center gap-2 text-sm text-text-sub-light bg-surface-light px-4 py-2 rounded-full border border-slate-100">
                             <span className="font-semibold text-primary">Powered by Viator</span>

@@ -49,7 +49,7 @@ export default function BlogPostPage({ params }: BlogPostPageProps) {
         }
     };
 
-    // Improved markdown-like rendering
+    // Improved markdown-like rendering with auto-linking to destinations
     const renderContent = (content: string) => {
         const lines = content.trim().split('\n');
         const elements: React.ReactNode[] = [];
@@ -58,6 +58,47 @@ export default function BlogPostPage({ params }: BlogPostPageProps) {
         let inList = false;
         let listItems: string[] = [];
 
+        const destinations = ['Copenhagen', 'Tokyo', 'Barcelona', 'Singapore', 'Lisbon', 'London', 'Paris', 'Amsterdam', 'Reykjavik', 'Vancouver', 'Melbourne', 'Auckland', 'Vienna', 'Banff', 'Phuket', 'Maldives'];
+
+        const linkify = (text: string) => {
+            let parts: (string | React.ReactNode)[] = [text];
+
+            destinations.forEach(city => {
+                const newParts: (string | React.ReactNode)[] = [];
+                parts.forEach(part => {
+                    if (typeof part !== 'string') {
+                        newParts.push(part);
+                        return;
+                    }
+
+                    const regex = new RegExp(`\\b${city}\\b`, 'g');
+                    const split = part.split(regex);
+
+                    if (split.length === 1) {
+                        newParts.push(part);
+                    } else {
+                        split.forEach((s, i) => {
+                            newParts.push(s);
+                            if (i < split.length - 1) {
+                                newParts.push(
+                                    <Link
+                                        key={`${city}-${i}`}
+                                        href={`/destination/${encodeURIComponent(city)}`}
+                                        className="text-primary font-bold hover:underline decoration-2 underline-offset-4"
+                                    >
+                                        {city}
+                                    </Link>
+                                );
+                            }
+                        });
+                    }
+                });
+                parts = newParts;
+            });
+
+            return parts;
+        };
+
         const flushList = (index: number) => {
             if (listItems.length > 0) {
                 elements.push(
@@ -65,7 +106,7 @@ export default function BlogPostPage({ params }: BlogPostPageProps) {
                         {listItems.map((item, i) => (
                             <li key={i} className="flex items-start gap-3 text-text-main-light leading-relaxed">
                                 <span className="text-primary mt-1.5 flex-shrink-0">•</span>
-                                <span>{item}</span>
+                                <span>{linkify(item)}</span>
                             </li>
                         ))}
                     </ul>
@@ -88,7 +129,7 @@ export default function BlogPostPage({ params }: BlogPostPageProps) {
                 elements.push(
                     <blockquote key={`bq-${index}`} className="border-l-4 border-secondary pl-6 py-4 my-6 bg-secondary/5 rounded-r-xl">
                         {blockquoteContent.map((bqLine, i) => (
-                            <p key={i} className="text-text-sub-light italic text-base leading-relaxed">{bqLine}</p>
+                            <p key={i} className="text-text-sub-light italic text-base leading-relaxed">{linkify(bqLine)}</p>
                         ))}
                     </blockquote>
                 );
@@ -139,7 +180,7 @@ export default function BlogPostPage({ params }: BlogPostPageProps) {
                 flushList(index);
                 elements.push(
                     <p key={index} className="text-text-main-light text-base md:text-lg leading-relaxed mb-5">
-                        {trimmedLine}
+                        {linkify(trimmedLine)}
                     </p>
                 );
             }
@@ -150,7 +191,7 @@ export default function BlogPostPage({ params }: BlogPostPageProps) {
             elements.push(
                 <blockquote key="bq-final" className="border-l-4 border-secondary pl-6 py-4 my-6 bg-secondary/5 rounded-r-xl">
                     {blockquoteContent.map((bqLine, i) => (
-                        <p key={i} className="text-text-sub-light italic text-base leading-relaxed">{bqLine}</p>
+                        <p key={i} className="text-text-sub-light italic text-base leading-relaxed">{linkify(bqLine)}</p>
                     ))}
                 </blockquote>
             );
