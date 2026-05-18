@@ -2,6 +2,13 @@ import { defineSchema, defineTable } from "convex/server";
 import { v } from "convex/values";
 
 export default defineSchema({
+    waitlistEmails: defineTable({
+        email: v.string(),
+        createdAt: v.number(),
+        updatedAt: v.number(),
+        source: v.optional(v.string()),
+    }).index("by_email", ["email"]),
+
     destinations: defineTable({
         name: v.string(),
         country: v.string(),

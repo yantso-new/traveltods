@@ -44,34 +44,39 @@ export const BLOG_CATEGORIES: { id: BlogCategory | 'all'; label: string }[] = [
 
 const LAST_UPDATED = '2026-05-18';
 
-const IMAGE_URLS: Record<string, string> = {
-    'lisbon-family-travel': 'https://images.unsplash.com/photo-1502602898657-3e91760cbb34?w=1200&q=80',
-    'porto-portugal-family': 'https://images.unsplash.com/photo-1523906834658-6e24ef2386f9?w=1200&q=80',
-    'algarve-family-beach': 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=1200&q=80',
-    'madeira-portugal-family': 'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=1200&q=80',
-    'azores-family-travel': 'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?w=1200&q=80',
-    'barcelona-family-travel': 'https://images.unsplash.com/photo-1583422409516-2895a77efded?w=1200&q=80',
-    'madrid-family-travel': 'https://images.unsplash.com/photo-1539037116277-4db20889f2d4?w=1200&q=80',
-    'seville-family-travel': 'https://images.unsplash.com/photo-1559564477-6e85822748c8?w=1200&q=80',
-    'valencia-family-travel': 'https://images.unsplash.com/photo-1511527661048-7fe73d85e9a4?w=1200&q=80',
-    'malaga-family-travel': 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=1200&q=80',
-    'family-airport-travel': 'https://images.unsplash.com/photo-1436491865332-7a61a109cc05?w=1200&q=80',
-    'family-packing-travel': 'https://images.unsplash.com/photo-1488646953014-85cb44e25828?w=1200&q=80',
-    'child-sleep-travel': 'https://images.unsplash.com/photo-1541781774459-bb2af2f05b55?w=1200&q=80',
-    'child-car-seat-travel': 'https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=1200&q=80',
-    'family-food-travel': 'https://images.unsplash.com/photo-1493770348161-369560ae357d?w=1200&q=80',
-    'family-hotel-room': 'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=1200&q=80',
-    'family-beach-kids': 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=1200&q=80',
-    'toddler-travel-day': 'https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=1200&q=80',
-    'family-travel-health-kit': 'https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?w=1200&q=80',
-    'family-travel-budget': 'https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=1200&q=80',
+const unsplashPhoto = (id: string) => ({
+    url: `https://unsplash.com/photos/${id}/download?w=1200&q=80`,
+    creditUrl: `https://unsplash.com/photos/${id}`,
+});
+
+const IMAGE_URLS: Record<string, { url: string; creditUrl?: string }> = {
+    'lisbon-family-travel': unsplashPhoto('GwNkrz7Q9XY'),
+    'porto-portugal-family': unsplashPhoto('zllGA-8RW5M'),
+    'algarve-family-beach': unsplashPhoto('wK0IqOKVOI4'),
+    'madeira-portugal-family': unsplashPhoto('fyz4vI1g-xM'),
+    'azores-family-travel': unsplashPhoto('4Hn6ThgpqBE'),
+    'barcelona-family-travel': unsplashPhoto('cNFPCAV23lM'),
+    'madrid-family-travel': unsplashPhoto('VIzeB9tB-J0'),
+    'seville-family-travel': unsplashPhoto('M7DS8qqyG3E'),
+    'valencia-family-travel': unsplashPhoto('jKywkUgB4X4'),
+    'malaga-family-travel': unsplashPhoto('RpPOIyQf0ow'),
+    'family-airport-travel': { url: 'https://images.unsplash.com/photo-1436491865332-7a61a109cc05?w=1200&q=80' },
+    'family-packing-travel': { url: 'https://images.unsplash.com/photo-1488646953014-85cb44e25828?w=1200&q=80' },
+    'child-sleep-travel': { url: 'https://images.unsplash.com/photo-1541781774459-bb2af2f05b55?w=1200&q=80' },
+    'child-car-seat-travel': { url: 'https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=1200&q=80' },
+    'family-food-travel': { url: 'https://images.unsplash.com/photo-1493770348161-369560ae357d?w=1200&q=80' },
+    'family-hotel-room': { url: 'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=1200&q=80' },
+    'family-beach-kids': { url: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=1200&q=80' },
+    'toddler-travel-day': { url: 'https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=1200&q=80' },
+    'family-travel-health-kit': { url: 'https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?w=1200&q=80' },
+    'family-travel-budget': { url: 'https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=1200&q=80' },
 };
 
 const image = (query: string, alt: string): BlogImage => ({
-    url: IMAGE_URLS[query],
+    url: IMAGE_URLS[query].url,
     alt,
     creditLabel: 'Unsplash',
-    creditUrl: `https://unsplash.com/s/photos/${query}`,
+    creditUrl: IMAGE_URLS[query].creditUrl ?? `https://unsplash.com/s/photos/${query}`,
 });
 
 export const BLOG_POSTS: BlogPost[] = [

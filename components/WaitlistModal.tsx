@@ -2,6 +2,8 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
+import { useMutation } from 'convex/react';
+import { api } from '@/convex/_generated/api';
 import { Button, Input } from '@/components/ui';
 import { X, Sparkles, Rocket, Users } from 'lucide-react';
 
@@ -14,8 +16,10 @@ export function WaitlistModal({ isOpen, onClose }: WaitlistModalProps) {
     const [email, setEmail] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isSubmitted, setIsSubmitted] = useState(false);
+    const [error, setError] = useState('');
     const [mounted, setMounted] = useState(false);
     const modalRef = useRef<HTMLDivElement>(null);
+    const joinWaitlist = useMutation(api.waitlist.join);
 
     // Ensure portal only renders on client
     useEffect(() => {
@@ -84,10 +88,16 @@ export function WaitlistModal({ isOpen, onClose }: WaitlistModalProps) {
         if (!email) return;
 
         setIsSubmitting(true);
-        // Simulate API call - replace with actual waitlist API
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        setIsSubmitting(false);
-        setIsSubmitted(true);
+        setError('');
+
+        try {
+            await joinWaitlist({ email, source: 'waitlist_modal' });
+            setIsSubmitted(true);
+        } catch {
+            setError('We could not save your email. Please try again.');
+        } finally {
+            setIsSubmitting(false);
+        }
     };
 
     const handleClose = () => {
@@ -95,6 +105,7 @@ export function WaitlistModal({ isOpen, onClose }: WaitlistModalProps) {
         // Reset state after animation
         setTimeout(() => {
             setEmail('');
+            setError('');
             setIsSubmitted(false);
         }, 300);
     };
@@ -144,7 +155,7 @@ export function WaitlistModal({ isOpen, onClose }: WaitlistModalProps) {
                             <div className="text-center mb-6">
                                 <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-accent text-accent-foreground shadow-lg shadow-accent/40 border border-white/20 backdrop-blur-md text-xs font-extrabold mb-3">
                                     <Sparkles className="w-3 h-3" />
-                                    Join 1,240+ parents
+                                    Get early access updates
                                 </div>
                                 <h2
                                     id="waitlist-modal-title"
@@ -171,6 +182,11 @@ export function WaitlistModal({ isOpen, onClose }: WaitlistModalProps) {
                                         className="h-14 text-base rounded-2xl border-orange-100 focus:border-primary bg-white"
                                         aria-label="Email address"
                                     />
+                                    {error ? (
+                                        <p className="mt-2 text-sm font-medium text-primary" role="alert">
+                                            {error}
+                                        </p>
+                                    ) : null}
                                 </div>
                                 <Button
                                     type="submit"
@@ -195,15 +211,15 @@ export function WaitlistModal({ isOpen, onClose }: WaitlistModalProps) {
                                 </Button>
                             </form>
 
-                            {/* Member benefits proof */}
+                            {/* Member benefits */}
                             <div className="mt-8 pt-6 border-t border-slate-100 grid grid-cols-2 gap-4">
                                 <div className="flex flex-col items-center text-center">
-                                    <div className="text-primary font-black text-xl mb-0.5">850+</div>
-                                    <div className="text-[10px] text-text-sub-light uppercase tracking-wider font-bold">Safe Spots</div>
+                                    <div className="text-primary font-black text-sm mb-0.5">Toddler-friendly</div>
+                                    <div className="text-[10px] text-text-sub-light uppercase tracking-wider font-bold">Destinations</div>
                                 </div>
                                 <div className="flex flex-col items-center text-center">
-                                    <div className="text-secondary font-black text-xl mb-0.5">12k+</div>
-                                    <div className="text-[10px] text-text-sub-light uppercase tracking-wider font-bold">Parent Tips</div>
+                                    <div className="text-secondary font-black text-sm mb-0.5">Parent-tested</div>
+                                    <div className="text-[10px] text-text-sub-light uppercase tracking-wider font-bold">Travel Tips</div>
                                 </div>
                             </div>
 

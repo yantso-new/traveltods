@@ -17,6 +17,7 @@ import type * as lib_viator_destinations from "../lib/viator_destinations.js";
 import type * as seed from "../seed.js";
 import type * as update_all from "../update_all.js";
 import type * as viator from "../viator.js";
+import type * as waitlist from "../waitlist.js";
 
 import type {
   ApiFromModules,
@@ -34,6 +35,7 @@ declare const fullApi: ApiFromModules<{
   seed: typeof seed;
   update_all: typeof update_all;
   viator: typeof viator;
+  waitlist: typeof waitlist;
 }>;
 
 /**
