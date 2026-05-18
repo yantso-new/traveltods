@@ -2,7 +2,7 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { Clock, ArrowRight } from 'lucide-react';
+import { Calendar, Clock, MapPin, ArrowRight } from 'lucide-react';
 import { BlogPost } from '@/blogData';
 import { Badge } from '@/components/ui';
 
@@ -11,7 +11,7 @@ interface BlogCardProps {
 }
 
 export const BlogCard: React.FC<BlogCardProps> = ({ post }) => {
-    const formattedDate = new Date(post.publishedAt).toLocaleDateString('en-US', {
+    const formattedDate = new Date(post.lastUpdated).toLocaleDateString('en-US', {
         month: 'short',
         day: 'numeric',
         year: 'numeric',
@@ -23,13 +23,13 @@ export const BlogCard: React.FC<BlogCardProps> = ({ post }) => {
                 {/* Image */}
                 <div className="relative aspect-[16/10] overflow-hidden">
                     <img
-                        src={post.image}
-                        alt={post.title}
+                        src={post.image.url}
+                        alt={post.image.alt}
                         className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                     />
                     <div className="absolute top-3 left-3">
                         <Badge
-                            variant={post.category === 'explore' ? 'solid-primary' : 'solid-secondary'}
+                            variant={post.category === 'destinations' ? 'solid-primary' : 'solid-secondary'}
                             className="capitalize text-xs font-semibold"
                         >
                             {post.category}
@@ -48,14 +48,14 @@ export const BlogCard: React.FC<BlogCardProps> = ({ post }) => {
 
                     {/* Meta */}
                     <div className="flex items-center justify-between pt-4 border-t border-slate-100">
-                        <div className="flex items-center gap-2">
-                            <img
-                                src={post.author.avatar}
-                                alt={post.author.name}
-                                className="w-6 h-6 rounded-full object-cover"
-                            />
+                        <div className="flex items-center gap-1.5 min-w-0 text-xs text-text-sub-light font-medium">
+                            {post.destinationName ? (
+                                <MapPin className="w-3 h-3 flex-shrink-0" />
+                            ) : (
+                                <Calendar className="w-3 h-3 flex-shrink-0" />
+                            )}
                             <span className="text-xs text-text-sub-light font-medium">
-                                {post.author.name}
+                                {post.destinationName || formattedDate}
                             </span>
                         </div>
                         <div className="flex items-center gap-1 text-xs text-text-sub-light">
@@ -74,7 +74,7 @@ interface FeaturedBlogCardProps {
 }
 
 export const FeaturedBlogCard: React.FC<FeaturedBlogCardProps> = ({ post }) => {
-    const formattedDate = new Date(post.publishedAt).toLocaleDateString('en-US', {
+    const formattedDate = new Date(post.lastUpdated).toLocaleDateString('en-US', {
         month: 'long',
         day: 'numeric',
         year: 'numeric',
@@ -87,13 +87,13 @@ export const FeaturedBlogCard: React.FC<FeaturedBlogCardProps> = ({ post }) => {
                     {/* Image */}
                     <div className="relative aspect-[16/10] md:aspect-auto overflow-hidden">
                         <img
-                            src={post.image}
-                            alt={post.title}
+                            src={post.image.url}
+                            alt={post.image.alt}
                             className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                         />
                         <div className="absolute top-4 left-4">
                             <Badge variant="gradient-accent" className="text-xs font-bold uppercase tracking-wider">
-                                ✨ Featured
+                                Featured
                             </Badge>
                         </div>
                     </div>
@@ -101,7 +101,7 @@ export const FeaturedBlogCard: React.FC<FeaturedBlogCardProps> = ({ post }) => {
                     {/* Content */}
                     <div className="p-6 md:p-10 flex flex-col justify-center">
                         <Badge
-                            variant={post.category === 'explore' ? 'solid-primary' : 'solid-secondary'}
+                            variant={post.category === 'destinations' ? 'solid-primary' : 'solid-secondary'}
                             className="capitalize text-xs font-semibold w-fit mb-4"
                         >
                             {post.category}
@@ -117,17 +117,17 @@ export const FeaturedBlogCard: React.FC<FeaturedBlogCardProps> = ({ post }) => {
 
                         {/* Meta */}
                         <div className="flex items-center gap-4 mb-6">
-                            <div className="flex items-center gap-2">
-                                <img
-                                    src={post.author.avatar}
-                                    alt={post.author.name}
-                                    className="w-8 h-8 rounded-full object-cover border-2 border-white shadow-sm"
-                                />
+                            <div className="flex items-center gap-2 text-text-main-light">
+                                {post.destinationName ? (
+                                    <MapPin className="w-4 h-4 text-primary" />
+                                ) : (
+                                    <Calendar className="w-4 h-4 text-primary" />
+                                )}
                                 <span className="text-sm text-text-main-light font-medium">
-                                    {post.author.name}
+                                    {post.destinationName || 'Family travel tips'}
                                 </span>
                             </div>
-                            <span className="text-sm text-text-sub-light">{formattedDate}</span>
+                            <span className="text-sm text-text-sub-light">Updated {formattedDate}</span>
                             <div className="flex items-center gap-1 text-sm text-text-sub-light">
                                 <Clock className="w-4 h-4" />
                                 <span>{post.readTime} min read</span>

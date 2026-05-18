@@ -3,7 +3,7 @@
 import React, { useState, useMemo } from 'react';
 import Link from 'next/link';
 import { ArrowLeft, Search } from 'lucide-react';
-import { BLOG_POSTS, BLOG_CATEGORIES, BlogCategory, getFeaturedPost, getPostsByCategory } from '@/blogData';
+import { BLOG_CATEGORIES, BlogCategory, getFeaturedPost, getPostsByCategory } from '@/blogData';
 import { BlogCard, FeaturedBlogCard } from '@/components/BlogCard';
 import { Navbar } from '@/components/Navbar';
 import { Footer } from '@/components/Footer';
@@ -23,7 +23,8 @@ export default function BlogPage() {
                 post =>
                     post.title.toLowerCase().includes(term) ||
                     post.excerpt.toLowerCase().includes(term) ||
-                    post.author.name.toLowerCase().includes(term)
+                    post.destinationName?.toLowerCase().includes(term) ||
+                    post.sources.some(source => source.label.toLowerCase().includes(term))
             );
         }
 
@@ -60,7 +61,7 @@ export default function BlogPage() {
                                 Travel Tips & Stories
                             </h1>
                             <p className="relative text-xl text-text-sub-light font-light max-w-2xl">
-                                Expert advice, destination guides, and community stories to make your family adventures unforgettable.
+                                Source-backed destination guides and practical tips for traveling with kids under 10.
                             </p>
                         </div>
                     </div>

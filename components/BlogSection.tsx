@@ -23,7 +23,7 @@ export const BlogSection: React.FC = () => {
                             Travel Tips & Stories
                         </h2>
                         <p className="relative text-lg text-text-sub-light mt-3 font-medium">
-                            Expert advice and inspiration from our <span className="text-secondary font-bold">community of parents</span>.
+                            Source-backed destination guides and practical tips for <span className="text-secondary font-bold">parents traveling with young kids</span>.
                         </p>
                     </div>
                     <Link

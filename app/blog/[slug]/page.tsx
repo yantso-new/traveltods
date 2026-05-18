@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { ArrowLeft, Clock, Calendar, Twitter, Linkedin, Link2, Check } from 'lucide-react';
+import { ArrowLeft, Clock, Calendar, Twitter, Linkedin, Link2, Check, ExternalLink, MapPin } from 'lucide-react';
 import { getPostBySlug, getRelatedPosts } from '@/blogData';
 import { BlogCard } from '@/components/BlogCard';
 import { Navbar } from '@/components/Navbar';
@@ -24,7 +24,7 @@ export default function BlogPostPage({ params }: BlogPostPageProps) {
 
     const relatedPosts = getRelatedPosts(post.slug, 3);
 
-    const formattedDate = new Date(post.publishedAt).toLocaleDateString('en-US', {
+    const formattedDate = new Date(post.lastUpdated).toLocaleDateString('en-US', {
         month: 'long',
         day: 'numeric',
         year: 'numeric',
@@ -49,54 +49,44 @@ export default function BlogPostPage({ params }: BlogPostPageProps) {
         }
     };
 
-    // Improved markdown-like rendering with auto-linking to destinations
+    // Lightweight markdown-like rendering for trusted local blog content.
     const renderContent = (content: string) => {
         const lines = content.trim().split('\n');
         const elements: React.ReactNode[] = [];
         let inBlockquote = false;
         let blockquoteContent: string[] = [];
-        let inList = false;
         let listItems: string[] = [];
 
-        const destinations = ['Copenhagen', 'Tokyo', 'Barcelona', 'Singapore', 'Lisbon', 'London', 'Paris', 'Amsterdam', 'Reykjavik', 'Vancouver', 'Melbourne', 'Auckland', 'Vienna', 'Banff', 'Phuket', 'Maldives'];
-
         const linkify = (text: string) => {
-            let parts: (string | React.ReactNode)[] = [text];
+            const parts: React.ReactNode[] = [];
+            const linkRegex = /\[([^\]]+)\]\((https?:\/\/[^)]+)\)/g;
+            let lastIndex = 0;
+            let match: RegExpExecArray | null;
 
-            destinations.forEach(city => {
-                const newParts: (string | React.ReactNode)[] = [];
-                parts.forEach(part => {
-                    if (typeof part !== 'string') {
-                        newParts.push(part);
-                        return;
-                    }
+            while ((match = linkRegex.exec(text)) !== null) {
+                if (match.index > lastIndex) {
+                    parts.push(text.slice(lastIndex, match.index));
+                }
 
-                    const regex = new RegExp(`\\b${city}\\b`, 'g');
-                    const split = part.split(regex);
+                parts.push(
+                    <a
+                        key={`${match[1]}-${match.index}`}
+                        href={match[2]}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-primary font-bold hover:underline decoration-2 underline-offset-4"
+                    >
+                        {match[1]}
+                    </a>
+                );
+                lastIndex = match.index + match[0].length;
+            }
 
-                    if (split.length === 1) {
-                        newParts.push(part);
-                    } else {
-                        split.forEach((s, i) => {
-                            newParts.push(s);
-                            if (i < split.length - 1) {
-                                newParts.push(
-                                    <Link
-                                        key={`${city}-${i}`}
-                                        href={`/destination/${encodeURIComponent(city)}`}
-                                        className="text-primary font-bold hover:underline decoration-2 underline-offset-4"
-                                    >
-                                        {city}
-                                    </Link>
-                                );
-                            }
-                        });
-                    }
-                });
-                parts = newParts;
-            });
+            if (lastIndex < text.length) {
+                parts.push(text.slice(lastIndex));
+            }
 
-            return parts;
+            return parts.length ? parts : text;
         };
 
         const flushList = (index: number) => {
@@ -112,7 +102,6 @@ export default function BlogPostPage({ params }: BlogPostPageProps) {
                     </ul>
                 );
                 listItems = [];
-                inList = false;
             }
         };
 
@@ -167,7 +156,6 @@ export default function BlogPostPage({ params }: BlogPostPageProps) {
             }
             // List item
             else if (trimmedLine.startsWith('- ')) {
-                inList = true;
                 listItems.push(trimmedLine.slice(2));
             }
             // Empty line
@@ -208,20 +196,30 @@ export default function BlogPostPage({ params }: BlogPostPageProps) {
             {/* Hero Image */}
             <div className="relative h-72 md:h-[500px] overflow-hidden">
                 <img
-                    src={post.image}
-                    alt={post.title}
+                    src={post.image.url}
+                    alt={post.image.alt}
                     className="w-full h-full object-cover"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent" />
 
                 {/* Floating badge on hero */}
                 <div className="absolute bottom-8 left-4 md:left-20">
-                    <Badge
-                        variant={post.category === 'explore' ? 'solid-primary' : 'solid-secondary'}
-                        className="capitalize text-sm font-bold shadow-lg"
-                    >
-                        {post.category}
-                    </Badge>
+                    <div className="flex flex-col gap-2">
+                        <Badge
+                            variant={post.category === 'destinations' ? 'solid-primary' : 'solid-secondary'}
+                            className="capitalize text-sm font-bold shadow-lg w-fit"
+                        >
+                            {post.category}
+                        </Badge>
+                        <a
+                            href={post.image.creditUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-xs text-white/80 hover:text-white underline underline-offset-4"
+                        >
+                            Image: {post.image.creditLabel}
+                        </a>
+                    </div>
                 </div>
             </div>
 
@@ -249,20 +247,20 @@ export default function BlogPostPage({ params }: BlogPostPageProps) {
                 {/* Meta Bar */}
                 <div className="flex flex-wrap items-center gap-4 md:gap-6 mb-10 pb-8 border-b-2 border-slate-100">
                     <div className="flex items-center gap-3">
-                        <img
-                            src={post.author.avatar}
-                            alt={post.author.name}
-                            className="w-12 h-12 rounded-full object-cover border-2 border-primary/20 shadow-md"
-                        />
+                        <div className="w-12 h-12 rounded-full bg-primary/10 text-primary flex items-center justify-center border-2 border-primary/20 shadow-md">
+                            <MapPin className="w-5 h-5" />
+                        </div>
                         <div>
-                            <p className="text-sm font-bold text-text-main-light">{post.author.name}</p>
-                            <p className="text-xs text-text-sub-light">Author</p>
+                            <p className="text-sm font-bold text-text-main-light">{post.destinationName || 'Family travel tips'}</p>
+                            <p className="text-xs text-text-sub-light">
+                                {post.destinationId ? `Destination ID ${post.destinationId}` : 'No fictional byline'}
+                            </p>
                         </div>
                     </div>
 
                     <div className="flex items-center gap-1.5 text-sm text-text-sub-light">
                         <Calendar className="w-4 h-4" />
-                        <span>{formattedDate}</span>
+                        <span>Updated {formattedDate}</span>
                     </div>
 
                     <div className="flex items-center gap-1.5 text-sm text-text-sub-light">
@@ -305,6 +303,61 @@ export default function BlogPostPage({ params }: BlogPostPageProps) {
                 <div className="prose prose-lg max-w-none">
                     {renderContent(post.content)}
                 </div>
+
+                {post.places.length > 0 && (
+                    <section className="mt-12 border-t border-slate-100 pt-10">
+                        <h2 className="text-2xl md:text-3xl font-bold text-text-main-light mb-5">Places mentioned</h2>
+                        <div className="grid gap-4">
+                            {post.places.map(place => (
+                                <div key={place.name} className="rounded-2xl border border-slate-100 bg-white p-5 shadow-sm">
+                                    <h3 className="text-lg font-bold text-text-main-light">{place.name}</h3>
+                                    <p className="text-text-sub-light mt-1 mb-4">{place.description}</p>
+                                    <div className="flex flex-wrap gap-3">
+                                        <a
+                                            href={place.googleMapsUrl}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="inline-flex items-center gap-2 text-sm font-bold text-primary hover:underline underline-offset-4"
+                                        >
+                                            Google Maps
+                                            <ExternalLink className="w-3.5 h-3.5" />
+                                        </a>
+                                        {place.officialUrl && (
+                                            <a
+                                                href={place.officialUrl}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="inline-flex items-center gap-2 text-sm font-bold text-secondary hover:underline underline-offset-4"
+                                            >
+                                                Official site
+                                                <ExternalLink className="w-3.5 h-3.5" />
+                                            </a>
+                                        )}
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </section>
+                )}
+
+                <section className="mt-12 border-t border-slate-100 pt-10">
+                    <h2 className="text-2xl md:text-3xl font-bold text-text-main-light mb-5">Sources checked</h2>
+                    <ul className="grid gap-3">
+                        {post.sources.map(source => (
+                            <li key={source.url}>
+                                <a
+                                    href={source.url}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="inline-flex items-center gap-2 text-primary font-bold hover:underline underline-offset-4"
+                                >
+                                    {source.label}
+                                    <ExternalLink className="w-4 h-4" />
+                                </a>
+                            </li>
+                        ))}
+                    </ul>
+                </section>
 
                 {/* End of article decoration */}
                 <div className="flex items-center justify-center my-12">
