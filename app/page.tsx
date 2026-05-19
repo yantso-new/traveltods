@@ -33,6 +33,7 @@ export default function Home() {
   const handleFilterChange = (name: string) => {
     setActiveFilter(name);
     setIsFilterOpen(false);
+    setDisplayCount(INITIAL_DISPLAY_COUNT);
   };
 
   const selectedFilter = filters.find(f => f.name === activeFilter) || filters[0];
@@ -71,9 +72,11 @@ export default function Home() {
     name: `${m.name}, ${m.country}`
   }));
 
-  const allDestinations = dbDestinations.length > 0
-    ? dbDestinations
-    : formattedMocks.filter(m => (m.familyScore ?? 0) >= 80);
+  // Merge mocks + DB data, deduplicated by ID (DB takes precedence)
+  const destMap = new Map<string, Destination>();
+  formattedMocks.forEach(m => destMap.set(m.id, m));
+  dbDestinations.forEach(d => destMap.set(d.id, d));
+  const allDestinations = Array.from(destMap.values());
 
   const filteredDestinations = allDestinations.filter(d => {
     const matchesSearch = d.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -83,10 +86,21 @@ export default function Home() {
     if (!matchesSearch) return false;
 
     if (activeFilter === 'All') return true;
-    if (activeFilter === 'Safe') return d.metrics.safety >= 8;
-    if (activeFilter === 'Outdoors') return d.tags.some(t => ['Nature', 'Parks', 'Islands', 'Coastal'].includes(t));
-    if (activeFilter === 'Culture') return d.tags.some(t => ['Culture', 'Museums', 'History', 'Historic', 'Art'].includes(t));
-    if (activeFilter === 'Budget') return d.metrics.costAffordability >= 7;
+    if (activeFilter === 'Safe') {
+      return d.metrics.safety >= 7 || d.tags.some(t => t.toLowerCase().includes('safe'));
+    }
+    if (activeFilter === 'Outdoors') {
+      return d.metrics.nature >= 6 ||
+        d.metrics.playgrounds >= 6 ||
+        d.tags.some(t => ['Nature', 'Parks', 'Islands', 'Coastal', 'Beach', 'Tropical', 'Gardens', 'Outdoor', 'Active', 'Sunny', 'Wildlife', 'Mountains'].includes(t));
+    }
+    if (activeFilter === 'Culture') {
+      return d.metrics.kidActivities >= 6 ||
+        d.tags.some(t => ['Culture', 'Cultural', 'Museums', 'History', 'Historic', 'Art', 'Urban', 'Theme Parks', 'Kid-Friendly'].includes(t));
+    }
+    if (activeFilter === 'Budget') {
+      return d.metrics.costAffordability >= 5 || d.tags.some(t => t.toLowerCase().includes('budget'));
+    }
 
     return true;
   });
