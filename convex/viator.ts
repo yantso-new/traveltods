@@ -22,26 +22,29 @@ export const fetchActivities = action({
         destinationName: v.string(), // "City, Country" or just "City"
     },
     handler: async (ctx, args) => {
+        console.log(`[Viator Action] fetchActivities called for: ${args.destinationName}`);
+
         // 1. Get the destination from DB to check if we already have an ID
         const destination = await ctx.runQuery(api.destinations.getDestination, { name: args.destinationName });
 
         if (!destination) {
-            console.error(`Destination not found: ${args.destinationName}`);
+            console.error(`[Viator Action] Destination not found in DB: ${args.destinationName}`);
             return [];
         }
+        console.log(`[Viator Action] Found destination DB record: ${destination.name}, stored viatorId: ${destination.viatorDestinationId ?? "none"}`);
 
 
         // 2. Always look up the ID to ensure we use the latest mapping (fixes stale IDs)
-        console.log(`Looking up Viator ID for ${args.destinationName}...`);
         const query = args.destinationName.split(',')[0];
+        console.log(`[Viator Action] Looking up Viator ID for query: "${query}"`);
         const foundId = await getViatorDestinationId(query);
 
         let viatorId = destination.viatorDestinationId;
 
         if (foundId) {
-            console.log(`Found Viator ID: ${foundId}`);
+            console.log(`[Viator Action] Found Viator ID: ${foundId}`);
             if (viatorId !== foundId) {
-                console.log(`Updating stored ID from ${viatorId} to ${foundId}`);
+                console.log(`[Viator Action] Updating stored ID from ${viatorId} to ${foundId}`);
                 viatorId = foundId;
                 await ctx.runMutation(internal.viator.saveViatorId, {
                     id: destination._id,
@@ -49,18 +52,16 @@ export const fetchActivities = action({
                 });
             }
         } else if (!viatorId) {
-            console.log(`Could not find Viator ID for ${args.destinationName}`);
+            console.error(`[Viator Action] Could not find Viator ID for "${args.destinationName}" (query: "${query}")`);
             return [];
+        } else {
+            console.log(`[Viator Action] No cached lookup match, falling back to stored ID: ${viatorId}`);
         }
 
         // 3. Search for products
-        // Standard Family categories: 
-        // 21972 = Family-friendly
-        // 12057 = Kid Friendly
-        // We'll search without tags first to ensure results in sandbox, or try one.
-        // Sandbox data is limited.
-        console.log(`Searching products for ID: ${viatorId}`);
+        console.log(`[Viator Action] Searching products for Viator destination ID: ${viatorId}`);
         const products = await searchViatorProducts(viatorId);
+        console.log(`[Viator Action] Mapped ${products.length} products for ${args.destinationName}`);
 
         // 4. Map to our format (handles both v1 and v2 API response formats)
         return products.map((p: any) => ({

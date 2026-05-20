@@ -186,7 +186,7 @@ export function DestinationAutocomplete({
           className={
             isMinimal
               ? `w-full pl-10 pr-10 py-2.5 rounded-full border border-slate-200 bg-surface-light/80 focus:bg-surface-light focus:border-primary/50 focus:ring-2 focus:ring-primary/10 outline-none shadow-sm text-sm transition-all duration-200 placeholder:text-text-sub-light text-text-main-light font-medium ${isNavigating ? 'opacity-50 cursor-wait' : ''}`
-              : `w-full pl-12 pr-32 py-4 rounded-full border border-slate-200 bg-white/95 backdrop-blur focus:border-primary/50 focus:ring-4 focus:ring-primary/10 outline-none shadow-xl shadow-black/10 text-lg transition-all placeholder:text-text-sub-light text-text-main-light font-medium ${isNavigating ? 'opacity-50 cursor-wait' : ''}`
+              : `w-full pl-12 pr-24 md:pr-32 py-4 rounded-full border border-slate-200 bg-white/95 backdrop-blur focus:border-primary/50 focus:ring-4 focus:ring-primary/10 outline-none shadow-xl shadow-black/10 text-lg transition-all placeholder:text-text-sub-light text-text-main-light font-medium ${isNavigating ? 'opacity-50 cursor-wait' : ''}`
           }
           value={query}
           onChange={(e) => {
@@ -220,7 +220,7 @@ export function DestinationAutocomplete({
           <button
             onClick={handleSearchClick}
             disabled={(!hasValidSelection && !query.trim()) || isNavigating}
-            className={`absolute right-2 top-2 bottom-2 rounded-full px-6 flex items-center gap-2 transition-all duration-200 font-bold text-sm ${(hasValidSelection || query.trim()) && !isNavigating
+            className={`absolute right-2 top-2 bottom-2 rounded-full px-3 md:px-6 flex items-center gap-1 md:gap-2 transition-all duration-200 font-bold text-xs md:text-sm ${(hasValidSelection || query.trim()) && !isNavigating
               ? 'bg-primary hover:bg-primary-dark text-primary-foreground cursor-pointer shadow-md active:scale-[0.98]'
               : 'bg-muted text-muted-foreground cursor-not-allowed'
               }`}

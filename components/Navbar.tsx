@@ -102,24 +102,20 @@ export function Navbar() {
 
                     {/* Mobile Search Bar (Expandable) */}
                     <div className={`lg:hidden overflow-hidden transition-all duration-300 ease-in-out ${showSearch ? 'max-h-20 opacity-100 mt-3 pb-2' : 'max-h-0 opacity-0'}`}>
-                        <div className="relative">
-                            <DestinationAutocomplete
-                                placeholder="Search destinations..."
-                                className="w-full py-2 pl-10 pr-4 bg-surface-light/50 border-slate-200 focus:bg-surface-light shadow-sm rounded-full text-sm h-11"
-                                onSelect={(dest) => {
-                                    const destinationName = `${dest.name}, ${dest.country}`;
-                                    router.push(`/destination/${encodeURIComponent(destinationName)}`);
-                                    if (window.innerWidth < 1024) setShowSearch(false);
-                                }}
-                                onSearch={(query) => {
-                                    router.push(`/destination/${encodeURIComponent(query)}`);
-                                    if (window.innerWidth < 1024) setShowSearch(false);
-                                }}
-                            />
-                            <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-primary">
-                                <Search className="w-4 h-4" />
-                            </div>
-                        </div>
+                        <DestinationAutocomplete
+                            placeholder="Search destinations..."
+                            className="w-full"
+                            variant="minimal"
+                            onSelect={(dest) => {
+                                const destinationName = `${dest.name}, ${dest.country}`;
+                                router.push(`/destination/${encodeURIComponent(destinationName)}`);
+                                if (window.innerWidth < 1024) setShowSearch(false);
+                            }}
+                            onSearch={(query) => {
+                                router.push(`/destination/${encodeURIComponent(query)}`);
+                                if (window.innerWidth < 1024) setShowSearch(false);
+                            }}
+                        />
                     </div>
 
                     {/* Mobile Menu Dropdown */}

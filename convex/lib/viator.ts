@@ -18,10 +18,12 @@ import { KNOWN_DESTINATIONS } from "./viator_destinations";
 export const VIATOR_SANDBOX_URL = "https://api.sandbox.viator.com/partner";
 export const VIATOR_PRODUCTION_URL = "https://api.viator.com/partner";
 
-// Use sandbox by default, switch to production via env var
-export const VIATOR_BASE_URL = process.env.VIATOR_USE_PRODUCTION === "true"
-    ? VIATOR_PRODUCTION_URL
-    : VIATOR_SANDBOX_URL;
+function getViatorBaseUrl(): string {
+    const useProduction = process.env.VIATOR_USE_PRODUCTION === "true";
+    const url = useProduction ? VIATOR_PRODUCTION_URL : VIATOR_SANDBOX_URL;
+    console.log(`[Viator] Using ${useProduction ? "PRODUCTION" : "SANDBOX"} endpoint: ${url}`);
+    return url;
+}
 
 /**
  * Headers for Viator API requests (v2 format requires Accept header with version)
@@ -29,7 +31,9 @@ export const VIATOR_BASE_URL = process.env.VIATOR_USE_PRODUCTION === "true"
 function getHeaders() {
     const apiKey = process.env.VIATOR_API_KEY;
     if (!apiKey) {
-        throw new Error("VIATOR_API_KEY is not set");
+        const msg = "VIATOR_API_KEY is not set in Convex environment variables. Activities will not load. Set it via: npx convex env set VIATOR_API_KEY your_key";
+        console.error(`[Viator] ${msg}`);
+        throw new Error(msg);
     }
 
     return {
@@ -101,7 +105,8 @@ export async function searchViatorProducts(destinationId: number, tags: number[]
             requestBody.filtering.tags = tags;
         }
 
-        const response = await fetch(`${VIATOR_BASE_URL}/products/search`, {
+        const baseUrl = getViatorBaseUrl();
+        const response = await fetch(`${baseUrl}/products/search`, {
             method: "POST",
             headers: getHeaders(),
             body: JSON.stringify(requestBody)
@@ -109,15 +114,17 @@ export async function searchViatorProducts(destinationId: number, tags: number[]
 
         if (!response.ok) {
             const errorText = await response.text();
-            console.error("Viator product search failed:", errorText);
+            console.error(`[Viator] Product search HTTP ${response.status} failed for dest ${destinationId}:`, errorText.substring(0, 500));
             return [];
         }
 
         const data = await response.json();
-        return data.products || [];
+        const products = data.products || [];
+        console.log(`[Viator] Found ${products.length} products for destination ${destinationId}`);
+        return products;
 
-    } catch (error) {
-        console.error("Error fetching Viator products:", error);
+    } catch (error: any) {
+        console.error(`[Viator] Fatal error fetching products for dest ${destinationId}:`, error.message || error);
         return [];
     }
 }
