@@ -244,41 +244,46 @@ export const getAllCountries = query({
         // Group by country and calculate stats
         const countryMap = new Map<string, {
             count: number;
-            avgScore: number;
+            totalScore: number;
+            topScore: number;
             topDestination: string;
         }>();
 
-        destinations.forEach(dest => {
+        for (const dest of destinations) {
             const country = dest.country;
+            if (!country) continue;
+
+            const score = dest.allScores?.familyScore ?? 0;
+
             if (!countryMap.has(country)) {
                 countryMap.set(country, {
-                    count: 0,
-                    avgScore: 0,
+                    count: 1,
+                    totalScore: score,
+                    topScore: score,
                     topDestination: dest.name,
                 });
+            } else {
+                const stats = countryMap.get(country)!;
+                stats.count++;
+                stats.totalScore += score;
+                if (score > stats.topScore) {
+                    stats.topScore = score;
+                    stats.topDestination = dest.name;
+                }
             }
-            
-            const stats = countryMap.get(country)!;
-            stats.count++;
-            stats.avgScore += (dest.allScores?.familyScore || 0);
-            
-            // Update top destination if this one has higher score
-            if ((dest.allScores?.familyScore || 0) > 
-                (destinations.find(d => d.name === stats.topDestination)?.allScores?.familyScore || 0)) {
-                stats.topDestination = dest.name;
-            }
-        });
+        }
 
-        // Calculate averages and return
-        const countries = Array.from(countryMap.entries()).map(([country, stats]) => ({
-            name: country,
+        // Build result array
+        const countries = Array.from(countryMap.entries()).map(([name, stats]) => ({
+            name,
             destinationCount: stats.count,
-            avgFamilyScore: Math.round(stats.avgScore / stats.count),
+            avgFamilyScore: Math.round(stats.totalScore / stats.count),
             topDestination: stats.topDestination,
         }));
 
-        // Sort by destination count
-        return countries.sort((a, b) => b.destinationCount - a.destinationCount);
+        // Sort by destination count descending
+        countries.sort((a, b) => b.destinationCount - a.destinationCount);
+        return countries;
     },
 });
 
