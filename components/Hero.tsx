@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { DestinationAutocomplete } from '@/components/DestinationAutocomplete';
+import { LoadingOverlay } from '@/components/LoadingOverlay';
 
 interface HeroProps {
     onSearchTermChange: (term: string) => void;
@@ -11,6 +12,7 @@ interface HeroProps {
 export function Hero({ onSearchTermChange }: HeroProps) {
     const router = useRouter();
     const [searchOpacity, setSearchOpacity] = useState(1);
+    const [loadingDestination, setLoadingDestination] = useState<string | null>(null);
 
     useEffect(() => {
         const handleScroll = () => {
@@ -28,6 +30,9 @@ export function Hero({ onSearchTermChange }: HeroProps) {
 
     return (
         <section className="relative">
+            {loadingDestination && (
+                <LoadingOverlay isVisible={true} destinationName={loadingDestination} />
+            )}
             <div className="px-4 py-6 md:px-20 md:py-10 flex justify-center">
                 <div className="w-full max-w-7xl">
                     <div className="relative rounded-3xl bg-slate-900 shadow-2xl shadow-primary/10 transition-all duration-700">
@@ -60,10 +65,12 @@ export function Hero({ onSearchTermChange }: HeroProps) {
                                         className="w-full"
                                         onSelect={(dest) => {
                                             const destinationName = `${dest.name}, ${dest.country}`;
+                                            setLoadingDestination(destinationName);
                                             onSearchTermChange(destinationName);
                                             router.push(`/destination/${encodeURIComponent(destinationName)}`);
                                         }}
                                         onSearch={(query) => {
+                                            setLoadingDestination(query);
                                             onSearchTermChange(query);
                                             router.push(`/destination/${encodeURIComponent(query)}`);
                                         }}

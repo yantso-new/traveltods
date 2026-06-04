@@ -11,6 +11,7 @@
 import type * as crons from "../crons.js";
 import type * as destinations from "../destinations.js";
 import type * as lib_api_clients from "../lib/api_clients.js";
+import type * as lib_foursquare from "../lib/foursquare.js";
 import type * as lib_scores from "../lib/scores.js";
 import type * as lib_viator from "../lib/viator.js";
 import type * as lib_viator_destinations from "../lib/viator_destinations.js";
@@ -29,6 +30,7 @@ declare const fullApi: ApiFromModules<{
   crons: typeof crons;
   destinations: typeof destinations;
   "lib/api_clients": typeof lib_api_clients;
+  "lib/foursquare": typeof lib_foursquare;
   "lib/scores": typeof lib_scores;
   "lib/viator": typeof lib_viator;
   "lib/viator_destinations": typeof lib_viator_destinations;

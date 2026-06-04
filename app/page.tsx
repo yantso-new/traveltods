@@ -12,6 +12,8 @@ import { api } from '@/convex/_generated/api';
 import { Navbar } from '@/components/Navbar';
 import { Hero } from '@/components/Hero';
 import { BlogSection } from '@/components/BlogSection';
+import { Footer } from '@/components/Footer';
+import { BrowseByCountry } from '@/components/BrowseByCountry';
 
 const INITIAL_DISPLAY_COUNT = 12;
 
@@ -231,6 +233,22 @@ export default function Home() {
 
         {/* Blog Section */}
         <BlogSection />
+
+        {/* Browse by Country Section */}
+        <section className="py-16 px-4 md:px-20 bg-gradient-to-b from-orange-50/50 to-white">
+          <div className="max-w-7xl mx-auto">
+            <div className="text-center mb-12">
+              <h2 className="text-4xl md:text-5xl font-black text-text-main-light mb-4">
+                Browse by Country
+              </h2>
+              <p className="text-lg text-text-sub-light max-w-2xl mx-auto">
+                Explore family-friendly destinations organized by country
+              </p>
+            </div>
+
+            <BrowseByCountry />
+          </div>
+        </section>
       </main>
     </div>
   );

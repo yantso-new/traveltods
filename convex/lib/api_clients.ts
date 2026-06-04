@@ -706,3 +706,417 @@ function getAdvisoryText(level: 'none' | 'caution' | 'reconsider' | 'avoid'): st
         case 'avoid': return 'Do not travel';
     }
 }
+
+// ============================================================================
+// NEIGHBORHOOD & FAMILY SUGGESTIONS DATA
+// ============================================================================
+
+export interface Neighborhood {
+    name: string;
+    description?: string;
+    tag?: string;              // "Best Overall", "Budget Pick", "Quiet Area"
+    center: { lat: number; lon: number };
+    scores: {
+        parks: number;
+        cafes: number;
+        restaurants: number;
+        safety: number;
+        walkability: number;
+        affordability: number;
+    };
+}
+
+export interface FamilySuggestions {
+    freeActivities: SuggestionItem[];
+    downtime: SuggestionItem[];
+    cafes: VenueSuggestion[];
+    restaurants: VenueSuggestion[];
+}
+
+export interface SuggestionItem {
+    name: string;
+    description?: string;
+    type: string;              // "park", "playground", "museum", "beach", "library", "garden"
+    coordinates?: { lat: number; lon: number };
+    address?: string;
+}
+
+export interface VenueSuggestion {
+    name: string;
+    address: string;
+    rating?: number;
+    priceLevel?: string;       // "$", "$$", "$$$"
+    kidFeatures?: string[];    // ["high_chair", "play_area", "changing_table", "kids_menu"]
+    cuisine?: string;
+    hours?: string;
+    tips?: string;
+}
+
+/**
+ * Get neighborhoods for a city from OpenStreetMap admin boundaries
+ * Uses admin_level 8-10 which typically represent districts/neighborhoods
+ */
+export async function getNeighborhoods(lat: number, lon: number, cityName: string): Promise<Neighborhood[]> {
+    // Query for admin boundaries within the city
+    // admin_level=8 is typically districts/boroughs
+    // admin_level=9-10 are sub-neighborhoods
+    const query = `
+        [out:json][timeout:30];
+        area[name="${cityName}"]->.city;
+        (
+            relation["boundary"="administrative"]["admin_level"~"^[89]$"](area.city);
+        );
+        out tags center;
+    `;
+
+    const url = `https://overpass-api.de/api/interpreter?data=${encodeURIComponent(query)}`;
+
+    try {
+        const res = await fetch(url);
+        if (!res.ok) {
+            console.error(`Overpass neighborhoods error: ${res.status}`);
+            return [];
+        }
+
+        const data = await res.json();
+        const elements = data.elements || [];
+
+        if (elements.length === 0) {
+            console.log(`No neighborhoods found for ${cityName}, trying broader query...`);
+            return getNeighborhoodsFallback(lat, lon, cityName);
+        }
+
+        // Process each neighborhood
+        const neighborhoods: Neighborhood[] = [];
+        
+        for (const element of elements.slice(0, 12)) { // Limit to 12 neighborhoods
+            const name = element.tags?.name || element.tags?.['name:en'];
+            if (!name) continue;
+
+            const center = element.center || { lat, lon };
+            const neighborhoodLat = center.lat || lat;
+            const neighborhoodLon = center.lon || lon;
+
+            // Get local scores for this neighborhood
+            const localScores = await getNeighborhoodScores(neighborhoodLat, neighborhoodLon);
+
+            neighborhoods.push({
+                name,
+                center: { lat: neighborhoodLat, lon: neighborhoodLon },
+                scores: localScores,
+            });
+
+            // Rate limit
+            await new Promise(r => setTimeout(r, 500));
+        }
+
+        // Add tags based on scores
+        return tagNeighborhoods(neighborhoods);
+    } catch (e) {
+        console.error("Overpass neighborhoods error:", e);
+        return [];
+    }
+}
+
+/**
+ * Fallback: query with broader radius around city center
+ */
+async function getNeighborhoodsFallback(lat: number, lon: number, cityName: string): Promise<Neighborhood[]> {
+    const query = `
+        [out:json][timeout:30];
+        (
+            relation["boundary"="administrative"]["admin_level"~"^[89]$"](around:10000,${lat},${lon});
+        );
+        out tags center;
+    `;
+
+    const url = `https://overpass-api.de/api/interpreter?data=${encodeURIComponent(query)}`;
+
+    try {
+        const res = await fetch(url);
+        if (!res.ok) return [];
+
+        const data = await res.json();
+        const elements = data.elements || [];
+
+        const neighborhoods: Neighborhood[] = [];
+        
+        for (const element of elements.slice(0, 12)) {
+            const name = element.tags?.name || element.tags?.['name:en'];
+            if (!name) continue;
+
+            const center = element.center || { lat, lon };
+            const neighborhoodLat = center.lat || lat;
+            const neighborhoodLon = center.lon || lon;
+
+            const localScores = await getNeighborhoodScores(neighborhoodLat, neighborhoodLon);
+
+            neighborhoods.push({
+                name,
+                center: { lat: neighborhoodLat, lon: neighborhoodLon },
+                scores: localScores,
+            });
+
+            await new Promise(r => setTimeout(r, 500));
+        }
+
+        return tagNeighborhoods(neighborhoods);
+    } catch (e) {
+        console.error("Overpass neighborhoods fallback error:", e);
+        return [];
+    }
+}
+
+/**
+ * Calculate family-friendliness scores for a neighborhood
+ */
+async function getNeighborhoodScores(lat: number, lon: number, radius = 1500): Promise<Neighborhood['scores']> {
+    const query = `
+        [out:json][timeout:20];
+        (
+            node["leisure"="park"](around:${radius},${lat},${lon});
+            node["leisure"="playground"](around:${radius},${lat},${lon});
+            node["amenity"="cafe"](around:${radius},${lat},${lon});
+            node["amenity"="restaurant"](around:${radius},${lat},${lon});
+            node["amenity"="police"](around:${radius},${lat},${lon});
+            node["highway"="street_lamp"](around:${radius},${lat},${lon});
+            way["highway"="footway"](around:${radius},${lat},${lon});
+            way["highway"="pedestrian"](around:${radius},${lat},${lon});
+        );
+        out body;
+    `;
+
+    const url = `https://overpass-api.de/api/interpreter?data=${encodeURIComponent(query)}`;
+
+    try {
+        const res = await fetch(url);
+        if (!res.ok) {
+            return { parks: 5, cafes: 5, restaurants: 5, safety: 7, walkability: 6, affordability: 6 };
+        }
+
+        const data = await res.json();
+        const elements = data.elements || [];
+
+        const parks = elements.filter((e: any) => e.tags?.leisure === 'park' || e.tags?.leisure === 'playground').length;
+        const cafes = elements.filter((e: any) => e.tags?.amenity === 'cafe').length;
+        const restaurants = elements.filter((e: any) => e.tags?.amenity === 'restaurant').length;
+        const police = elements.filter((e: any) => e.tags?.amenity === 'police').length;
+        const lighting = elements.filter((e: any) => e.tags?.highway === 'street_lamp').length;
+        const footways = elements.filter((e: any) => e.tags?.highway === 'footway' || e.tags?.highway === 'pedestrian').length;
+
+        // Normalize to 0-10 scale
+        const parksScore = Math.min(10, Math.round((parks / 8) * 10));
+        const cafesScore = Math.min(10, Math.round((cafes / 15) * 10));
+        const restaurantsScore = Math.min(10, Math.round((restaurants / 20) * 10));
+        const safetyScore = Math.min(10, Math.round(((police * 2 + lighting / 50) / 3) * 10));
+        const walkabilityScore = Math.min(10, Math.round((footways / 30) * 10));
+        const affordabilityScore = 6; // Default - would need cost data per neighborhood
+
+        return {
+            parks: parksScore,
+            cafes: cafesScore,
+            restaurants: restaurantsScore,
+            safety: safetyScore,
+            walkability: walkabilityScore,
+            affordability: affordabilityScore,
+        };
+    } catch (e) {
+        console.error("Neighborhood scores error:", e);
+        return { parks: 5, cafes: 5, restaurants: 5, safety: 7, walkability: 6, affordability: 6 };
+    }
+}
+
+/**
+ * Add tags to neighborhoods based on their scores
+ */
+function tagNeighborhoods(neighborhoods: Neighborhood[]): Neighborhood[] {
+    if (neighborhoods.length === 0) return [];
+
+    // Calculate overall scores
+    const scored = neighborhoods.map(n => {
+        const overall = (
+            n.scores.parks +
+            n.scores.cafes +
+            n.scores.restaurants +
+            n.scores.safety +
+            n.scores.walkability +
+            n.scores.affordability
+        ) / 6;
+        return { ...n, overall };
+    });
+
+    // Sort by overall score
+    scored.sort((a, b) => b.overall - a.overall);
+
+    // Tag the best one
+    if (scored[0]) scored[0].tag = "Best Overall";
+
+    // Find budget pick (highest affordability with decent scores)
+    const budgetPick = scored.find(n => n.scores.affordability >= 7 && n.overall >= 5);
+    if (budgetPick) budgetPick.tag = "Budget Pick";
+
+    // Find quiet area (high parks, lower restaurants/cafes)
+    const quietArea = scored.find(n => 
+        n.scores.parks >= 7 && 
+        n.scores.restaurants < 6 && 
+        !n.tag
+    );
+    if (quietArea) quietArea.tag = "Quiet Area";
+
+    // Add descriptions based on characteristics
+    return scored.map(n => {
+        let description = "";
+        const features: string[] = [];
+        
+        if (n.scores.parks >= 8) features.push("many parks");
+        if (n.scores.cafes >= 8) features.push("great cafés");
+        if (n.scores.restaurants >= 8) features.push("lots of restaurants");
+        if (n.scores.safety >= 8) features.push("very safe");
+        if (n.scores.walkability >= 8) features.push("very walkable");
+        if (n.scores.affordability >= 8) features.push("affordable");
+
+        if (features.length > 0) {
+            description = `Known for ${features.slice(0, 3).join(', ')}.`;
+        }
+
+        // Strip out the overall field before returning (not in schema)
+        const { overall, ...rest } = n;
+        return { ...rest, description };
+    });
+}
+
+/**
+ * Get family-friendly suggestions from OpenStreetMap
+ * Free activities, downtime spots, cafes, restaurants
+ */
+export async function getFamilySuggestions(lat: number, lon: number, radius = 3000): Promise<FamilySuggestions> {
+    const query = `
+        [out:json][timeout:30];
+        (
+            /* Free Activities: Parks, playgrounds, beaches, viewpoints */
+            node["leisure"="park"](around:${radius},${lat},${lon});
+            node["leisure"="playground"](around:${radius},${lat},${lon});
+            node["natural"="beach"](around:${radius},${lat},${lon});
+            node["tourism"="viewpoint"](around:${radius},${lat},${lon});
+            node["tourism"="museum"]["fee"="no"](around:${radius},${lat},${lon});
+            
+            /* Downtime: Libraries, gardens, quiet spaces */
+            node["amenity"="library"](around:${radius},${lat},${lon});
+            node["leisure"="garden"](around:${radius},${lat},${lon});
+            node["tourism"="attraction"]["leisure"="garden"](around:${radius},${lat},${lon});
+            
+            /* Cafes & Restaurants */
+            node["amenity"="cafe"](around:${radius},${lat},${lon});
+            node["amenity"="restaurant"](around:${radius},${lat},${lon});
+        );
+        out body;
+    `;
+
+    const url = `https://overpass-api.de/api/interpreter?data=${encodeURIComponent(query)}`;
+
+    try {
+        const res = await fetch(url);
+        if (!res.ok) {
+            console.error(`Overpass family suggestions error: ${res.status}`);
+            return { freeActivities: [], downtime: [], cafes: [], restaurants: [] };
+        }
+
+        const data = await res.json();
+        const elements = data.elements || [];
+
+        // Categorize results
+        const freeActivities: SuggestionItem[] = [];
+        const downtime: SuggestionItem[] = [];
+        const cafes: VenueSuggestion[] = [];
+        const restaurants: VenueSuggestion[] = [];
+
+        elements.forEach((e: any) => {
+            const name = e.tags?.name || e.tags?.['name:en'];
+            if (!name) return;
+
+            const coords = e.lat && e.lon ? { lat: e.lat, lon: e.lon } : undefined;
+            const address = e.tags?.['addr:street'] 
+                ? `${e.tags['addr:housenumber'] || ''} ${e.tags['addr:street']}`.trim()
+                : undefined;
+
+            // Free activities
+            if (e.tags?.leisure === 'park' || e.tags?.leisure === 'playground') {
+                freeActivities.push({
+                    name,
+                    type: e.tags.leisure,
+                    coordinates: coords,
+                    address,
+                });
+            } else if (e.tags?.natural === 'beach') {
+                freeActivities.push({
+                    name,
+                    type: 'beach',
+                    coordinates: coords,
+                    address,
+                });
+            } else if (e.tags?.tourism === 'viewpoint') {
+                freeActivities.push({
+                    name,
+                    type: 'viewpoint',
+                    description: e.tags?.description,
+                    coordinates: coords,
+                });
+            } else if (e.tags?.tourism === 'museum' && e.tags?.fee === 'no') {
+                freeActivities.push({
+                    name,
+                    type: 'museum',
+                    description: 'Free admission',
+                    coordinates: coords,
+                    address,
+                });
+            }
+
+            // Downtime
+            if (e.tags?.amenity === 'library') {
+                downtime.push({
+                    name,
+                    type: 'library',
+                    coordinates: coords,
+                    address,
+                });
+            } else if (e.tags?.leisure === 'garden') {
+                downtime.push({
+                    name,
+                    type: 'garden',
+                    coordinates: coords,
+                    address,
+                });
+            }
+
+            // Cafes
+            if (e.tags?.amenity === 'cafe') {
+                cafes.push({
+                    name,
+                    address: address || '',
+                    cuisine: e.tags?.cuisine,
+                    hours: e.tags?.opening_hours,
+                });
+            }
+
+            // Restaurants
+            if (e.tags?.amenity === 'restaurant') {
+                restaurants.push({
+                    name,
+                    address: address || '',
+                    cuisine: e.tags?.cuisine,
+                    hours: e.tags?.opening_hours,
+                });
+            }
+        });
+
+        return {
+            freeActivities: freeActivities.slice(0, 10),
+            downtime: downtime.slice(0, 8),
+            cafes: cafes.slice(0, 10),
+            restaurants: restaurants.slice(0, 10),
+        };
+    } catch (e) {
+        console.error("Family suggestions error:", e);
+        return { freeActivities: [], downtime: [], cafes: [], restaurants: [] };
+    }
+}

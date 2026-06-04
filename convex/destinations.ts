@@ -17,7 +17,10 @@ import {
     getOpenMeteoClimate,
     getSafetyInfrastructure,
     getTravelAdvisory,
+    getNeighborhoods,
+    getFamilySuggestions,
 } from "./lib/api_clients";
+import { searchFamilyVenues } from "./lib/foursquare";
 
 // Mutation to save or update a destination (updated for new schema)
 export const saveDestination = mutation({
@@ -85,6 +88,56 @@ export const saveDestination = mutation({
         shortDescription: v.optional(v.string()),
         tags: v.optional(v.array(v.string())),
         image: v.optional(v.string()),
+        suggestions: v.optional(v.object({
+            freeActivities: v.array(v.object({
+                name: v.string(),
+                type: v.string(),
+                description: v.optional(v.string()),
+                address: v.optional(v.string()),
+                coordinates: v.optional(v.object({ lat: v.number(), lon: v.number() })),
+            })),
+            downtime: v.array(v.object({
+                name: v.string(),
+                type: v.string(),
+                description: v.optional(v.string()),
+                address: v.optional(v.string()),
+                coordinates: v.optional(v.object({ lat: v.number(), lon: v.number() })),
+            })),
+            cafes: v.array(v.object({
+                name: v.string(),
+                address: v.string(),
+                rating: v.optional(v.number()),
+                priceLevel: v.optional(v.string()),
+                kidFeatures: v.optional(v.array(v.string())),
+                cuisine: v.optional(v.string()),
+                hours: v.optional(v.string()),
+                tips: v.optional(v.string()),
+            })),
+            restaurants: v.array(v.object({
+                name: v.string(),
+                address: v.string(),
+                rating: v.optional(v.number()),
+                priceLevel: v.optional(v.string()),
+                kidFeatures: v.optional(v.array(v.string())),
+                cuisine: v.optional(v.string()),
+                hours: v.optional(v.string()),
+                tips: v.optional(v.string()),
+            })),
+        })),
+        neighborhoods: v.optional(v.array(v.object({
+            name: v.string(),
+            description: v.optional(v.string()),
+            tag: v.optional(v.string()),
+            center: v.object({ lat: v.number(), lon: v.number() }),
+            scores: v.object({
+                parks: v.number(),
+                cafes: v.number(),
+                restaurants: v.number(),
+                safety: v.number(),
+                walkability: v.number(),
+                affordability: v.number(),
+            }),
+        }))),
     },
     handler: async (ctx, args) => {
         const existing = await ctx.db
@@ -167,6 +220,68 @@ export const getTop100Destinations = query({
     },
 });
 
+// Get all destinations for a specific country
+export const getDestinationsByCountry = query({
+    args: { country: v.string() },
+    handler: async (ctx, args) => {
+        const destinations = await ctx.db
+            .query("destinations")
+            .withIndex("by_country", (q) => q.eq("country", args.country))
+            .collect();
+
+        // Sort by family score
+        return destinations.sort((a, b) => 
+            (b.allScores?.familyScore || 0) - (a.allScores?.familyScore || 0)
+        );
+    },
+});
+
+// Get all unique countries
+export const getAllCountries = query({
+    handler: async (ctx) => {
+        const destinations = await ctx.db.query("destinations").collect();
+        
+        // Group by country and calculate stats
+        const countryMap = new Map<string, {
+            count: number;
+            avgScore: number;
+            topDestination: string;
+        }>();
+
+        destinations.forEach(dest => {
+            const country = dest.country;
+            if (!countryMap.has(country)) {
+                countryMap.set(country, {
+                    count: 0,
+                    avgScore: 0,
+                    topDestination: dest.name,
+                });
+            }
+            
+            const stats = countryMap.get(country)!;
+            stats.count++;
+            stats.avgScore += (dest.allScores?.familyScore || 0);
+            
+            // Update top destination if this one has higher score
+            if ((dest.allScores?.familyScore || 0) > 
+                (destinations.find(d => d.name === stats.topDestination)?.allScores?.familyScore || 0)) {
+                stats.topDestination = dest.name;
+            }
+        });
+
+        // Calculate averages and return
+        const countries = Array.from(countryMap.entries()).map(([country, stats]) => ({
+            name: country,
+            destinationCount: stats.count,
+            avgFamilyScore: Math.round(stats.avgScore / stats.count),
+            topDestination: stats.topDestination,
+        }));
+
+        // Sort by destination count
+        return countries.sort((a, b) => b.destinationCount - a.destinationCount);
+    },
+});
+
 // Increment search count when a destination is viewed
 export const incrementSearchCount = mutation({
     args: { name: v.string() },
@@ -245,16 +360,22 @@ export const gatherDestination = action({
             costData,
             weatherData,
             safetyData,
-            advisoryData
+            advisoryData,
+            neighborhoodsData,
+            suggestionsData,
+            familyVenuesData
         ] = await Promise.all([
             getOverpassData(coords.lat, coords.lon),
             getOpenTripMapData(coords.lat, coords.lon),
             getWikipediaData(args.city, args.country),
             getUnsplashCityImage(args.city, args.country),
-            getTravelTablesData(args.city, args.country),       // NEW
-            getOpenMeteoClimate(coords.lat, coords.lon),        // NEW
-            getSafetyInfrastructure(coords.lat, coords.lon),    // NEW
-            getTravelAdvisory(args.country),                     // NEW
+            getTravelTablesData(args.city, args.country),
+            getOpenMeteoClimate(coords.lat, coords.lon),
+            getSafetyInfrastructure(coords.lat, coords.lon),
+            getTravelAdvisory(args.country),
+            getNeighborhoods(coords.lat, coords.lon, args.city),
+            getFamilySuggestions(coords.lat, coords.lon),
+            searchFamilyVenues(coords.lat, coords.lon, "both"),
         ]);
 
         // 3. Construct Score Inputs with all new data
@@ -362,6 +483,17 @@ export const gatherDestination = action({
             shortDescription,
             tags,
             image: cityImage,
+            suggestions: {
+                freeActivities: suggestionsData.freeActivities.slice(0, 8),
+                downtime: suggestionsData.downtime.slice(0, 6),
+                cafes: familyVenuesData.success 
+                    ? familyVenuesData.venues.filter(v => v.categories.some(c => c.toLowerCase().includes('cafe') || c.toLowerCase().includes('coffee'))).slice(0, 8)
+                    : suggestionsData.cafes.slice(0, 8),
+                restaurants: familyVenuesData.success
+                    ? familyVenuesData.venues.filter(v => v.categories.some(c => c.toLowerCase().includes('restaurant'))).slice(0, 8)
+                    : suggestionsData.restaurants.slice(0, 8),
+            },
+            neighborhoods: neighborhoodsData.slice(0, 10),
         });
 
         // 8. Increment search count

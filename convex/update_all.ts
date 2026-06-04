@@ -165,6 +165,58 @@ export const refreshTop100Destinations = action({
     },
 });
 
+/**
+ * Batch update: Populate suggestions and neighborhoods for destinations missing them
+ */
+export const populateNewFields = action({
+    args: {
+        batchSize: v.optional(v.number()), // How many to process per run (default: 10)
+    },
+    handler: async (ctx, args) => {
+        const destinations: any[] = await ctx.runQuery(api.destinations.getAllDestinations);
+        const batchSize = args.batchSize || 10;
+        
+        // Filter to destinations missing suggestions or neighborhoods
+        const needsUpdate: any[] = destinations.filter((d: any) => 
+            !d.suggestions || 
+            !d.neighborhoods || 
+            d.neighborhoods.length === 0
+        );
+        
+        console.log(`Found ${needsUpdate.length} destinations missing new fields`);
+        console.log(`Processing batch of ${Math.min(batchSize, needsUpdate.length)}...`);
+        
+        let successCount = 0;
+        let failCount = 0;
+        const processed = needsUpdate.slice(0, batchSize);
+        
+        for (const dest of processed) {
+            try {
+                console.log(`Updating ${dest.name}...`);
+                await refreshDestination(ctx, dest);
+                successCount++;
+                
+                // Rate limit: 3 seconds between API calls (more conservative)
+                await new Promise(r => setTimeout(r, 3000));
+            } catch (e) {
+                console.error(`Failed to update ${dest.name}:`, e);
+                failCount++;
+            }
+        }
+        
+        const remaining: number = needsUpdate.length - processed.length;
+        console.log(`Batch update complete. Success: ${successCount}, Failed: ${failCount}, Remaining: ${remaining}`);
+        
+        return { 
+            success: true, 
+            successCount, 
+            failCount, 
+            remaining,
+            total: needsUpdate.length 
+        };
+    },
+});
+
 // Keep the old internal action for backwards compatibility with existing cron
 export const refreshAllDestinationsInternal = internalAction({
     args: {},

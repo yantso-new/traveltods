@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { Destination, DestinationMetrics } from '@/types';
 import { Card } from '@/components/ui';
 import { Heart } from 'lucide-react';
@@ -9,6 +10,7 @@ interface Props {
 }
 
 export const DestinationCard: React.FC<Props> = ({ destination, onClick }) => {
+  const router = useRouter();
   const [isSaved, setIsSaved] = useState(false);
 
   useEffect(() => {
@@ -115,7 +117,15 @@ export const DestinationCard: React.FC<Props> = ({ destination, onClick }) => {
             </div>
           </div>
           <div className="flex items-center gap-1 text-text-sub-light mt-1">
-            <span className="text-sm font-medium">{destination.country}</span>
+            <button 
+              onClick={(e) => {
+                e.stopPropagation();
+                router.push(`/country/${encodeURIComponent(destination.country)}`);
+              }}
+              className="text-sm font-medium hover:text-primary cursor-pointer transition-colors"
+            >
+              {destination.country}
+            </button>
           </div>
         </div>
 

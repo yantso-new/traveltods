@@ -84,7 +84,62 @@ export default defineSchema({
         image: v.optional(v.string()),
         viatorDestinationId: v.optional(v.number()),
         lastUpdated: v.number(),
+
+        // Family-friendly suggestions (parks, cafes, restaurants, downtime spots)
+        suggestions: v.optional(v.object({
+            freeActivities: v.array(v.object({
+                name: v.string(),
+                type: v.string(),
+                description: v.optional(v.string()),
+                address: v.optional(v.string()),
+                coordinates: v.optional(v.object({ lat: v.number(), lon: v.number() })),
+            })),
+            downtime: v.array(v.object({
+                name: v.string(),
+                type: v.string(),
+                description: v.optional(v.string()),
+                address: v.optional(v.string()),
+                coordinates: v.optional(v.object({ lat: v.number(), lon: v.number() })),
+            })),
+            cafes: v.array(v.object({
+                name: v.string(),
+                address: v.string(),
+                rating: v.optional(v.number()),
+                priceLevel: v.optional(v.string()),
+                kidFeatures: v.optional(v.array(v.string())),
+                cuisine: v.optional(v.string()),
+                hours: v.optional(v.string()),
+                tips: v.optional(v.string()),
+            })),
+            restaurants: v.array(v.object({
+                name: v.string(),
+                address: v.string(),
+                rating: v.optional(v.number()),
+                priceLevel: v.optional(v.string()),
+                kidFeatures: v.optional(v.array(v.string())),
+                cuisine: v.optional(v.string()),
+                hours: v.optional(v.string()),
+                tips: v.optional(v.string()),
+            })),
+        })),
+
+        // Neighborhoods/areas within the city
+        neighborhoods: v.optional(v.array(v.object({
+            name: v.string(),
+            description: v.optional(v.string()),
+            tag: v.optional(v.string()),
+            center: v.object({ lat: v.number(), lon: v.number() }),
+            scores: v.object({
+                parks: v.number(),
+                cafes: v.number(),
+                restaurants: v.number(),
+                safety: v.number(),
+                walkability: v.number(),
+                affordability: v.number(),
+            }),
+        }))),
     })
         .index("by_name", ["name"])
-        .index("by_last_updated", ["lastUpdated"]),
+        .index("by_last_updated", ["lastUpdated"])
+        .index("by_country", ["country"]),
 });

@@ -69,7 +69,7 @@ export function DestinationAutocomplete({
 
     try {
       const response = await fetch(
-        `https://api.geoapify.com/v1/geocode/autocomplete?text=${encodeURIComponent(searchText)}&type=city&limit=5&apiKey=${API_KEY}`
+        `https://api.geoapify.com/v1/geocode/autocomplete?text=${encodeURIComponent(searchText)}&type=city&limit=15&apiKey=${API_KEY}`
       );
 
       if (!response.ok) throw new Error('Failed to fetch suggestions');
@@ -151,11 +151,6 @@ export function DestinationAutocomplete({
         e.preventDefault();
         if (highlightedIndex >= 0 && suggestions[highlightedIndex]) {
           handleSelect(suggestions[highlightedIndex]);
-        } else if (query.trim()) {
-          // Allow search even if not selected from list (free text) regarding user intent
-          setIsNavigating(true);
-          onSearch(query);
-          setIsOpen(false);
         }
         break;
       case 'Escape':
@@ -166,10 +161,8 @@ export function DestinationAutocomplete({
   };
 
   const handleSearchClick = () => {
-    if (query.trim()) {
-      setIsOpen(false);
-      setIsNavigating(true);
-      onSearch(query);
+    if (highlightedIndex >= 0 && suggestions[highlightedIndex]) {
+      handleSelect(suggestions[highlightedIndex]);
     }
   };
 
@@ -219,8 +212,8 @@ export function DestinationAutocomplete({
         {!isMinimal && (
           <button
             onClick={handleSearchClick}
-            disabled={(!hasValidSelection && !query.trim()) || isNavigating}
-            className={`absolute right-2 top-2 bottom-2 rounded-full px-3 md:px-6 flex items-center gap-1 md:gap-2 transition-all duration-200 font-bold text-xs md:text-sm ${(hasValidSelection || query.trim()) && !isNavigating
+            disabled={!hasValidSelection || isNavigating}
+            className={`absolute right-2 top-2 bottom-2 rounded-full px-3 md:px-6 flex items-center gap-1 md:gap-2 transition-all duration-200 font-bold text-xs md:text-sm ${hasValidSelection && !isNavigating
               ? 'bg-primary hover:bg-primary-dark text-primary-foreground cursor-pointer shadow-md active:scale-[0.98]'
               : 'bg-muted text-muted-foreground cursor-not-allowed'
               }`}

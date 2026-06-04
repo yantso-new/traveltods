@@ -18,11 +18,13 @@ import {
     Info,
     Ticket,
     ExternalLink,
-    ShoppingBag
+    ShoppingBag,
+    MapPin
 } from 'lucide-react';
 // ChatMessage type removed
 import { Button, Badge, ProgressBar, Card, LoadingSpinner, Tooltip } from '@/components/ui';
 import { Navbar } from '@/components/Navbar';
+import { LoadingOverlay } from '@/components/LoadingOverlay';
 
 import { ResponsiveContainer, RadarChart, PolarGrid, PolarAngleAxis, Radar, Tooltip as ChartTooltip } from 'recharts';
 
@@ -114,42 +116,12 @@ export default function DestinationDetails() {
             .catch(console.error);
     }, [id, destination, checkAndRefreshIfStale, incrementSearchCount]);
 
-    // Show skeleton if undefined (connecting) or gathering
+    // Show loading overlay while connecting or gathering data
     if (destination === undefined || isGathering) {
         return (
             <div className="min-h-screen bg-background-light">
                 <Navbar />
-                {/* Hero Skeleton */}
-                <div className="h-[40vh] md:h-[50vh] bg-slate-200 animate-pulse relative">
-                    <div className="absolute bottom-20 left-4 md:left-20 w-1/3 h-12 bg-white/20 rounded-lg" />
-                </div>
-
-                <div className="px-4 md:px-20 -mt-10 relative z-10 flex justify-center">
-                    <div className="w-full max-w-7xl grid grid-cols-1 lg:grid-cols-3 gap-8">
-                        <div className="lg:col-span-2 space-y-8">
-                            <Card className="p-8 h-64 bg-white animate-pulse">
-                                <div className="h-full w-full" />
-                            </Card>
-                            <Card className="p-8 h-96 bg-white animate-pulse">
-                                <div className="h-full w-full" />
-                            </Card>
-                        </div>
-                        <div className="space-y-8">
-                            <Card className="p-6 h-80 bg-white animate-pulse">
-                                <div className="h-full w-full" />
-                            </Card>
-                            <Card className="p-6 h-48 bg-white animate-pulse">
-                                <div className="h-full w-full" />
-                            </Card>
-                        </div>
-                    </div>
-                </div>
-                {isGathering && (
-                    <div className="fixed bottom-10 left-1/2 -translate-x-1/2 bg-primary text-white px-6 py-3 rounded-full shadow-2xl flex items-center gap-3 z-50">
-                        <LoadingSpinner />
-                        <span className="font-bold">Locating data for {id}...</span>
-                    </div>
-                )}
+                <LoadingOverlay isVisible={true} destinationName={id} />
             </div>
         );
     }
@@ -193,10 +165,13 @@ export default function DestinationDetails() {
                             <span className="text-white">Destination</span>
                         </div>
 
-                        <div className="inline-flex items-center gap-2 px-3 py-1 mb-4 rounded-full bg-gradient-to-r from-primary to-primary-dark text-white border border-white/10 shadow-lg shadow-primary/40 backdrop-blur-md text-xs font-extrabold uppercase tracking-wider">
+                        <Link 
+                            href={`/country/${encodeURIComponent(destination.country)}`}
+                            className="inline-flex items-center gap-2 px-3 py-1 mb-4 rounded-full bg-gradient-to-r from-primary to-primary-dark text-white border border-white/10 shadow-lg shadow-primary/40 backdrop-blur-md text-xs font-extrabold uppercase tracking-wider hover:scale-105 transition-transform cursor-pointer"
+                        >
                             <span className="material-symbols-outlined text-sm">public</span>
                             {destination.country}
-                        </div>
+                        </Link>
                         <h1 className="text-4xl md:text-6xl font-black text-white mb-4 drop-shadow-md tracking-tight leading-none">{destination.name}</h1>
                         <p className="text-white/90 text-lg md:text-xl max-w-2xl font-medium leading-relaxed drop-shadow-sm">{destination.shortDescription}</p>
                     </div>
@@ -380,7 +355,220 @@ export default function DestinationDetails() {
                 </div>
             </div>
 
-            {/* NEW: Book Activities Section */}
+            {/* Neighborhoods Section */}
+            {destination.neighborhoods && destination.neighborhoods.length > 0 && (
+                <div className="px-4 md:px-20 mt-16 flex justify-center">
+                    <div className="w-full max-w-7xl">
+                        <div className="mb-8">
+                            <div className="inline-flex items-center gap-1.5 px-3 py-1 mb-4 rounded-full bg-primary/10 text-primary border border-primary/20 text-[10px] font-black uppercase tracking-widest">
+                                <MapPin className="w-3 h-3" />
+                                Local Guide
+                            </div>
+                            <h2 className="text-3xl font-black text-text-main-light mb-2">Best Neighborhoods for Families</h2>
+                            <p className="text-text-sub-light text-lg">Where to stay in <span className="text-primary font-bold">{destination.name}</span></p>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            {destination.neighborhoods.slice(0, 6).map((hood: any) => (
+                                <Card key={hood.name} className="p-6 hover:shadow-xl transition-all duration-300">
+                                    <div className="flex items-start justify-between mb-4">
+                                        <div>
+                                            <h3 className="text-xl font-bold text-text-main-light mb-1">{hood.name}</h3>
+                                            {hood.tag && (
+                                                <Badge variant="subtle-primary" className="text-xs">{hood.tag}</Badge>
+                                            )}
+                                        </div>
+                                    </div>
+
+                                    <div className="space-y-3">
+                                        <div className="flex items-center justify-between">
+                                            <span className="text-sm text-text-sub-light">Parks & Playgrounds</span>
+                                            <div className="flex items-center gap-1">
+                                                <Trees className="w-4 h-4 text-green-500" />
+                                                <span className="font-bold text-sm">{hood.scores.parks}/10</span>
+                                            </div>
+                                        </div>
+                                        <div className="flex items-center justify-between">
+                                            <span className="text-sm text-text-sub-light">Cafés</span>
+                                            <div className="flex items-center gap-1">
+                                                <Utensils className="w-4 h-4 text-orange-500" />
+                                                <span className="font-bold text-sm">{hood.scores.cafes}/10</span>
+                                            </div>
+                                        </div>
+                                        <div className="flex items-center justify-between">
+                                            <span className="text-sm text-text-sub-light">Restaurants</span>
+                                            <div className="flex items-center gap-1">
+                                                <Utensils className="w-4 h-4 text-red-500" />
+                                                <span className="font-bold text-sm">{hood.scores.restaurants}/10</span>
+                                            </div>
+                                        </div>
+                                        <div className="flex items-center justify-between">
+                                            <span className="text-sm text-text-sub-light">Safety</span>
+                                            <div className="flex items-center gap-1">
+                                                <ShieldCheck className="w-4 h-4 text-emerald-500" />
+                                                <span className="font-bold text-sm">{hood.scores.safety}/10</span>
+                                            </div>
+                                        </div>
+                                        <div className="flex items-center justify-between">
+                                            <span className="text-sm text-text-sub-light">Walkability</span>
+                                            <div className="flex items-center gap-1">
+                                                <Footprints className="w-4 h-4 text-blue-500" />
+                                                <span className="font-bold text-sm">{hood.scores.walkability}/10</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </Card>
+                            ))}
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Local Suggestions Section */}
+            {destination.suggestions && (
+                <div className="px-4 md:px-20 mt-16 flex justify-center">
+                    <div className="w-full max-w-7xl">
+                        <div className="mb-8">
+                            <div className="inline-flex items-center gap-1.5 px-3 py-1 mb-4 rounded-full bg-accent/10 text-accent border border-accent/20 text-[10px] font-black uppercase tracking-widest">
+                                <Smile className="w-3 h-3" />
+                                Parent Approved
+                            </div>
+                            <h2 className="text-3xl font-black text-text-main-light mb-2">Family-Friendly Spots</h2>
+                            <p className="text-text-sub-light text-lg">Curated recommendations in <span className="text-primary font-bold">{destination.name}</span></p>
+                        </div>
+
+                        {/* Free Activities */}
+                        {destination.suggestions.freeActivities && destination.suggestions.freeActivities.length > 0 && (
+                            <div className="mb-12">
+                                <h3 className="text-2xl font-bold text-text-main-light mb-4 flex items-center gap-2">
+                                    <Trees className="w-6 h-6 text-green-500" />
+                                    Free Activities & Parks
+                                </h3>
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                    {destination.suggestions.freeActivities.slice(0, 6).map((activity: any, idx: number) => (
+                                        <Card key={idx} className="p-4 hover:shadow-md transition-all">
+                                            <div className="flex items-start gap-3">
+                                                <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                                                    <Trees className="w-5 h-5 text-green-600" />
+                                                </div>
+                                                <div className="flex-1">
+                                                    <h4 className="font-bold text-text-main-light mb-1">{activity.name}</h4>
+                                                    <p className="text-xs text-text-sub-light capitalize mb-2">{activity.type}</p>
+                                                    {activity.description && (
+                                                        <p className="text-sm text-text-sub-light line-clamp-2">{activity.description}</p>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        </Card>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Downtime Spots */}
+                        {destination.suggestions.downtime && destination.suggestions.downtime.length > 0 && (
+                            <div className="mb-12">
+                                <h3 className="text-2xl font-bold text-text-main-light mb-4 flex items-center gap-2">
+                                    <CloudSun className="w-6 h-6 text-blue-500" />
+                                    Quiet Downtime Spots
+                                </h3>
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                    {destination.suggestions.downtime.slice(0, 6).map((spot: any, idx: number) => (
+                                        <Card key={idx} className="p-4 hover:shadow-md transition-all">
+                                            <div className="flex items-start gap-3">
+                                                <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                                                    <CloudSun className="w-5 h-5 text-blue-600" />
+                                                </div>
+                                                <div className="flex-1">
+                                                    <h4 className="font-bold text-text-main-light mb-1">{spot.name}</h4>
+                                                    <p className="text-xs text-text-sub-light capitalize mb-2">{spot.type}</p>
+                                                    {spot.description && (
+                                                        <p className="text-sm text-text-sub-light line-clamp-2">{spot.description}</p>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        </Card>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Cafés */}
+                        {destination.suggestions.cafes && destination.suggestions.cafes.length > 0 && (
+                            <div className="mb-12">
+                                <h3 className="text-2xl font-bold text-text-main-light mb-4 flex items-center gap-2">
+                                    <Utensils className="w-6 h-6 text-orange-500" />
+                                    Family-Friendly Cafés
+                                </h3>
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                    {destination.suggestions.cafes.slice(0, 6).map((cafe: any, idx: number) => (
+                                        <Card key={idx} className="p-4 hover:shadow-md transition-all">
+                                            <div className="flex items-start gap-3">
+                                                <div className="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                                                    <Utensils className="w-5 h-5 text-orange-600" />
+                                                </div>
+                                                <div className="flex-1">
+                                                    <h4 className="font-bold text-text-main-light mb-1">{cafe.name}</h4>
+                                                    {cafe.cuisine && (
+                                                        <p className="text-xs text-text-sub-light mb-2">{cafe.cuisine}</p>
+                                                    )}
+                                                    {cafe.kidFeatures && cafe.kidFeatures.length > 0 && (
+                                                        <div className="flex flex-wrap gap-1 mt-2">
+                                                            {cafe.kidFeatures.slice(0, 2).map((feature: string) => (
+                                                                <Badge key={feature} variant="subtle-accent" className="text-xs">
+                                                                    {feature.replace('_', ' ')}
+                                                                </Badge>
+                                                            ))}
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        </Card>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Restaurants */}
+                        {destination.suggestions.restaurants && destination.suggestions.restaurants.length > 0 && (
+                            <div className="mb-12">
+                                <h3 className="text-2xl font-bold text-text-main-light mb-4 flex items-center gap-2">
+                                    <Utensils className="w-6 h-6 text-red-500" />
+                                    Kid-Friendly Restaurants
+                                </h3>
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                    {destination.suggestions.restaurants.slice(0, 6).map((restaurant: any, idx: number) => (
+                                        <Card key={idx} className="p-4 hover:shadow-md transition-all">
+                                            <div className="flex items-start gap-3">
+                                                <div className="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                                                    <Utensils className="w-5 h-5 text-red-600" />
+                                                </div>
+                                                <div className="flex-1">
+                                                    <h4 className="font-bold text-text-main-light mb-1">{restaurant.name}</h4>
+                                                    {restaurant.cuisine && (
+                                                        <p className="text-xs text-text-sub-light mb-2">{restaurant.cuisine}</p>
+                                                    )}
+                                                    {restaurant.kidFeatures && restaurant.kidFeatures.length > 0 && (
+                                                        <div className="flex flex-wrap gap-1 mt-2">
+                                                            {restaurant.kidFeatures.slice(0, 2).map((feature: string) => (
+                                                                <Badge key={feature} variant="subtle-accent" className="text-xs">
+                                                                    {feature.replace('_', ' ')}
+                                                                </Badge>
+                                                            ))}
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        </Card>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                </div>
+            )}
+
+            {/* Book Activities Section */}
             <div className="px-4 md:px-20 mt-16 flex justify-center">
                 <div className="w-full max-w-7xl">
                     <div className="flex items-center justify-between mb-8">
