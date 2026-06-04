@@ -177,11 +177,18 @@ export const populateNewFields = action({
         const batchSize = args.batchSize || 10;
         
         // Filter to destinations missing suggestions or neighborhoods
-        const needsUpdate: any[] = destinations.filter((d: any) => 
-            !d.suggestions || 
-            !d.neighborhoods || 
-            d.neighborhoods.length === 0
-        );
+        const needsUpdate: any[] = destinations.filter((d: any) => {
+            // Check if suggestions are missing or empty
+            const noSuggestions = !d.suggestions || 
+                (!d.suggestions.freeActivities?.length && 
+                 !d.suggestions.cafes?.length && 
+                 !d.suggestions.restaurants?.length);
+            
+            // Check if neighborhoods are missing or empty
+            const noNeighborhoods = !d.neighborhoods || d.neighborhoods.length === 0;
+            
+            return noSuggestions || noNeighborhoods;
+        });
         
         console.log(`Found ${needsUpdate.length} destinations missing new fields`);
         console.log(`Processing batch of ${Math.min(batchSize, needsUpdate.length)}...`);
