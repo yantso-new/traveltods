@@ -34,10 +34,10 @@ export function LoadingOverlay({ isVisible, destinationName }: LoadingOverlayPro
       <div className={`relative z-10 flex flex-col items-center gap-8 transition-all duration-500 ${
         show ? 'translate-y-0 scale-100' : 'translate-y-4 scale-95'
       }`}>
-        {/* Animated Stroller Icon */}
+        {/* Animated Baby Icon */}
         <div className="relative">
           {/* Outer rotating ring */}
-          <div className="absolute inset-0 rounded-full border-4 border-primary/20 border-t-primary animate-spin-slow" />
+          <div className="absolute inset-[-8px] rounded-full border-4 border-primary/20 border-t-primary animate-spin" style={{ animationDuration: '3s' }} />
           
           {/* Inner circle with icon */}
           <div className="relative w-24 h-24 rounded-full bg-gradient-to-br from-primary via-primary to-primary-dark flex items-center justify-center shadow-2xl shadow-primary/50">
@@ -62,9 +62,9 @@ export function LoadingOverlay({ isVisible, destinationName }: LoadingOverlayPro
           </div>
 
           {/* Floating decorative circles */}
-          <div className="absolute -top-3 -right-3 w-6 h-6 bg-secondary/80 rounded-full animate-float-1 shadow-lg" />
-          <div className="absolute -bottom-2 -left-4 w-4 h-4 bg-accent/80 rounded-full animate-float-2 shadow-lg" />
-          <div className="absolute top-1/2 -right-6 w-3 h-3 bg-primary/60 rounded-full animate-float-3 shadow-lg" />
+          <div className="absolute -top-3 -right-3 w-6 h-6 bg-secondary/80 rounded-full shadow-lg animate-bounce" style={{ animationDelay: '0.2s', animationDuration: '3s' }} />
+          <div className="absolute -bottom-2 -left-4 w-4 h-4 bg-accent/80 rounded-full shadow-lg animate-bounce" style={{ animationDelay: '0.5s', animationDuration: '3.5s' }} />
+          <div className="absolute top-1/2 -right-6 w-3 h-3 bg-primary/60 rounded-full shadow-lg animate-bounce" style={{ animationDelay: '1s', animationDuration: '4s' }} />
         </div>
 
         {/* Text Content */}
@@ -92,69 +92,6 @@ export function LoadingOverlay({ isVisible, destinationName }: LoadingOverlayPro
           </div>
         </div>
       </div>
-
-      {/* Custom animations */}
-      <style jsx global>{`
-        @keyframes spin-slow {
-          from {
-            transform: rotate(0deg);
-          }
-          to {
-            transform: rotate(360deg);
-          }
-        }
-
-        @keyframes float-1 {
-          0%, 100% {
-            transform: translate(0, 0) scale(1);
-            opacity: 0.8;
-          }
-          50% {
-            transform: translate(8px, -12px) scale(1.1);
-            opacity: 0.5;
-          }
-        }
-
-        @keyframes float-2 {
-          0%, 100% {
-            transform: translate(0, 0) scale(1);
-            opacity: 0.8;
-          }
-          50% {
-            transform: translate(-10px, -8px) scale(1.15);
-            opacity: 0.6;
-          }
-        }
-
-        @keyframes float-3 {
-          0%, 100% {
-            transform: translate(0, 0) scale(1);
-            opacity: 0.6;
-          }
-          50% {
-            transform: translate(6px, 10px) scale(1.2);
-            opacity: 0.4;
-          }
-        }
-
-        .animate-spin-slow {
-          animation: spin-slow 3s linear infinite;
-        }
-
-        .animate-float-1 {
-          animation: float-1 3s ease-in-out infinite;
-        }
-
-        .animate-float-2 {
-          animation: float-2 3.5s ease-in-out infinite;
-          animation-delay: 0.5s;
-        }
-
-        .animate-float-3 {
-          animation: float-3 4s ease-in-out infinite;
-          animation-delay: 1s;
-        }
-      `}</style>
     </div>
   );
 }
