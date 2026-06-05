@@ -174,6 +174,7 @@ export const getDestination = query({
 
 // Get all destinations
 export const getAllDestinations = query({
+    args: {},
     handler: async (ctx) => {
         return await ctx.db.query("destinations").collect();
     },
@@ -202,6 +203,7 @@ export const getTopRatedDestinations = query({
 
 // Get top 100 destinations by search count
 export const getTop100Destinations = query({
+    args: {},
     handler: async (ctx) => {
         const destinations = await ctx.db.query("destinations").collect();
 
@@ -238,6 +240,7 @@ export const getDestinationsByCountry = query({
 
 // Get all unique countries
 export const getAllCountries = query({
+    args: {},
     handler: async (ctx) => {
         const destinations = await ctx.db.query("destinations").collect();
         

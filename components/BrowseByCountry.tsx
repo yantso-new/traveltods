@@ -1,15 +1,47 @@
 "use client";
 
-import React from 'react';
+import React, { Component } from 'react';
 import { useRouter } from 'next/navigation';
-import { MapPin, TrendingUp, Star } from 'lucide-react';
+import { MapPin, TrendingUp, Star, AlertTriangle } from 'lucide-react';
 import { useQuery } from 'convex/react';
 import { api } from '@/convex/_generated/api';
 import { Card } from '@/components/ui';
 
-export function BrowseByCountry() {
+class ErrorBoundary extends Component<
+  { children: React.ReactNode; fallback?: React.ReactNode },
+  { hasError: boolean }
+> {
+  constructor(props: { children: React.ReactNode; fallback?: React.ReactNode }) {
+    super(props);
+    this.state = { hasError: false };
+  }
+
+  static getDerivedStateFromError() {
+    return { hasError: true };
+  }
+
+  componentDidCatch(error: Error) {
+    console.error('BrowseByCountry error:', error);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        this.props.fallback || (
+          <div className="text-center py-8 text-text-sub-light">
+            <AlertTriangle className="w-10 h-10 mx-auto mb-3 opacity-50" />
+            <p className="text-sm">Could not load countries. Please try refreshing.</p>
+          </div>
+        )
+      );
+    }
+    return this.props.children;
+  }
+}
+
+function BrowseByCountryInner() {
     const router = useRouter();
-    const countries = useQuery(api.destinations.getAllCountries);
+    const countries = useQuery(api.destinations.getAllCountries, {});
 
     if (countries === undefined) {
         return (
@@ -76,5 +108,13 @@ export function BrowseByCountry() {
                 </Card>
             ))}
         </div>
+    );
+}
+
+export function BrowseByCountry() {
+    return (
+        <ErrorBoundary>
+            <BrowseByCountryInner />
+        </ErrorBoundary>
     );
 }
