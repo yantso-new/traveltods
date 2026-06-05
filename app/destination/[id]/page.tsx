@@ -19,7 +19,8 @@ import {
     Ticket,
     ExternalLink,
     ShoppingBag,
-    MapPin
+    MapPin,
+    RefreshCw
 } from 'lucide-react';
 // ChatMessage type removed
 import { Button, Badge, ProgressBar, Card, LoadingSpinner, Tooltip } from '@/components/ui';
@@ -48,6 +49,17 @@ export default function DestinationDetails() {
 
     const [isGathering, setIsGathering] = useState(false);
     const [isRefreshing, setIsRefreshing] = useState(false);
+    const [localSuggestions, setLocalSuggestions] = useState<any>(null);
+
+    // Sync localSuggestions with destination.suggestions when destination loads/changes
+    useEffect(() => {
+        if (destination?.suggestions) {
+            setLocalSuggestions(destination.suggestions);
+        }
+    }, [destination?.suggestions]);
+
+    // Refresh suggestions action
+    const refreshSuggestionsAction = useAction(api.refresh_suggestions.refreshSuggestions);
 
     // Track if we have initiated gathering to prevent loops
     const gatheringRef = useRef(false);
@@ -369,8 +381,8 @@ export default function DestinationDetails() {
                         </div>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                            {destination.neighborhoods.slice(0, 6).map((hood: any) => (
-                                <Card key={hood.name} className="p-6 transition-colors duration-200">
+                            {destination.neighborhoods.slice(0, 6).map((hood: any, idx: number) => (
+                                <Card key={`${hood.name}-${idx}`} className="p-6 transition-colors duration-200">
                                     <div className="flex items-start justify-between mb-4">
                                         <div>
                                             <h3 className="text-xl font-bold text-text-main-light mb-1">{hood.name}</h3>
@@ -429,9 +441,33 @@ export default function DestinationDetails() {
                 <div className="px-4 md:px-20 mt-16 flex justify-center">
                     <div className="w-full max-w-7xl">
                         <div className="mb-8">
-                            <div className="inline-flex items-center gap-1.5 px-3 py-1 mb-4 rounded-full bg-accent/10 text-accent border border-accent/20 text-[10px] font-black uppercase tracking-widest">
-                                <Smile className="w-3 h-3" />
-                                Parent Approved
+                            <div className="flex items-center justify-between">
+                                <div className="inline-flex items-center gap-1.5 px-3 py-1 mb-4 rounded-full bg-accent/10 text-accent border border-accent/20 text-[10px] font-black uppercase tracking-widest">
+                                    <Smile className="w-3 h-3" />
+                                    Parent Approved
+                                </div>
+                                <button
+                                    onClick={async () => {
+                                        setIsRefreshing(true);
+                                        try {
+                                            const result = await refreshSuggestionsAction({ destinationName: id });
+                                            if (result.success) {
+                                                // Re-fetch destination to get updated suggestions
+                                                // The Convex query will update reactively since we patched the DB
+                                            }
+                                        } catch (e) {
+                                            console.error('Refresh suggestions failed:', e);
+                                        } finally {
+                                            setIsRefreshing(false);
+                                        }
+                                    }}
+                                    disabled={isRefreshing}
+                                    className="inline-flex items-center gap-1.5 px-3 py-1 mb-4 rounded-full bg-white border border-slate-200 text-text-sub-light hover:border-primary/30 hover:text-primary text-xs font-bold transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                    title="Refresh suggestions from local APIs"
+                                >
+                                    <RefreshCw className={`w-3 h-3 ${isRefreshing ? 'animate-spin' : ''}`} />
+                                    {isRefreshing ? 'Refreshing...' : 'Refresh'}
+                                </button>
                             </div>
                             <h2 className="text-3xl font-black text-text-main-light mb-2">Family-Friendly Spots</h2>
                             <p className="text-text-sub-light text-lg">Curated recommendations in <span className="text-primary font-bold">{destination.name}</span></p>

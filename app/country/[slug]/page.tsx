@@ -51,12 +51,12 @@ export default function CountryPage() {
 
     // Calculate country stats
     const avgScore = destinations.length > 0
-        ? Math.round(destinations.reduce((sum, d) => sum + (d.allScores?.familyScore || 0), 0) / destinations.length / 10)
+        ? Math.round(destinations.reduce((sum: number, d: any) => sum + (d.allScores?.familyScore || 0), 0) / destinations.length / 10)
         : 0;
     
     const topDestination = destinations[0];
-    const totalParks = destinations.reduce((sum, d) => sum + (d.suggestions?.freeActivities.length || 0), 0);
-    const totalCafes = destinations.reduce((sum, d) => sum + (d.suggestions?.cafes.length || 0), 0);
+    const totalParks = destinations.reduce((sum: number, d: any) => sum + (d.suggestions?.freeActivities?.length || 0), 0);
+    const totalCafes = destinations.reduce((sum: number, d: any) => sum + (d.suggestions?.cafes?.length || 0), 0);
 
     return (
         <div className="min-h-screen bg-background-light text-text-main-light">
@@ -164,7 +164,7 @@ export default function CountryPage() {
                         </Card>
                     ) : (
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                            {destinations.map((destination) => (
+                            {destinations.map((destination: any) => (
                                 <DestinationCard
                                     key={destination._id}
                                     destination={{

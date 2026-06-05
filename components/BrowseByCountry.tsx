@@ -67,7 +67,7 @@ function BrowseByCountryInner() {
 
     return (
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-            {topCountries.map((country) => (
+            {topCountries.map((country: any) => (
                 <Card
                     key={country.name}
                     onClick={() => router.push(`/country/${encodeURIComponent(country.name)}`)}

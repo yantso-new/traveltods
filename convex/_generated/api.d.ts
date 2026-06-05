@@ -15,6 +15,7 @@ import type * as lib_foursquare from "../lib/foursquare.js";
 import type * as lib_scores from "../lib/scores.js";
 import type * as lib_viator from "../lib/viator.js";
 import type * as lib_viator_destinations from "../lib/viator_destinations.js";
+import type * as refresh_suggestions from "../refresh_suggestions.js";
 import type * as seed from "../seed.js";
 import type * as test_data from "../test_data.js";
 import type * as update_all from "../update_all.js";
@@ -35,6 +36,7 @@ declare const fullApi: ApiFromModules<{
   "lib/scores": typeof lib_scores;
   "lib/viator": typeof lib_viator;
   "lib/viator_destinations": typeof lib_viator_destinations;
+  refresh_suggestions: typeof refresh_suggestions;
   seed: typeof seed;
   test_data: typeof test_data;
   update_all: typeof update_all;

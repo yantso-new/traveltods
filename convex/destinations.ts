@@ -562,10 +562,10 @@ export const refreshDestinationImages = action({
         let toRefresh = allDestinations;
 
         if (args.destinationNames && args.destinationNames.length > 0) {
-            toRefresh = allDestinations.filter(d => args.destinationNames!.includes(d.name));
+            toRefresh = allDestinations.filter((d: any) => args.destinationNames!.includes(d.name));
         } else {
             // Filter to destinations with fallback images
-            toRefresh = allDestinations.filter(d => {
+            toRefresh = allDestinations.filter((d: any) => {
                 if (!d.image) return true;
                 return FALLBACK_IMAGE_IDS.some(id => d.image?.includes(id));
             });
