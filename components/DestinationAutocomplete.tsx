@@ -178,8 +178,8 @@ export function DestinationAutocomplete({
           placeholder={isNavigating ? "Navigating..." : placeholder}
           className={
             isMinimal
-              ? `w-full pl-10 pr-10 py-2.5 rounded-full border border-slate-200 bg-surface-light/80 focus:bg-surface-light focus:border-primary/50 focus:ring-2 focus:ring-primary/10 outline-none shadow-sm text-sm transition-all duration-200 placeholder:text-text-sub-light text-text-main-light font-medium ${isNavigating ? 'opacity-50 cursor-wait' : ''}`
-              : `w-full pl-12 pr-24 md:pr-32 py-4 rounded-full border border-slate-200 bg-white/95 backdrop-blur focus:border-primary/50 focus:ring-4 focus:ring-primary/10 outline-none shadow-xl shadow-black/10 text-lg transition-all placeholder:text-text-sub-light text-text-main-light font-medium ${isNavigating ? 'opacity-50 cursor-wait' : ''}`
+              ? `w-full pl-10 pr-10 py-2.5 rounded-full border border-slate-200 bg-surface-light/80 focus:bg-surface-light focus:border-primary/50 focus:ring-2 focus:ring-primary/10 outline-none text-sm transition-all duration-200 placeholder:text-text-sub-light text-text-main-light font-medium ${isNavigating ? 'opacity-50 cursor-wait' : ''}`
+              : `w-full pl-12 pr-24 md:pr-32 py-4 rounded-full border border-slate-200 bg-white/95 backdrop-blur focus:border-primary/50 focus:ring-4 focus:ring-primary/10 outline-none text-lg transition-all placeholder:text-text-sub-light text-text-main-light font-medium ${isNavigating ? 'opacity-50 cursor-wait' : ''}`
           }
           value={query}
           onChange={(e) => {
@@ -194,7 +194,7 @@ export function DestinationAutocomplete({
           className={
             isMinimal
               ? "absolute left-3.5 top-1/2 -translate-y-1/2 text-primary w-4 h-4"
-              : "absolute left-5 top-1/2 -translate-y-1/2 text-text-sub-light w-5 h-5 group-hover:text-primary transition-colors duration-200"
+              : "absolute left-5 top-1/2 -translate-y-1/2 text-text-sub-light w-5 h-5 transition-colors duration-200"
           }
         />
 
@@ -214,7 +214,7 @@ export function DestinationAutocomplete({
             onClick={handleSearchClick}
             disabled={!hasValidSelection || isNavigating}
             className={`absolute right-2 top-2 bottom-2 rounded-full px-3 md:px-6 flex items-center gap-1 md:gap-2 transition-all duration-200 font-bold text-xs md:text-sm ${hasValidSelection && !isNavigating
-              ? 'bg-primary hover:bg-primary-dark text-primary-foreground cursor-pointer shadow-md active:scale-[0.98]'
+              ? 'bg-primary hover:bg-primary-dark text-primary-foreground cursor-pointer active:scale-[0.985] transition-colors duration-200'
               : 'bg-muted text-muted-foreground cursor-not-allowed'
               }`}
           >
@@ -225,7 +225,7 @@ export function DestinationAutocomplete({
 
       {/* Dropdown */}
       {isOpen && (
-        <div className="absolute z-50 w-full mt-2 bg-white rounded-2xl shadow-xl shadow-slate-200/50 border border-slate-100 overflow-hidden">
+        <div className="absolute z-50 w-full mt-2 bg-white rounded-2xl border border-slate-200 overflow-hidden">
           {suggestions.length > 0 ? (
             <ul className="py-2">
               {suggestions.map((suggestion, index) => (

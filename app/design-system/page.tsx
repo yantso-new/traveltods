@@ -203,7 +203,7 @@ export default function DesignSystemPage() {
                             </div>
                             <p className="text-text-sub-light text-sm">A simple card component with hover effects suitable for most content.</p>
                         </Card>
-                        <Card className="p-6 h-64 flex flex-col justify-between bg-surface-light border-primary/20 shadow-xl">
+                        <Card className="p-6 h-64 flex flex-col justify-between bg-surface-light border-primary/20">
                             <div>
                                 <Badge variant="gradient-accent" className="mb-2">Featured</Badge>
                                 <h3 className="text-xl font-bold text-primary">Highlighted Card</h3>
@@ -249,7 +249,7 @@ export default function DesignSystemPage() {
 
 function ColorCard({ name, variable, hex, textColor = "text-white", border = false }: { name: string, variable: string, hex: string, textColor?: string, border?: boolean }) {
     return (
-        <div className={`rounded-2xl overflow-hidden shadow-sm transition-transform duration-200 hover:-translate-y-1 ${border ? 'border border-slate-200' : ''}`}>
+        <div className={`rounded-2xl overflow-hidden transition-colors duration-200 ${border ? 'border border-slate-200' : ''}`}>
             <div
                 className={`h-32 flex items-center justify-center ${textColor} font-bold text-lg`}
                 style={{ backgroundColor: `var(${variable})` }}

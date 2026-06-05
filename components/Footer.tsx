@@ -9,7 +9,7 @@ export const Footer: React.FC = () => {
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-8 mb-10">
           {/* Brand */}
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 bg-surface-light rounded-xl flex items-center justify-center overflow-hidden border border-slate-200 shadow-sm">
+            <div className="w-9 h-9 bg-surface-light rounded-xl flex items-center justify-center overflow-hidden border border-slate-200">
               <img src="/logo.png" alt="TravelTods Logo" className="w-full h-full object-cover" />
             </div>
             <span className="text-lg font-extrabold text-text-main-light tracking-tight">TravelTods</span>

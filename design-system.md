@@ -66,14 +66,14 @@ We use a standard 4px or 8px grid system for spacing.
 ## 🏗️ Core Components
 
 ### 🔘 Buttons
-- **Primary:** Filled with `--color-primary`. Used for call-to-actions.
+- **Primary:** Filled with `--color-primary`. Used for call-to-actions. No shadow. Active state: subtle `scale-[0.985]`.
 - **Secondary:** Filled with `--color-secondary`.
 - **Outline:** Transparent background with border.
-- **Ghost:** No background or border until hover.
+- **Ghost:** No background or border. Background fades in on focus/hover via `transition-colors` only.
 
 ### 💳 Cards
-- **Standard:** White/Surface-Dark background with subtle shadow and `hover:-translate-y-1` transition.
-- **Highlighted:** High contrast border or accent color background for featured items.
+- **Standard:** White/Surface-Dark background with a `border border-slate-200/60` for definition. No shadow, no hover lift. Purely flat layout with rounded corners.
+- **Highlighted:** A tinted border (`border-primary/30`) or a soft accent background for featured items. No elevation tricks.
 
 ### 🏷️ Badges & Tags
 Used for metadata, categories, and status indicators. **High visibility is critical** - badges must be readable against any background.
@@ -94,8 +94,8 @@ Used for metadata, categories, and status indicators. **High visibility is criti
 #### Effects
 - **Backdrop Blur:** `backdrop-blur-md` for glassmorphism depth
 - **Border:** `border border-white/20` for definition against images
-- **Shadow:** `shadow-lg shadow-{color}/30-50` for elevation
 - **Border Radius:** `rounded-lg` (0.5rem)
+- **No Shadows:** All `shadow-*` classes are forbidden. Depth is communicated through borders and background contrast alone.
 
 #### Usage Rules
 1. Use **solid backgrounds** for critical information (categories, status)
@@ -103,19 +103,21 @@ Used for metadata, categories, and status indicators. **High visibility is criti
 3. Always include `backdrop-blur-md` when overlaying images
 4. Ensure text contrast ratio ≥ 4.5:1 (WCAG AA)
 5. Add white border for definition on busy backgrounds
+6. Never use `shadow-*`, `hover:shadow-*`, or `hover:-translate-y-*` — these are banned
 
 ### ⌨️ Form Elements
-- **Inputs & Textareas:** Clean borders (`#e2e8f0`), rounded-xl, focal focus rings using `--color-primary`.
+- **Inputs & Textareas:** Clean borders (`#e2e8f0`), rounded-xl, focal focus rings using `--color-primary`. No shadows on focus. Transition border-color only.
 - **Checkboxes:** Themed with secondary colors.
 
 ---
 
-## ✨ Philosophy: "Soft Utility"
-The design follows a **Soft Utility** approach:
+## ✨ Philosophy: "Quiet Confidence"
+The design follows a **Quiet Confidence** approach:
 1. **Clarity over Complexity:** Use whitespace and hierarchy to guide the user.
-2. **Premium Micro-interactions:** Subtle hover states, smooth transitions, and loaders.
-3. **Optimistic Tone:** Vibrant colors and rounded corners to feel welcoming for families.
-4. **Resilience:** Mobile-first responsive layouts that degrade gracefully.
+2. **Restrained Motion:** No hover-driven lifts, scales, or shadow pops. Transitions are limited to essential state changes (color shifts on focus/press, opacity fades). Active states use subtle `scale-[0.985]` press feedback only.
+3. **Flat & Clean:** No box-shadows of any kind. Depth is communicated through border contrast, background tinting, and spacing alone.
+4. **Optimistic Tone:** Vibrant colors and rounded corners to feel welcoming for families.
+5. **Resilience:** Mobile-first responsive layouts that degrade gracefully.
 
 ## 🔗 Sync Status
 This document is synced with `app/design-system/page.tsx`. Any changes to the UI tokens in `globals.css` should be reflected here.

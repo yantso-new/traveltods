@@ -76,8 +76,8 @@ export default function BlogPage() {
                                 <button
                                     key={category.id}
                                     onClick={() => setActiveCategory(category.id)}
-                                    className={`px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all cursor-pointer ${activeCategory === category.id
-                                            ? 'bg-primary text-white shadow-md'
+                                    className={`px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-colors cursor-pointer ${activeCategory === category.id
+                                            ? 'bg-primary text-white'
                                             : 'bg-slate-100 text-text-sub-light hover:bg-slate-200'
                                         }`}
                                 >

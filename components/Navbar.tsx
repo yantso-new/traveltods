@@ -45,7 +45,7 @@ export function Navbar() {
                     <div className="flex items-center justify-between gap-4 w-full">
                         {/* Logo */}
                         <div className="flex items-center gap-3 cursor-pointer flex-shrink-0" onClick={() => router.push('/')}>
-                            <div className="flex items-center justify-center size-10 md:size-12 rounded-xl bg-surface-light overflow-hidden shadow-lg border border-slate-100">
+                            <div className="flex items-center justify-center size-10 md:size-12 rounded-xl bg-surface-light overflow-hidden border border-slate-200">
                                 <img src="/logo.png" alt="TravelTods Logo" className="w-full h-full object-cover" />
                             </div>
                             <h2 className="text-xl md:text-2xl font-extrabold tracking-tight text-text-main-light hidden sm:block">TravelTods</h2>
@@ -90,7 +90,7 @@ export function Navbar() {
                                 <Search className="w-4 h-4 ml-0" />
                             </Button>
                             <button
-                                className="p-2 text-text-main-light transition-transform active:scale-95"
+                                className="p-2 text-text-main-light transition-colors duration-200 active:scale-[0.985]"
                                 onClick={() => setIsMenuOpen(!isMenuOpen)}
                                 aria-label={isMenuOpen ? "Close menu" : "Open menu"}
                                 aria-expanded={isMenuOpen}

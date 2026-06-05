@@ -137,7 +137,7 @@ export default function Home() {
               <div className="relative min-w-[200px]">
                 <button
                   onClick={() => setIsFilterOpen(!isFilterOpen)}
-                  className="flex items-center justify-between w-full gap-3 px-6 py-4 bg-white rounded-2xl shadow-sm border border-slate-100 font-bold text-text-main-light hover:border-primary/30 transition-all active:scale-[0.98]"
+                  className="flex items-center justify-between w-full gap-3 px-6 py-4 bg-white rounded-2xl border border-slate-200 font-bold text-text-main-light hover:border-primary/30 transition-colors active:scale-[0.985]"
                 >
                   <div className="flex items-center gap-2">
                     <span className="material-symbols-outlined text-primary">{selectedFilter.icon}</span>
@@ -152,7 +152,7 @@ export default function Home() {
                       className="fixed inset-0 z-30"
                       onClick={() => setIsFilterOpen(false)}
                     />
-                    <div className="absolute right-0 mt-3 w-full bg-white rounded-2xl shadow-2xl border border-slate-100 overflow-hidden z-40 animate-scaleIn origin-top-right">
+                    <div className="absolute right-0 mt-3 w-full bg-white rounded-2xl border border-slate-200 overflow-hidden z-40 animate-scaleIn origin-top-right">
                       <div className="p-2">
                         {filters.map(filter => (
                           <button
@@ -205,7 +205,7 @@ export default function Home() {
                 )}
               </>
             ) : (
-              <div className="text-center py-20 bg-white/40 backdrop-blur-sm rounded-[3rem] border-2 border-dashed border-slate-200 transition-all">
+              <div className="text-center py-20 bg-white/40 backdrop-blur-sm rounded-[3rem] border-2 border-dashed border-slate-200 transition-colors">
                 <div className="bg-slate-100 w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-6">
                   <span className="material-symbols-outlined text-5xl text-slate-400">search_off</span>
                 </div>

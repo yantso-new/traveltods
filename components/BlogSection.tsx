@@ -28,10 +28,10 @@ export const BlogSection: React.FC = () => {
                     </div>
                     <Link
                         href="/blog"
-                        className="inline-flex items-center gap-2 text-primary font-bold hover:gap-3 transition-all group"
+                        className="inline-flex items-center gap-2 text-primary font-bold"
                     >
                         View All Articles
-                        <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                        <ArrowRight className="w-4 h-4 ml-1 transition-transform duration-200" />
                     </Link>
                 </div>
 

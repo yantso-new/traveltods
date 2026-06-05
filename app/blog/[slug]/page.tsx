@@ -207,7 +207,7 @@ export default function BlogPostPage({ params }: BlogPostPageProps) {
                     <div className="flex flex-col gap-2">
                         <Badge
                             variant={post.category === 'destinations' ? 'solid-primary' : 'solid-secondary'}
-                            className="capitalize text-sm font-bold shadow-lg w-fit"
+                            className="capitalize text-sm font-bold w-fit"
                         >
                             {post.category}
                         </Badge>
@@ -247,7 +247,7 @@ export default function BlogPostPage({ params }: BlogPostPageProps) {
                 {/* Meta Bar */}
                 <div className="flex flex-wrap items-center gap-4 md:gap-6 mb-10 pb-8 border-b-2 border-slate-100">
                     <div className="flex items-center gap-3">
-                        <div className="w-12 h-12 rounded-full bg-primary/10 text-primary flex items-center justify-center border-2 border-primary/20 shadow-md">
+                        <div className="w-12 h-12 rounded-full bg-primary/10 text-primary flex items-center justify-center border-2 border-primary/20">
                             <MapPin className="w-5 h-5" />
                         </div>
                         <div>
@@ -273,21 +273,21 @@ export default function BlogPostPage({ params }: BlogPostPageProps) {
                         <span className="text-xs text-text-sub-light font-semibold mr-1">Share:</span>
                         <button
                             onClick={() => handleShare('twitter')}
-                            className="p-2.5 rounded-xl hover:bg-slate-100 transition-all cursor-pointer hover:scale-110"
+                            className="p-2.5 rounded-xl hover:bg-slate-100 transition-colors cursor-pointer active:scale-[0.985]"
                             aria-label="Share on Twitter"
                         >
                             <Twitter className="w-4 h-4 text-text-sub-light hover:text-primary transition-colors" />
                         </button>
                         <button
                             onClick={() => handleShare('linkedin')}
-                            className="p-2.5 rounded-xl hover:bg-slate-100 transition-all cursor-pointer hover:scale-110"
+                            className="p-2.5 rounded-xl hover:bg-slate-100 transition-colors cursor-pointer active:scale-[0.985]"
                             aria-label="Share on LinkedIn"
                         >
                             <Linkedin className="w-4 h-4 text-text-sub-light hover:text-primary transition-colors" />
                         </button>
                         <button
                             onClick={() => handleShare('copy')}
-                            className="p-2.5 rounded-xl hover:bg-slate-100 transition-all cursor-pointer hover:scale-110 relative"
+                            className="p-2.5 rounded-xl hover:bg-slate-100 transition-colors cursor-pointer active:scale-[0.985] relative"
                             aria-label="Copy link"
                         >
                             {copied ? (
@@ -309,7 +309,7 @@ export default function BlogPostPage({ params }: BlogPostPageProps) {
                         <h2 className="text-2xl md:text-3xl font-bold text-text-main-light mb-5">Places mentioned</h2>
                         <div className="grid gap-4">
                             {post.places.map(place => (
-                                <div key={place.name} className="rounded-2xl border border-slate-100 bg-white p-5 shadow-sm">
+                                <div key={place.name} className="rounded-2xl border border-slate-200/60 bg-white p-5">
                                     <h3 className="text-lg font-bold text-text-main-light">{place.name}</h3>
                                     <p className="text-text-sub-light mt-1 mb-4">{place.description}</p>
                                     <div className="flex flex-wrap gap-3">

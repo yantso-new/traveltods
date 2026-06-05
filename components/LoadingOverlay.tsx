@@ -40,7 +40,7 @@ export function LoadingOverlay({ isVisible, destinationName }: LoadingOverlayPro
           <div className="absolute inset-[-8px] rounded-full border-4 border-primary/20 border-t-primary animate-spin" style={{ animationDuration: '3s' }} />
           
           {/* Inner circle with icon */}
-          <div className="relative w-24 h-24 rounded-full bg-gradient-to-br from-primary via-primary to-primary-dark flex items-center justify-center shadow-2xl shadow-primary/50">
+          <div className="relative w-24 h-24 rounded-full bg-gradient-to-br from-primary via-primary to-primary-dark flex items-center justify-center">
             {/* Baby Icon - Lucide Baby */}
             <svg
               width="56"
@@ -48,7 +48,7 @@ export function LoadingOverlay({ isVisible, destinationName }: LoadingOverlayPro
               viewBox="0 0 24 24"
               fill="none"
               xmlns="http://www.w3.org/2000/svg"
-              className="text-white drop-shadow-lg"
+              className="text-white"
               stroke="currentColor"
               strokeWidth="2"
               strokeLinecap="round"
@@ -62,9 +62,9 @@ export function LoadingOverlay({ isVisible, destinationName }: LoadingOverlayPro
           </div>
 
           {/* Floating decorative circles */}
-          <div className="absolute -top-3 -right-3 w-6 h-6 bg-secondary/80 rounded-full shadow-lg animate-bounce" style={{ animationDelay: '0.2s', animationDuration: '3s' }} />
-          <div className="absolute -bottom-2 -left-4 w-4 h-4 bg-accent/80 rounded-full shadow-lg animate-bounce" style={{ animationDelay: '0.5s', animationDuration: '3.5s' }} />
-          <div className="absolute top-1/2 -right-6 w-3 h-3 bg-primary/60 rounded-full shadow-lg animate-bounce" style={{ animationDelay: '1s', animationDuration: '4s' }} />
+          <div className="absolute -top-3 -right-3 w-6 h-6 bg-secondary/80 rounded-full animate-bounce" style={{ animationDelay: '0.2s', animationDuration: '3s' }} />
+          <div className="absolute -bottom-2 -left-4 w-4 h-4 bg-accent/80 rounded-full animate-bounce" style={{ animationDelay: '0.5s', animationDuration: '3.5s' }} />
+          <div className="absolute top-1/2 -right-6 w-3 h-3 bg-primary/60 rounded-full animate-bounce" style={{ animationDelay: '1s', animationDuration: '4s' }} />
         </div>
 
         {/* Text Content */}

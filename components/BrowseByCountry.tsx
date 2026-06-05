@@ -71,7 +71,7 @@ function BrowseByCountryInner() {
                 <Card
                     key={country.name}
                     onClick={() => router.push(`/country/${encodeURIComponent(country.name)}`)}
-                    className="p-6 hover:scale-105 transition-transform duration-200"
+                    className="p-6 transition-colors duration-200"
                 >
                     <div className="flex items-start justify-between mb-3">
                         <div className="flex items-center gap-2">

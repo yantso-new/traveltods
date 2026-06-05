@@ -167,7 +167,7 @@ export default function DestinationDetails() {
 
                         <Link 
                             href={`/country/${encodeURIComponent(destination.country)}`}
-                            className="inline-flex items-center gap-2 px-3 py-1 mb-4 rounded-full bg-gradient-to-r from-primary to-primary-dark text-white border border-white/10 shadow-lg shadow-primary/40 backdrop-blur-md text-xs font-extrabold uppercase tracking-wider hover:scale-105 transition-transform cursor-pointer"
+                            className="inline-flex items-center gap-2 px-3 py-1 mb-4 rounded-full bg-gradient-to-r from-primary to-primary-dark text-white border border-white/10 backdrop-blur-md text-xs font-extrabold uppercase tracking-wider transition-colors cursor-pointer"
                         >
                             <span className="material-symbols-outlined text-sm">public</span>
                             {destination.country}
@@ -327,7 +327,7 @@ export default function DestinationDetails() {
                         </Card>
 
                         {/* Affiliate: Baby Gear Rental (BabyQuip) */}
-                        <Card className="overflow-hidden border-2 border-transparent hover:border-sky-200 transition-all duration-300">
+                        <Card className="overflow-hidden border-2 border-transparent transition-colors duration-200">
                             <div className="p-6 space-y-4">
                                 <div className="flex items-center gap-3">
                                     <div className="p-2.5 bg-secondary/15 rounded-xl text-secondary">
@@ -370,7 +370,7 @@ export default function DestinationDetails() {
 
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                             {destination.neighborhoods.slice(0, 6).map((hood: any) => (
-                                <Card key={hood.name} className="p-6 hover:shadow-xl transition-all duration-300">
+                                <Card key={hood.name} className="p-6 transition-colors duration-200">
                                     <div className="flex items-start justify-between mb-4">
                                         <div>
                                             <h3 className="text-xl font-bold text-text-main-light mb-1">{hood.name}</h3>
@@ -446,7 +446,7 @@ export default function DestinationDetails() {
                                 </h3>
                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                                     {destination.suggestions.freeActivities.slice(0, 6).map((activity: any, idx: number) => (
-                                        <Card key={idx} className="p-4 hover:shadow-md transition-all">
+                                        <Card key={idx} className="p-4 transition-colors duration-200">
                                             <div className="flex items-start gap-3">
                                                 <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center flex-shrink-0">
                                                     <Trees className="w-5 h-5 text-green-600" />
@@ -474,7 +474,7 @@ export default function DestinationDetails() {
                                 </h3>
                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                                     {destination.suggestions.downtime.slice(0, 6).map((spot: any, idx: number) => (
-                                        <Card key={idx} className="p-4 hover:shadow-md transition-all">
+                                        <Card key={idx} className="p-4 transition-colors duration-200">
                                             <div className="flex items-start gap-3">
                                                 <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0">
                                                     <CloudSun className="w-5 h-5 text-blue-600" />
@@ -502,7 +502,7 @@ export default function DestinationDetails() {
                                 </h3>
                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                                     {destination.suggestions.cafes.slice(0, 6).map((cafe: any, idx: number) => (
-                                        <Card key={idx} className="p-4 hover:shadow-md transition-all">
+                                        <Card key={idx} className="p-4 transition-colors duration-200">
                                             <div className="flex items-start gap-3">
                                                 <div className="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center flex-shrink-0">
                                                     <Utensils className="w-5 h-5 text-orange-600" />
@@ -538,7 +538,7 @@ export default function DestinationDetails() {
                                 </h3>
                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                                     {destination.suggestions.restaurants.slice(0, 6).map((restaurant: any, idx: number) => (
-                                        <Card key={idx} className="p-4 hover:shadow-md transition-all">
+                                        <Card key={idx} className="p-4 transition-colors duration-200">
                                             <div className="flex items-start gap-3">
                                                 <div className="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center flex-shrink-0">
                                                     <Utensils className="w-5 h-5 text-red-600" />
@@ -595,18 +595,18 @@ export default function DestinationDetails() {
                             ))
                         ) : activities.length > 0 ? (
                             activities.map((activity) => (
-                                <Card key={activity.id} className="group overflow-hidden border-none shadow-sm hover:shadow-xl transition-all duration-300 cursor-pointer h-full flex flex-col" onClick={() => window.open(activity.productUrl, '_blank')}>
+                                <Card key={activity.id} className="group overflow-hidden border-none cursor-pointer h-full flex flex-col transition-colors duration-200" onClick={() => window.open(activity.productUrl, '_blank')}>
                                     <div className="relative h-48 overflow-hidden">
                                         <img
                                             src={activity.image || '/placeholder.jpg'}
                                             alt={activity.title}
-                                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                                            className="w-full h-full object-cover transition-transform duration-500 ease-out"
                                         />
-                                        <div className="absolute top-2 right-2 bg-white/90 backdrop-blur-sm px-2 py-1 rounded-md text-xs font-bold shadow-sm">
+                                        <div className="absolute top-2 right-2 bg-white/90 backdrop-blur-sm px-2 py-1 rounded-md text-xs font-bold">
                                             {activity.duration}
                                         </div>
                                         {activity.badge && (
-                                            <div className="absolute top-2 left-2 bg-accent text-accent-foreground px-2 py-1 rounded-md text-xs font-bold shadow-sm">
+                                            <div className="absolute top-2 left-2 bg-accent text-accent-foreground px-2 py-1 rounded-md text-xs font-bold">
                                                 {activity.badge}
                                             </div>
                                         )}
@@ -620,7 +620,7 @@ export default function DestinationDetails() {
                                             ))}
                                             <span className="text-xs text-text-sub-light ml-1 font-medium">({activity.reviews})</span>
                                         </div>
-                                        <h3 className="font-bold text-text-main-light mb-2 line-clamp-2 leading-snug group-hover:text-primary transition-colors">{activity.title}</h3>
+                                        <h3 className="font-bold text-text-main-light mb-2 line-clamp-2 leading-snug">{activity.title}</h3>
                                         <p className="text-xs text-text-sub-light mb-4 flex items-center gap-1">
                                             <Baby className="w-3 h-3" />
                                             Family Friendly
@@ -631,7 +631,7 @@ export default function DestinationDetails() {
                                                 <p className="text-xs text-text-sub-light">From</p>
                                                 <p className="font-black text-lg text-primary">${activity.price?.toFixed(2)}</p>
                                             </div>
-                                            <Button className="h-8 px-4 py-1 text-xs bg-surface-light text-text-main-light hover:bg-primary hover:text-white border-transparent shadow-none hover:shadow-md transition-all">
+                                            <Button className="h-8 px-4 py-1 text-xs bg-surface-light text-text-main-light hover:bg-primary hover:text-white border-transparent transition-colors">
                                                 View
                                             </Button>
                                         </div>
@@ -647,7 +647,7 @@ export default function DestinationDetails() {
 
                     <div className="mt-10 text-center">
                         <Button
-                            className="bg-accent hover:bg-accent/90 text-accent-foreground font-bold px-8 py-6 h-auto text-lg hover:shadow-lg transition-all duration-200"
+                            className="bg-accent hover:bg-accent/90 text-accent-foreground font-bold px-8 py-6 h-auto text-lg transition-colors duration-200"
                             onClick={() => window.open('https://www.viator.com', '_blank')}
                         >
                             View All Family Activities
@@ -659,7 +659,7 @@ export default function DestinationDetails() {
             {/* Unreliable Data Blocking Modal */}
             {isUnreliable && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-in fade-in duration-300">
-                    <Card className="max-w-md w-full p-8 text-center space-y-6 shadow-2xl scale-100">
+                    <Card className="max-w-md w-full p-8 text-center space-y-6 scale-100">
                         <div className="mx-auto w-20 h-20 bg-accent/20 rounded-full flex items-center justify-center text-accent mb-2">
                             <AlertTriangle className="w-10 h-10" />
                         </div>

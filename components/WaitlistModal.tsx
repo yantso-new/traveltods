@@ -126,7 +126,7 @@ export function WaitlistModal({ isOpen, onClose }: WaitlistModalProps) {
             {/* Modal */}
             <div
                 ref={modalRef}
-                className="relative w-full max-w-md bg-surface-light rounded-3xl shadow-2xl animate-scaleIn overflow-hidden"
+                className="relative w-full max-w-md bg-surface-light rounded-3xl animate-scaleIn overflow-hidden"
             >
                 {/* Decorative gradient header */}
                 <div className="absolute top-0 left-0 right-0 h-32 bg-gradient-to-br from-primary via-primary-dark to-secondary opacity-90" />
@@ -144,7 +144,7 @@ export function WaitlistModal({ isOpen, onClose }: WaitlistModalProps) {
                 <div className="relative pt-16 px-8 pb-8">
                     {/* Icon */}
                     <div className="flex justify-center mb-4">
-                        <div className="w-20 h-20 rounded-2xl bg-white shadow-lg flex items-center justify-center">
+                        <div className="w-20 h-20 rounded-2xl bg-white flex items-center justify-center">
                             <Users className="w-10 h-10 text-primary" />
                         </div>
                     </div>
@@ -153,7 +153,7 @@ export function WaitlistModal({ isOpen, onClose }: WaitlistModalProps) {
                         <>
                             {/* Header */}
                             <div className="text-center mb-6">
-                                <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-accent text-accent-foreground shadow-lg shadow-accent/40 border border-white/20 backdrop-blur-md text-xs font-extrabold mb-3">
+                                <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-accent text-accent-foreground border border-white/20 backdrop-blur-md text-xs font-extrabold mb-3">
                                     <Sparkles className="w-3 h-3" />
                                     Get early access updates
                                 </div>

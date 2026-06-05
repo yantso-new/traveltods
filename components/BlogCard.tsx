@@ -19,13 +19,13 @@ export const BlogCard: React.FC<BlogCardProps> = ({ post }) => {
 
     return (
         <Link href={`/blog/${post.slug}`} className="group block">
-            <article className="bg-surface-light rounded-2xl overflow-hidden border border-slate-100 shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1 h-full flex flex-col">
+            <article className="bg-surface-light rounded-2xl overflow-hidden border border-slate-200/60 h-full flex flex-col transition-colors duration-200">
                 {/* Image */}
                 <div className="relative aspect-[16/10] overflow-hidden">
                     <img
                         src={post.image.url}
                         alt={post.image.alt}
-                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                        className="w-full h-full object-cover transition-transform duration-500 ease-out"
                     />
                     <div className="absolute top-3 left-3">
                         <Badge
@@ -39,7 +39,7 @@ export const BlogCard: React.FC<BlogCardProps> = ({ post }) => {
 
                 {/* Content */}
                 <div className="p-5 flex flex-col flex-1">
-                    <h3 className="text-lg font-bold text-text-main-light leading-snug mb-2 group-hover:text-primary transition-colors line-clamp-2">
+                    <h3 className="text-lg font-bold text-text-main-light leading-snug mb-2 line-clamp-2">
                         {post.title}
                     </h3>
                     <p className="text-text-sub-light text-sm font-light leading-relaxed mb-4 line-clamp-2 flex-1">
@@ -82,14 +82,14 @@ export const FeaturedBlogCard: React.FC<FeaturedBlogCardProps> = ({ post }) => {
 
     return (
         <Link href={`/blog/${post.slug}`} className="group block">
-            <article className="relative bg-surface-light rounded-3xl overflow-hidden border border-slate-100 shadow-lg hover:shadow-2xl transition-all duration-300">
+            <article className="relative bg-surface-light rounded-3xl overflow-hidden border border-slate-200/60 transition-colors duration-200">
                 <div className="grid md:grid-cols-2 gap-0">
                     {/* Image */}
                     <div className="relative aspect-[16/10] md:aspect-auto overflow-hidden">
                         <img
                             src={post.image.url}
                             alt={post.image.alt}
-                            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                            className="w-full h-full object-cover transition-transform duration-500 ease-out"
                         />
                         <div className="absolute top-4 left-4">
                             <Badge variant="gradient-accent" className="text-xs font-bold uppercase tracking-wider">
@@ -107,7 +107,7 @@ export const FeaturedBlogCard: React.FC<FeaturedBlogCardProps> = ({ post }) => {
                             {post.category}
                         </Badge>
 
-                        <h2 className="text-2xl md:text-3xl font-black text-text-main-light leading-tight mb-4 group-hover:text-primary transition-colors">
+                        <h2 className="text-2xl md:text-3xl font-black text-text-main-light leading-tight mb-4">
                             {post.title}
                         </h2>
 
