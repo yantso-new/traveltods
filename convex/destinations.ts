@@ -22,6 +22,12 @@ import {
 } from "./lib/api_clients";
 import { searchFamilyVenues } from "./lib/foursquare";
 
+const UNKNOWN_COUNTRY = "unknown";
+
+function isUnknownCountry(country: string) {
+    return country.trim().toLowerCase() === UNKNOWN_COUNTRY;
+}
+
 // Mutation to save or update a destination (updated for new schema)
 export const saveDestination = mutation({
     args: {
@@ -140,6 +146,10 @@ export const saveDestination = mutation({
         }))),
     },
     handler: async (ctx, args) => {
+        if (!args.country.trim() || isUnknownCountry(args.country)) {
+            throw new Error("Destination country must be selected before saving");
+        }
+
         const existing = await ctx.db
             .query("destinations")
             .withIndex("by_name", (q) => q.eq("name", args.name))
@@ -177,6 +187,44 @@ export const getAllDestinations = query({
     args: {},
     handler: async (ctx) => {
         return await ctx.db.query("destinations").collect();
+    },
+});
+
+export const getDestinationsWithUnknownCountry = query({
+    args: {},
+    handler: async (ctx) => {
+        const destinations = await ctx.db.query("destinations").collect();
+
+        return destinations
+            .filter((destination) => isUnknownCountry(destination.country))
+            .map((destination) => ({
+                _id: destination._id,
+                name: destination.name,
+                country: destination.country,
+                lastUpdated: destination.lastUpdated,
+                searchCount: destination.popularity?.searchCount ?? 0,
+            }));
+    },
+});
+
+export const deleteDestinationsWithUnknownCountry = mutation({
+    args: {},
+    handler: async (ctx) => {
+        const destinations = await ctx.db.query("destinations").collect();
+        const toDelete = destinations.filter((destination) => isUnknownCountry(destination.country));
+
+        for (const destination of toDelete) {
+            await ctx.db.delete(destination._id);
+        }
+
+        return {
+            deletedCount: toDelete.length,
+            deleted: toDelete.map((destination) => ({
+                _id: destination._id,
+                name: destination.name,
+                country: destination.country,
+            })),
+        };
     },
 });
 
@@ -350,8 +398,12 @@ export const gatherDestination = action({
         country: v.string(),
     },
     handler: async (ctx, args) => {
+        if (!args.country.trim() || isUnknownCountry(args.country)) {
+            return { success: false, error: "Country is required. Select a destination from the autocomplete list." };
+        }
+
         console.log(`Gathering real data for ${args.city}, ${args.country}`);
-        const fullName = args.country === "Unknown" ? args.city : `${args.city}, ${args.country}`;
+        const fullName = `${args.city}, ${args.country}`;
 
         // 1. Fetch Coordinates
         const coords = await getCoordinates(args.city, args.country);

@@ -13,6 +13,13 @@ export function Hero({ onSearchTermChange }: HeroProps) {
     const router = useRouter();
     const [searchOpacity, setSearchOpacity] = useState(1);
     const [loadingDestination, setLoadingDestination] = useState<string | null>(null);
+    const popularDestinations = [
+        { city: 'Tokyo', country: 'Japan' },
+        { city: 'Copenhagen', country: 'Denmark' },
+        { city: 'Singapore', country: 'Singapore' },
+        { city: 'Barcelona', country: 'Spain' },
+        { city: 'Paris', country: 'France' },
+    ];
 
     useEffect(() => {
         const handleScroll = () => {
@@ -79,18 +86,21 @@ export function Hero({ onSearchTermChange }: HeroProps) {
 
                                 <div className="mt-4 flex gap-3 flex-wrap items-center">
                                     <span className="text-sm text-white/90 font-bold whitespace-nowrap">Popular:</span>
-                                    {['Tokyo', 'Copenhagen', 'Singapore', 'Barcelona', 'Paris'].map(city => (
+                                    {popularDestinations.map(destination => {
+                                        const destinationName = `${destination.city}, ${destination.country}`;
+                                        return (
                                         <button
-                                            key={city}
+                                            key={destinationName}
                                             onClick={() => {
-                                                onSearchTermChange(city);
-                                                router.push(`/destination/${encodeURIComponent(city)}`);
+                                                setLoadingDestination(destinationName);
+                                                onSearchTermChange(destinationName);
+                                                router.push(`/destination/${encodeURIComponent(destinationName)}`);
                                             }}
                                             className="px-4 py-1.5 rounded-full bg-white/20 hover:bg-white/30 text-white text-xs font-semibold backdrop-blur-sm border border-white/20 transition-colors whitespace-nowrap cursor-pointer"
                                         >
-                                            {city}
+                                            {destination.city}
                                         </button>
-                                    ))}
+                                    )})}
                                 </div>
                             </div>
                         </div>

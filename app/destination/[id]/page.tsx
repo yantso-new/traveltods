@@ -91,12 +91,16 @@ export default function DestinationDetails() {
         if (!id) return;
 
         if (destination === null && !gatheringRef.current && !isGathering) {
+            const parts = id.split(',');
+            const city = parts[0]?.trim();
+            const country = parts[1]?.trim();
+
+            if (!city || !country) {
+                return;
+            }
+
             gatheringRef.current = true;
             setIsGathering(true);
-
-            const parts = id.split(',');
-            const city = parts[0]?.trim() || id;
-            const country = parts[1]?.trim() || "Unknown";
 
             gatherDestination({ city, country })
                 .then(() => setIsGathering(false))
@@ -715,4 +719,3 @@ export default function DestinationDetails() {
         </div>
     );
 }
-
