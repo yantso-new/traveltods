@@ -707,7 +707,7 @@ export const backfillCountryDestinations = action({
             };
         }
 
-        const inventory = await ctx.runQuery(api.destinations.getDestinationInventory);
+        const inventory: { name: string; country: string }[] = await ctx.runQuery(api.destinations.getDestinationInventory);
         const existingNames = new Set(
             inventory
                 .filter((destination) => normalizeCountryName(destination.country) === country)
