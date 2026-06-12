@@ -53,7 +53,6 @@ const candidates = [
 ];
 
 const targetTotal = Number(process.argv[2] || 150);
-const concurrency = Number(process.argv[3] || 3);
 
 function runConvex(args) {
   const result = spawnSync("npx", ["convex", ...args], {
@@ -88,7 +87,7 @@ function parseJsonFromOutput(output) {
 }
 
 async function main() {
-  const raw = runConvex(["data", "--prod", "destinations", "--limit", "500", "--format", "json"]);
+  const raw = runConvex(["run", "--prod", "destinations:getDestinationInventory", "{}"]);
   const existing = parseJsonFromOutput(raw);
   const existingNames = new Set(existing.map((d) => normalizeName(d.name)));
   const planned = candidates
@@ -98,43 +97,37 @@ async function main() {
   console.log(`Production currently has ${existing.length} destinations.`);
   console.log(`Importing ${planned.length} new destinations to reach target ${targetTotal}.`);
 
-  let index = 0;
   let success = 0;
   let failed = 0;
   const failures = [];
 
-  async function worker(workerId) {
-    while (index < planned.length) {
-      const current = index++;
-      const [city, country] = planned[current];
-      const label = `${city}, ${country}`;
-      try {
-        console.log(`[${current + 1}/${planned.length}] worker ${workerId}: ${label}`);
-        const out = runConvex([
-          "run",
-          "--prod",
-          "destinations:gatherDestination",
-          JSON.stringify({ city, country }),
-        ]);
-        const parsed = parseJsonFromOutput(out);
-        if (parsed.success) {
-          success++;
-        } else {
-          failed++;
-          failures.push({ label, error: parsed.error || "Unknown action failure" });
-          console.error(`Failed ${label}: ${parsed.error || "Unknown action failure"}`);
-        }
-      } catch (error) {
+  for (let index = 0; index < planned.length; index++) {
+    const [city, country] = planned[index];
+    const label = `${city}, ${country}`;
+    try {
+      console.log(`[${index + 1}/${planned.length}] ${label}`);
+      const out = runConvex([
+        "run",
+        "--prod",
+        "destinations:gatherDestination",
+        JSON.stringify({ city, country }),
+      ]);
+      const parsed = parseJsonFromOutput(out);
+      if (parsed.success) {
+        success++;
+      } else {
         failed++;
-        failures.push({ label, error: error.message });
-        console.error(`Failed ${label}: ${error.message}`);
+        failures.push({ label, error: parsed.error || "Unknown action failure" });
+        console.error(`Failed ${label}: ${parsed.error || "Unknown action failure"}`);
       }
+    } catch (error) {
+      failed++;
+      failures.push({ label, error: error.message });
+      console.error(`Failed ${label}: ${error.message}`);
     }
   }
 
-  await Promise.all(Array.from({ length: concurrency }, (_, i) => worker(i + 1)));
-
-  const after = parseJsonFromOutput(runConvex(["data", "--prod", "destinations", "--limit", "500", "--format", "json"]));
+  const after = parseJsonFromOutput(runConvex(["run", "--prod", "destinations:getDestinationInventory", "{}"]));
   console.log(`Done. Success: ${success}. Failed: ${failed}. Production total: ${after.length}.`);
   if (failures.length) {
     console.log(JSON.stringify(failures, null, 2));

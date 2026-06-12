@@ -21,11 +21,48 @@ import {
     getFamilySuggestions,
 } from "./lib/api_clients";
 import { searchFamilyVenues } from "./lib/foursquare";
+import {
+    COUNTRY_DESTINATION_SUGGESTIONS,
+    MIN_DESTINATIONS_PER_COUNTRY,
+} from "./lib/country_destinations";
 
 const UNKNOWN_COUNTRY = "unknown";
 
+function capitalizeWord(word: string) {
+    if (word === word.toUpperCase() && word.length > 1) {
+        return word;
+    }
+
+    return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
+}
+
+function normalizeCountryName(country: string) {
+    return country
+        .trim()
+        .replace(/\s+/g, " ")
+        .split(" ")
+        .map((part) => part.split("-").map(capitalizeWord).join("-"))
+        .join(" ");
+}
+
+function normalizeDestinationName(name: string, country: string) {
+    const normalizedCountry = normalizeCountryName(country);
+    const parts = name.trim().replace(/\s+/g, " ").split(",");
+
+    if (parts.length < 2) {
+        return name.trim().replace(/\s+/g, " ");
+    }
+
+    const city = parts[0].trim();
+    return `${city}, ${normalizedCountry}`;
+}
+
+function destinationKey(name: string, country: string) {
+    return normalizeDestinationName(name, country).toLowerCase();
+}
+
 function isUnknownCountry(country: string) {
-    return country.trim().toLowerCase() === UNKNOWN_COUNTRY;
+    return normalizeCountryName(country).toLowerCase() === UNKNOWN_COUNTRY;
 }
 
 // Mutation to save or update a destination (updated for new schema)
@@ -146,26 +183,32 @@ export const saveDestination = mutation({
         }))),
     },
     handler: async (ctx, args) => {
-        if (!args.country.trim() || isUnknownCountry(args.country)) {
+        const country = normalizeCountryName(args.country);
+        const name = normalizeDestinationName(args.name, country);
+
+        if (!country || isUnknownCountry(country)) {
             throw new Error("Destination country must be selected before saving");
         }
 
-        const existing = await ctx.db
+        const existingByName = await ctx.db
             .query("destinations")
-            .withIndex("by_name", (q) => q.eq("name", args.name))
+            .withIndex("by_name", (q) => q.eq("name", name))
             .first();
+        const existing = existingByName ?? (await ctx.db.query("destinations").collect())
+            .find((destination) => destinationKey(destination.name, destination.country) === destinationKey(name, country));
+
+        const data = {
+            ...args,
+            name,
+            country,
+            lastUpdated: Date.now(),
+        };
 
         if (existing) {
-            await ctx.db.patch(existing._id, {
-                ...args,
-                lastUpdated: Date.now(),
-            });
+            await ctx.db.patch(existing._id, data);
             return existing._id;
         } else {
-            const newId = await ctx.db.insert("destinations", {
-                ...args,
-                lastUpdated: Date.now(),
-            });
+            const newId = await ctx.db.insert("destinations", data);
             return newId;
         }
     },
@@ -187,6 +230,31 @@ export const getAllDestinations = query({
     args: {},
     handler: async (ctx) => {
         return await ctx.db.query("destinations").collect();
+    },
+});
+
+// Lightweight inventory for scripts that should not pull large nested documents.
+export const getDestinationInventory = query({
+    args: {},
+    handler: async (ctx) => {
+        const destinations = await ctx.db.query("destinations").collect();
+        return destinations.map((d) => ({
+            name: d.name,
+            country: d.country,
+        }));
+    },
+});
+
+export const getCountryDestinationCount = query({
+    args: { country: v.string() },
+    handler: async (ctx, args) => {
+        const country = normalizeCountryName(args.country);
+        const destinations = await ctx.db
+            .query("destinations")
+            .withIndex("by_country", (q) => q.eq("country", country))
+            .collect();
+
+        return destinations.length;
     },
 });
 
@@ -224,6 +292,44 @@ export const deleteDestinationsWithUnknownCountry = mutation({
                 name: destination.name,
                 country: destination.country,
             })),
+        };
+    },
+});
+
+export const normalizeDestinationCasing = mutation({
+    args: {},
+    handler: async (ctx) => {
+        const destinations = await ctx.db.query("destinations").collect();
+        const updated = [];
+
+        for (const destination of destinations) {
+            const country = normalizeCountryName(destination.country);
+            const name = normalizeDestinationName(destination.name, country);
+
+            if (destination.country !== country || destination.name !== name) {
+                await ctx.db.patch(destination._id, {
+                    country,
+                    name,
+                    lastUpdated: Date.now(),
+                });
+
+                updated.push({
+                    _id: destination._id,
+                    from: {
+                        name: destination.name,
+                        country: destination.country,
+                    },
+                    to: {
+                        name,
+                        country,
+                    },
+                });
+            }
+        }
+
+        return {
+            updatedCount: updated.length,
+            updated,
         };
     },
 });
@@ -396,17 +502,21 @@ export const gatherDestination = action({
     args: {
         city: v.string(),
         country: v.string(),
+        skipCountryBackfill: v.optional(v.boolean()),
     },
     handler: async (ctx, args) => {
-        if (!args.country.trim() || isUnknownCountry(args.country)) {
+        const city = args.city.trim().replace(/\s+/g, " ");
+        const country = normalizeCountryName(args.country);
+
+        if (!country || isUnknownCountry(country)) {
             return { success: false, error: "Country is required. Select a destination from the autocomplete list." };
         }
 
-        console.log(`Gathering real data for ${args.city}, ${args.country}`);
-        const fullName = `${args.city}, ${args.country}`;
+        console.log(`Gathering real data for ${city}, ${country}`);
+        const fullName = `${city}, ${country}`;
 
         // 1. Fetch Coordinates
-        const coords = await getCoordinates(args.city, args.country);
+        const coords = await getCoordinates(city, country);
         if (!coords) {
             return { success: false, error: "Coordinates not found" };
         }
@@ -427,13 +537,13 @@ export const gatherDestination = action({
         ] = await Promise.all([
             getOverpassData(coords.lat, coords.lon),
             getOpenTripMapData(coords.lat, coords.lon),
-            getWikipediaData(args.city, args.country),
-            getUnsplashCityImage(args.city, args.country),
-            getTravelTablesData(args.city, args.country),
+            getWikipediaData(city, country),
+            getUnsplashCityImage(city, country),
+            getTravelTablesData(city, country),
             getOpenMeteoClimate(coords.lat, coords.lon),
             getSafetyInfrastructure(coords.lat, coords.lon),
-            getTravelAdvisory(args.country),
-            getNeighborhoods(coords.lat, coords.lon, args.city),
+            getTravelAdvisory(country),
+            getNeighborhoods(coords.lat, coords.lon, city),
             getFamilySuggestions(coords.lat, coords.lon),
             searchFamilyVenues(coords.lat, coords.lon, "both"),
         ]);
@@ -474,8 +584,8 @@ export const gatherDestination = action({
 
         // 5. Construct Metadata
         const description = wikiData.description ||
-            `Discover ${args.city}, a destination in ${args.country}. Explore what this location has to offer for families and travelers.`;
-        const shortDescription = `Discover ${args.city} in ${args.country}.`;
+            `Discover ${city}, a destination in ${country}. Explore what this location has to offer for families and travelers.`;
+        const shortDescription = `Discover ${city} in ${country}.`;
 
         // Resolve Image: Prefer Unsplash if it's not a fallback. 
         // If it is a fallback, but we have a Wikipedia image, use Wikipedia instead.
@@ -524,7 +634,7 @@ export const gatherDestination = action({
         console.log(`Saving verified destination to DB: ${fullName}`);
         await ctx.runMutation(api.destinations.saveDestination, {
             name: fullName,
-            country: args.country,
+            country,
             coordinates: coords,
             allScores: {
                 ...allScores,
@@ -559,10 +669,80 @@ export const gatherDestination = action({
         // 8. Increment search count
         await ctx.runMutation(api.destinations.incrementSearchCount, { name: fullName });
 
+        if (!args.skipCountryBackfill) {
+            const countryCount = await ctx.runQuery(api.destinations.getCountryDestinationCount, { country });
+            if (countryCount < MIN_DESTINATIONS_PER_COUNTRY) {
+                await ctx.runAction(api.destinations.backfillCountryDestinations, {
+                    country,
+                    minimum: MIN_DESTINATIONS_PER_COUNTRY,
+                });
+            }
+        }
+
         return {
             success: true,
             allScores,
             dataQuality,
+        };
+    },
+});
+
+export const backfillCountryDestinations = action({
+    args: {
+        country: v.string(),
+        minimum: v.optional(v.number()),
+    },
+    handler: async (ctx, args) => {
+        const country = normalizeCountryName(args.country);
+        const minimum = args.minimum ?? MIN_DESTINATIONS_PER_COUNTRY;
+        const suggestions = COUNTRY_DESTINATION_SUGGESTIONS[country] ?? [];
+
+        if (!suggestions.length) {
+            return {
+                success: false,
+                country,
+                added: 0,
+                failed: 0,
+                error: "No destination suggestions configured for country",
+            };
+        }
+
+        const inventory = await ctx.runQuery(api.destinations.getDestinationInventory);
+        const existingNames = new Set(
+            inventory
+                .filter((destination) => normalizeCountryName(destination.country) === country)
+                .map((destination) => normalizeDestinationName(destination.name, country).toLowerCase())
+        );
+
+        const planned = suggestions
+            .filter((city) => !existingNames.has(`${city}, ${country}`.toLowerCase()))
+            .slice(0, Math.max(0, minimum - existingNames.size));
+
+        let added = 0;
+        let failed = 0;
+        const failures: { city: string; error: string }[] = [];
+
+        for (const city of planned) {
+            const result: any = await ctx.runAction(api.destinations.gatherDestination, {
+                city,
+                country,
+                skipCountryBackfill: true,
+            });
+
+            if (result?.success) {
+                added++;
+            } else {
+                failed++;
+                failures.push({ city, error: result?.error ?? "Unknown failure" });
+            }
+        }
+
+        return {
+            success: failed === 0,
+            country,
+            added,
+            failed,
+            failures,
         };
     },
 });
