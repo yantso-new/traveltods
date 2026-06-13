@@ -13,12 +13,11 @@ export const BlogSection: React.FC = () => {
     if (!featuredPost) return null;
 
     return (
-        <section className="py-20 px-4 md:px-20 bg-gradient-to-b from-orange-50/50 to-transparent">
+        <section className="py-20 px-4 md:px-20 bg-muted/35">
             <div className="max-w-7xl mx-auto">
                 {/* Header */}
                 <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-12">
                     <div className="relative">
-                        <div className="absolute -top-6 -left-6 size-16 bg-secondary/30 rounded-full blur-xl animate-pulse"></div>
                         <h2 className="relative text-text-main-light text-3xl md:text-5xl font-black leading-tight tracking-tight">
                             Travel Tips & Stories
                         </h2>

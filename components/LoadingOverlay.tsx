@@ -28,7 +28,7 @@ export function LoadingOverlay({ isVisible, destinationName }: LoadingOverlayPro
       }`}
     >
       {/* Backdrop */}
-      <div className="absolute inset-0 bg-white/98 backdrop-blur-md" />
+      <div className="absolute inset-0 bg-background-light/98 backdrop-blur-md" />
 
       {/* Content */}
       <div className={`relative z-10 flex flex-col items-center gap-8 transition-all duration-500 ${
@@ -40,7 +40,7 @@ export function LoadingOverlay({ isVisible, destinationName }: LoadingOverlayPro
           <div className="absolute inset-[-8px] rounded-full border-4 border-primary/20 border-t-primary animate-spin" style={{ animationDuration: '3s' }} />
           
           {/* Inner circle with icon */}
-          <div className="relative w-24 h-24 rounded-full bg-gradient-to-br from-primary via-primary to-primary-dark flex items-center justify-center">
+          <div className="relative w-24 h-24 rounded-full bg-primary flex items-center justify-center">
             {/* Baby Icon - Lucide Baby */}
             <svg
               width="56"

@@ -8,19 +8,19 @@ export const Badge: React.FC<{
 }> = ({ children, className = '', variant = 'solid-primary' }) => {
   const variants = {
     // Solid variants - clean, no shadows
-    'solid-primary': 'bg-primary text-white backdrop-blur-md border border-white/20',
-    'solid-secondary': 'bg-secondary text-white backdrop-blur-md border border-white/20',
-    'solid-accent': 'bg-accent text-accent-foreground backdrop-blur-md border border-white/20',
+    'solid-primary': 'bg-primary text-primary-foreground backdrop-blur-md border border-white/20',
+    'solid-secondary': 'bg-secondary text-secondary-foreground backdrop-blur-md border border-white/20',
+    'solid-accent': 'bg-accent text-accent-foreground backdrop-blur-md border border-white/30',
 
-    // Gradient variants - no shadows, subtle definition
-    'gradient-primary': 'bg-gradient-to-r from-primary to-primary-dark text-white border border-white/10',
-    'gradient-secondary': 'bg-gradient-to-r from-secondary to-teal-500 text-white border border-white/10',
-    'gradient-accent': 'bg-gradient-to-r from-amber-400 to-accent text-accent-foreground border border-white/10',
+    // Soft variants retained for callers, but toned down to avoid neon gradients
+    'gradient-primary': 'bg-primary text-primary-foreground border border-primary-dark/20',
+    'gradient-secondary': 'bg-secondary text-secondary-foreground border border-secondary/20',
+    'gradient-accent': 'bg-accent text-accent-foreground border border-accent-strong/20',
 
     // Subtle variants - for less critical info
     'subtle-primary': 'bg-primary/10 text-primary border-primary/20',
     'subtle-secondary': 'bg-secondary/10 text-secondary border-secondary/20',
-    'subtle-accent': 'bg-accent/10 text-accent-foreground border-accent/20',
+    'subtle-accent': 'bg-accent/35 text-accent-strong border-accent-strong/20',
   };
 
   return (
@@ -41,8 +41,8 @@ export const Button: React.FC<React.ButtonHTMLAttributes<HTMLButtonElement> & { 
   const variants = {
     primary: "bg-primary text-primary-foreground hover:bg-primary-dark active:scale-[0.985] transition-all duration-200",
     secondary: "bg-secondary text-secondary-foreground hover:bg-secondary/90 active:scale-[0.985] transition-all duration-200",
-    outline: "border border-slate-200 bg-surface-light hover:bg-muted text-text-main-light active:bg-slate-100 active:scale-[0.985] transition-all duration-200",
-    ghost: "hover:bg-muted text-text-sub-light active:bg-slate-200 active:scale-[0.985] transition-all duration-200"
+    outline: "border border-[var(--border)] bg-surface-light hover:bg-muted text-text-main-light active:bg-muted active:scale-[0.985] transition-all duration-200",
+    ghost: "hover:bg-muted text-text-sub-light active:bg-muted active:scale-[0.985] transition-all duration-200"
   };
 
   return (
@@ -55,7 +55,7 @@ export const Button: React.FC<React.ButtonHTMLAttributes<HTMLButtonElement> & { 
 export const Card: React.FC<{ children: React.ReactNode; className?: string; onClick?: () => void; noHoverLift?: boolean }> = ({ children, className = '', onClick }) => (
   <div
     onClick={onClick}
-    className={`rounded-3xl border border-slate-200/60 bg-surface-light text-text-main-light transition-colors duration-200 ${onClick ? 'cursor-pointer hover:border-primary/30' : ''} ${className}`}
+    className={`rounded-3xl border border-[var(--border)] bg-surface-light text-text-main-light transition-colors duration-200 ${onClick ? 'cursor-pointer hover:border-primary/35' : ''} ${className}`}
   >
     {children}
   </div>
@@ -66,7 +66,7 @@ export const ProgressBar: React.FC<{ value: number; max?: number; label?: string
   max = 10,
   label,
   icon,
-  color = "bg-primary"
+    color = "bg-primary"
 }) => {
   const percentage = Math.min(100, Math.max(0, (value / max) * 100));
 
@@ -99,7 +99,7 @@ export const Tooltip: React.FC<{ content: string; children: React.ReactNode }> =
   return (
     <div className="group relative flex items-center justify-center">
       {children}
-      <div className="pointer-events-none absolute bottom-full mb-2 hidden w-48 -translate-x-1/2 rounded-lg bg-background-dark p-2 text-center text-xs text-text-main-dark opacity-0 border border-slate-700 transition-opacity duration-200 group-hover:block group-hover:opacity-100 z-50 left-1/2">
+      <div className="pointer-events-none absolute bottom-full mb-2 hidden w-48 -translate-x-1/2 rounded-lg bg-background-dark p-2 text-center text-xs text-text-main-dark opacity-0 border border-[var(--border)] transition-opacity duration-200 group-hover:block group-hover:opacity-100 z-50 left-1/2">
         {content}
         <div className="absolute -bottom-1 left-1/2 h-2 w-2 -translate-x-1/2 rotate-45 bg-background-dark"></div>
       </div>
@@ -109,14 +109,14 @@ export const Tooltip: React.FC<{ content: string; children: React.ReactNode }> =
 
 export const Input: React.FC<React.InputHTMLAttributes<HTMLInputElement>> = ({ className = '', ...props }) => (
   <input
-    className={`flex h-12 w-full rounded-xl border border-slate-200 bg-surface-light px-4 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-text-sub-light/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 transition-colors duration-200 ${className}`}
+    className={`flex h-12 w-full rounded-xl border border-[var(--input)] bg-surface-light px-4 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-text-sub-light/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 transition-colors duration-200 ${className}`}
     {...props}
   />
 );
 
 export const Textarea: React.FC<React.TextareaHTMLAttributes<HTMLTextAreaElement>> = ({ className = '', ...props }) => (
   <textarea
-    className={`flex min-h-[80px] w-full rounded-xl border border-slate-200 bg-surface-light px-4 py-3 text-sm ring-offset-background placeholder:text-text-sub-light/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 transition-colors duration-200 resize-none ${className}`}
+    className={`flex min-h-[80px] w-full rounded-xl border border-[var(--input)] bg-surface-light px-4 py-3 text-sm ring-offset-background placeholder:text-text-sub-light/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 transition-colors duration-200 resize-none ${className}`}
     {...props}
   />
 );
@@ -131,7 +131,7 @@ export const Label: React.FC<React.LabelHTMLAttributes<HTMLLabelElement>> = ({ c
 export const Checkbox: React.FC<React.InputHTMLAttributes<HTMLInputElement>> = ({ className = '', ...props }) => (
   <input
     type="checkbox"
-    className={`peer h-5 w-5 shrink-0 rounded-lg border border-slate-200 ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground accent-primary cursor-pointer transition-colors duration-200 ${className}`}
+    className={`peer h-5 w-5 shrink-0 rounded-lg border border-[var(--input)] ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground accent-primary cursor-pointer transition-colors duration-200 ${className}`}
     {...props}
   />
 );

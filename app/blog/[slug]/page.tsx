@@ -140,7 +140,7 @@ export default function BlogPostPage({ params }: BlogPostPageProps) {
             else if (trimmedLine.startsWith('## ')) {
                 flushList(index);
                 elements.push(
-                    <h2 key={index} className="text-2xl md:text-3xl font-bold text-text-main-light mt-10 mb-5 border-b border-slate-100 pb-3">
+                    <h2 key={index} className="text-2xl md:text-3xl font-bold text-text-main-light mt-10 mb-5 border-b border-[var(--border)] pb-3">
                         {trimmedLine.slice(3)}
                     </h2>
                 );
@@ -245,7 +245,7 @@ export default function BlogPostPage({ params }: BlogPostPageProps) {
                 </p>
 
                 {/* Meta Bar */}
-                <div className="flex flex-wrap items-center gap-4 md:gap-6 mb-10 pb-8 border-b-2 border-slate-100">
+                <div className="flex flex-wrap items-center gap-4 md:gap-6 mb-10 pb-8 border-b-2 border-[var(--border)]">
                     <div className="flex items-center gap-3">
                         <div className="w-12 h-12 rounded-full bg-primary/10 text-primary flex items-center justify-center border-2 border-primary/20">
                             <MapPin className="w-5 h-5" />
@@ -273,21 +273,21 @@ export default function BlogPostPage({ params }: BlogPostPageProps) {
                         <span className="text-xs text-text-sub-light font-semibold mr-1">Share:</span>
                         <button
                             onClick={() => handleShare('twitter')}
-                            className="p-2.5 rounded-xl hover:bg-slate-100 transition-colors cursor-pointer active:scale-[0.985]"
+                            className="p-2.5 rounded-xl hover:bg-muted transition-colors cursor-pointer active:scale-[0.985]"
                             aria-label="Share on Twitter"
                         >
                             <Twitter className="w-4 h-4 text-text-sub-light hover:text-primary transition-colors" />
                         </button>
                         <button
                             onClick={() => handleShare('linkedin')}
-                            className="p-2.5 rounded-xl hover:bg-slate-100 transition-colors cursor-pointer active:scale-[0.985]"
+                            className="p-2.5 rounded-xl hover:bg-muted transition-colors cursor-pointer active:scale-[0.985]"
                             aria-label="Share on LinkedIn"
                         >
                             <Linkedin className="w-4 h-4 text-text-sub-light hover:text-primary transition-colors" />
                         </button>
                         <button
                             onClick={() => handleShare('copy')}
-                            className="p-2.5 rounded-xl hover:bg-slate-100 transition-colors cursor-pointer active:scale-[0.985] relative"
+                            className="p-2.5 rounded-xl hover:bg-muted transition-colors cursor-pointer active:scale-[0.985] relative"
                             aria-label="Copy link"
                         >
                             {copied ? (
@@ -305,11 +305,11 @@ export default function BlogPostPage({ params }: BlogPostPageProps) {
                 </div>
 
                 {post.places.length > 0 && (
-                    <section className="mt-12 border-t border-slate-100 pt-10">
+                    <section className="mt-12 border-t border-[var(--border)] pt-10">
                         <h2 className="text-2xl md:text-3xl font-bold text-text-main-light mb-5">Places mentioned</h2>
                         <div className="grid gap-4">
                             {post.places.map(place => (
-                                <div key={place.name} className="rounded-2xl border border-slate-200/60 bg-white p-5">
+                                <div key={place.name} className="rounded-2xl border border-[var(--border)] bg-white p-5">
                                     <h3 className="text-lg font-bold text-text-main-light">{place.name}</h3>
                                     <p className="text-text-sub-light mt-1 mb-4">{place.description}</p>
                                     <div className="flex flex-wrap gap-3">
@@ -340,7 +340,7 @@ export default function BlogPostPage({ params }: BlogPostPageProps) {
                     </section>
                 )}
 
-                <section className="mt-12 border-t border-slate-100 pt-10">
+                <section className="mt-12 border-t border-[var(--border)] pt-10">
                     <h2 className="text-2xl md:text-3xl font-bold text-text-main-light mb-5">Sources checked</h2>
                     <ul className="grid gap-3">
                         {post.sources.map(source => (
@@ -364,14 +364,14 @@ export default function BlogPostPage({ params }: BlogPostPageProps) {
                     <div className="flex gap-2">
                         <div className="w-2 h-2 rounded-full bg-primary"></div>
                         <div className="w-2 h-2 rounded-full bg-secondary"></div>
-                        <div className="w-2 h-2 rounded-full bg-accent"></div>
+                        <div className="w-2 h-2 rounded-full bg-accent-strong"></div>
                     </div>
                 </div>
             </article>
 
             {/* Related Posts */}
             {relatedPosts.length > 0 && (
-                <section className="py-16 md:py-20 px-4 md:px-20 bg-gradient-to-b from-orange-50/30 to-transparent border-t border-slate-100">
+                <section className="py-16 md:py-20 px-4 md:px-20 bg-muted/35 border-t border-[var(--border)]">
                     <div className="max-w-7xl mx-auto">
                         <div className="mb-10">
                             <h2 className="text-3xl md:text-4xl font-black text-text-main-light mb-3">

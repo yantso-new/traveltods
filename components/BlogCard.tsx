@@ -19,7 +19,7 @@ export const BlogCard: React.FC<BlogCardProps> = ({ post }) => {
 
     return (
         <Link href={`/blog/${post.slug}`} className="group block">
-            <article className="bg-surface-light rounded-2xl overflow-hidden border border-slate-200/60 h-full flex flex-col transition-colors duration-200">
+            <article className="bg-surface-light rounded-2xl overflow-hidden border border-[var(--border)] h-full flex flex-col transition-colors duration-200">
                 {/* Image */}
                 <div className="relative aspect-[16/10] overflow-hidden">
                     <img
@@ -47,7 +47,7 @@ export const BlogCard: React.FC<BlogCardProps> = ({ post }) => {
                     </p>
 
                     {/* Meta */}
-                    <div className="flex items-center justify-between pt-4 border-t border-slate-100">
+                    <div className="flex items-center justify-between pt-4 border-t border-[var(--border)]">
                         <div className="flex items-center gap-1.5 min-w-0 text-xs text-text-sub-light font-medium">
                             {post.destinationName ? (
                                 <MapPin className="w-3 h-3 flex-shrink-0" />
@@ -82,7 +82,7 @@ export const FeaturedBlogCard: React.FC<FeaturedBlogCardProps> = ({ post }) => {
 
     return (
         <Link href={`/blog/${post.slug}`} className="group block">
-            <article className="relative bg-surface-light rounded-3xl overflow-hidden border border-slate-200/60 transition-colors duration-200">
+            <article className="relative bg-surface-light rounded-3xl overflow-hidden border border-[var(--border)] transition-colors duration-200">
                 <div className="grid md:grid-cols-2 gap-0">
                     {/* Image */}
                     <div className="relative aspect-[16/10] md:aspect-auto overflow-hidden">

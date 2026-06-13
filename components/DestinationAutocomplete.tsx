@@ -178,8 +178,8 @@ export function DestinationAutocomplete({
           placeholder={isNavigating ? "Navigating..." : placeholder}
           className={
             isMinimal
-              ? `w-full pl-10 pr-10 py-2.5 rounded-full border border-slate-200 bg-surface-light/80 focus:bg-surface-light focus:border-primary/50 focus:ring-2 focus:ring-primary/10 outline-none text-sm transition-all duration-200 placeholder:text-text-sub-light text-text-main-light font-medium ${isNavigating ? 'opacity-50 cursor-wait' : ''}`
-              : `w-full pl-12 pr-24 md:pr-32 py-4 rounded-full border border-slate-200 bg-white/95 backdrop-blur focus:border-primary/50 focus:ring-4 focus:ring-primary/10 outline-none text-lg transition-all placeholder:text-text-sub-light text-text-main-light font-medium ${isNavigating ? 'opacity-50 cursor-wait' : ''}`
+              ? `w-full pl-10 pr-10 py-2.5 rounded-full border border-[var(--input)] bg-surface-light/80 focus:bg-surface-light focus:border-primary/50 focus:ring-2 focus:ring-primary/10 outline-none text-sm transition-all duration-200 placeholder:text-text-sub-light text-text-main-light font-medium ${isNavigating ? 'opacity-50 cursor-wait' : ''}`
+              : `w-full pl-12 pr-24 md:pr-32 py-4 rounded-full border border-[var(--input)] bg-white/95 backdrop-blur focus:border-primary/50 focus:ring-4 focus:ring-primary/10 outline-none text-lg transition-all placeholder:text-text-sub-light text-text-main-light font-medium ${isNavigating ? 'opacity-50 cursor-wait' : ''}`
           }
           value={query}
           onChange={(e) => {
@@ -225,7 +225,7 @@ export function DestinationAutocomplete({
 
       {/* Dropdown */}
       {isOpen && (
-        <div className="absolute z-50 w-full mt-2 bg-white rounded-2xl border border-slate-200 overflow-hidden">
+        <div className="absolute z-50 w-full mt-2 bg-white rounded-2xl border border-[var(--border)] overflow-hidden">
           {suggestions.length > 0 ? (
             <ul className="py-2">
               {suggestions.map((suggestion, index) => (
@@ -238,7 +238,7 @@ export function DestinationAutocomplete({
                   onClick={() => handleSelect(suggestion)}
                   onMouseEnter={() => setHighlightedIndex(index)}
                 >
-                  <MapPin className={`w-4 h-4 flex-shrink-0 ${index === highlightedIndex ? 'text-primary' : 'text-slate-400'}`} />
+                  <MapPin className={`w-4 h-4 flex-shrink-0 ${index === highlightedIndex ? 'text-primary' : 'text-text-sub-light/60'}`} />
                   <div>
                     <span className="font-bold text-text-main-light">
                       {suggestion.city}

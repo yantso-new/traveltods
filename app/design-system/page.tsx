@@ -63,13 +63,14 @@ export default function DesignSystemPage() {
                         Color Palette
                     </h2>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                        <ColorCard name="Primary" variable="--color-primary" hex="#FF6B6B" />
-                        <ColorCard name="Secondary" variable="--color-secondary" hex="#4ECDC4" />
-                        <ColorCard name="Accent" variable="--color-accent" hex="#FFE66D" textColor="text-black" />
-                        <ColorCard name="Background" variable="--color-background-light" hex="#FFFDF9" border />
-                        <ColorCard name="Surface" variable="--color-surface-light" hex="#FFFFFF" border />
-                        <ColorCard name="Text Main" variable="--color-text-main-light" hex="#2D3436" />
-                        <ColorCard name="Text Sub" variable="--color-text-sub-light" hex="#636e72" />
+                        <ColorCard name="Primary" variable="--color-primary" hex="#3F7C79" />
+                        <ColorCard name="Secondary" variable="--color-secondary" hex="#4D7467" />
+                        <ColorCard name="Accent" variable="--color-accent" hex="#F4D58D" textColor="text-accent-foreground" />
+                        <ColorCard name="Accent Strong" variable="--color-accent-strong" hex="#8A6425" />
+                        <ColorCard name="Background" variable="--color-background-light" hex="#FBFAF4" textColor="text-text-main-light" border />
+                        <ColorCard name="Surface" variable="--color-surface-light" hex="#FFFFFF" textColor="text-text-main-light" border />
+                        <ColorCard name="Text Main" variable="--color-text-main-light" hex="#263735" />
+                        <ColorCard name="Text Sub" variable="--color-text-sub-light" hex="#526460" />
                     </div>
                 </section>
 
@@ -110,7 +111,7 @@ export default function DesignSystemPage() {
                 {/* Buttons Section */}
                 <section>
                     <h2 className="text-3xl font-bold mb-8 flex items-center gap-3">
-                        <span className="w-8 h-8 rounded-lg bg-accent flex items-center justify-center text-black text-sm">3</span>
+                        <span className="w-8 h-8 rounded-lg bg-accent flex items-center justify-center text-accent-foreground text-sm">3</span>
                         Buttons
                     </h2>
                     <Card className="p-8">
@@ -210,7 +211,7 @@ export default function DesignSystemPage() {
                             </div>
                             <Button className="w-full" variant="primary">Action</Button>
                         </Card>
-                        <div className="h-64 rounded-3xl bg-surface-light border-2 border-dashed border-slate-300 flex items-center justify-center text-text-sub-light">
+                        <div className="h-64 rounded-3xl bg-surface-light border-2 border-dashed border-[var(--border)] flex items-center justify-center text-text-sub-light">
                             Empty State / Placeholder
                         </div>
                     </div>
@@ -229,12 +230,12 @@ export default function DesignSystemPage() {
 
                         <div>
                             <p className="mb-4 text-text-sub-light">Destination Autocomplete: Search input with Geoapify integration.</p>
-                            <Card className="p-6 bg-slate-50">
+                            <Card className="p-6 bg-muted">
                                 <DestinationAutocomplete
                                     onSearch={(q) => console.log('Search', q)}
                                     onSelect={(d) => console.log('Selected', d)}
                                 />
-                                <div className="mt-32 p-4 text-sm text-slate-400 text-center">
+                                <div className="mt-32 p-4 text-sm text-text-sub-light/70 text-center">
                                     (Dropdown appears on interaction)
                                 </div>
                             </Card>
@@ -249,7 +250,7 @@ export default function DesignSystemPage() {
 
 function ColorCard({ name, variable, hex, textColor = "text-white", border = false }: { name: string, variable: string, hex: string, textColor?: string, border?: boolean }) {
     return (
-        <div className={`rounded-2xl overflow-hidden transition-colors duration-200 ${border ? 'border border-slate-200' : ''}`}>
+        <div className={`rounded-2xl overflow-hidden transition-colors duration-200 ${border ? 'border border-[var(--border)]' : ''}`}>
             <div
                 className={`h-32 flex items-center justify-center ${textColor} font-bold text-lg`}
                 style={{ backgroundColor: `var(${variable})` }}

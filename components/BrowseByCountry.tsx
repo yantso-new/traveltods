@@ -47,7 +47,7 @@ function BrowseByCountryInner() {
         return (
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                 {Array.from({ length: 8 }).map((_, i) => (
-                    <div key={i} className="h-40 bg-slate-200 animate-pulse rounded-2xl" />
+                    <div key={i} className="h-40 bg-muted animate-pulse rounded-2xl" />
                 ))}
             </div>
         );
@@ -91,14 +91,14 @@ function BrowseByCountryInner() {
                         </div>
 
                         <div className="flex items-center gap-2 text-sm">
-                            <Star className="w-4 h-4 text-accent fill-accent" />
+                            <Star className="w-4 h-4 text-accent-strong fill-accent-strong" />
                             <span className="text-text-sub-light font-medium">
                                 Avg score: {Math.round(country.avgFamilyScore / 10)}/10
                             </span>
                         </div>
 
                         {country.topDestination && (
-                            <div className="pt-2 border-t border-slate-100">
+                            <div className="pt-2 border-t border-[var(--border)]">
                                 <p className="text-xs text-text-sub-light">
                                     Top pick: <span className="font-semibold text-primary">{country.topDestination}</span>
                                 </p>

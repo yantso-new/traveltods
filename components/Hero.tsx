@@ -42,20 +42,20 @@ export function Hero({ onSearchTermChange }: HeroProps) {
             )}
             <div className="px-4 py-6 md:px-20 md:py-10 flex justify-center">
                 <div className="w-full max-w-7xl">
-                    <div className="relative rounded-3xl bg-slate-900 transition-all duration-700">
+                    <div className="relative rounded-3xl bg-background-dark transition-all duration-700">
                         <div className="absolute inset-0 z-0 overflow-hidden rounded-3xl">
-                            <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-black/30 to-transparent z-10"></div>
+                            <div className="absolute inset-0 bg-gradient-to-r from-[#13221f]/70 via-[#13221f]/35 to-transparent z-10"></div>
                             <div className="w-full h-full bg-cover bg-center" style={{ backgroundImage: 'url("/hero-family.png")' }}>
                             </div>
                         </div>
                         <div className="relative z-20 flex flex-col items-start justify-center min-h-[500px] p-6 md:p-16 max-w-3xl gap-8">
                             <div className="space-y-4">
-                                <div className="inline-flex items-center gap-2 px-3 py-1 mb-4 rounded-full bg-gradient-to-r from-primary to-primary-dark text-white border border-white/10 backdrop-blur-md text-xs font-extrabold uppercase tracking-wider transform -rotate-1">
+                                <div className="inline-flex items-center gap-2 px-3 py-1 mb-4 rounded-full bg-primary/90 text-primary-foreground border border-white/20 backdrop-blur-md text-xs font-extrabold uppercase tracking-wider transform -rotate-1">
                                     <span className="material-symbols-outlined text-base">verified</span>
                                     Parent Verified
                                 </div>
                                 <h1 className="text-white text-4xl md:text-5xl lg:text-7xl font-black leading-[0.95] tracking-tight drop-shadow-sm">
-                                    Adventures tailored for <span className="text-secondary">tiny travelers</span>
+                                    Adventures tailored for <span className="text-accent">tiny travelers</span>
                                 </h1>
                                 <h2 className="text-white/90 text-base md:text-xl font-medium max-w-xl leading-relaxed drop-shadow-md">
                                     Discover top-rated, safe, and engaging destinations perfect for kids under 10. Filter by stroller access, nap-friendliness, and more.
@@ -68,7 +68,7 @@ export function Hero({ onSearchTermChange }: HeroProps) {
                             >
                                 <div className="relative max-w-2xl mx-auto rounded-full group">
                                     <DestinationAutocomplete
-                                        placeholder="Where to next? (e.g. Tokyo, Paris)"
+                                        placeholder="Where to next?"
                                         className="w-full"
                                         onSelect={(dest) => {
                                             const destinationName = `${dest.name}, ${dest.country}`;

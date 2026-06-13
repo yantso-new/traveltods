@@ -39,13 +39,13 @@ export function Navbar() {
     }, [pathname]);
 
     return (
-        <header className="sticky top-0 z-50 w-full border-b border-slate-200 bg-surface-light/80 backdrop-blur-md transition-all duration-200">
+        <header className="sticky top-0 z-50 w-full border-b border-[var(--border)] bg-surface-light/85 backdrop-blur-md transition-all duration-200">
             <div className="px-4 md:px-20 py-3 flex justify-center">
                 <div className="w-full max-w-7xl flex flex-col gap-0">
                     <div className="flex items-center justify-between gap-4 w-full">
                         {/* Logo */}
                         <div className="flex items-center gap-3 cursor-pointer flex-shrink-0" onClick={() => router.push('/')}>
-                            <div className="flex items-center justify-center size-10 md:size-12 rounded-xl bg-surface-light overflow-hidden border border-slate-200">
+                            <div className="flex items-center justify-center size-10 md:size-12 rounded-xl bg-surface-light overflow-hidden border border-[var(--border)]">
                                 <img src="/logo.png" alt="TravelTods Logo" className="w-full h-full object-cover" />
                             </div>
                             <h2 className="text-xl md:text-2xl font-extrabold tracking-tight text-text-main-light hidden sm:block">TravelTods</h2>
@@ -84,7 +84,7 @@ export function Navbar() {
                             <Button
                                 variant="outline"
                                 aria-label="Toggle search"
-                                className={`rounded-full border-slate-200 !p-2 !w-10 !h-10 transition-colors duration-200 ${showSearch ? 'bg-primary/10' : ''}`}
+                                className={`rounded-full border-[var(--border)] !p-2 !w-10 !h-10 transition-colors duration-200 ${showSearch ? 'bg-primary/10' : ''}`}
                                 onClick={() => setShowSearch(!showSearch)}
                             >
                                 <Search className="w-4 h-4 ml-0" />
@@ -119,9 +119,9 @@ export function Navbar() {
                     </div>
 
                     {/* Mobile Menu Dropdown */}
-                    <div className={`lg:hidden overflow-hidden transition-all duration-300 ease-in-out bg-surface-light border-t border-slate-100 mt-2 ${isMenuOpen ? 'max-h-64 opacity-100 py-4' : 'max-h-0 opacity-0'}`}>
+                    <div className={`lg:hidden overflow-hidden transition-all duration-300 ease-in-out bg-surface-light border-t border-[var(--border)] mt-2 ${isMenuOpen ? 'max-h-64 opacity-100 py-4' : 'max-h-0 opacity-0'}`}>
                         <nav className="flex flex-col gap-4 px-2">
-                            <a className="text-base font-bold text-text-main-light px-4 py-2 rounded-xl hover:bg-slate-50 transition-colors" href="/">Home</a>
+                            <a className="text-base font-bold text-text-main-light px-4 py-2 rounded-xl hover:bg-muted transition-colors" href="/">Home</a>
                             <div className="px-4 pt-2">
                                 <Button variant="primary" className="w-full rounded-2xl h-12" onClick={() => {
                                     setIsMenuOpen(false);

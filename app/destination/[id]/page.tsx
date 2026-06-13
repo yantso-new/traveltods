@@ -20,7 +20,6 @@ import {
     ExternalLink,
     ShoppingBag,
     MapPin,
-    RefreshCw
 } from 'lucide-react';
 // ChatMessage type removed
 import { Button, Badge, ProgressBar, Card, LoadingSpinner, Tooltip } from '@/components/ui';
@@ -32,6 +31,92 @@ import { ResponsiveContainer, RadarChart, PolarGrid, PolarAngleAxis, Radar, Tool
 // Convex Imports
 import { useQuery, useAction, useMutation } from 'convex/react';
 import { api } from '@/convex/_generated/api';
+
+function hasSuggestionContent(suggestions: any) {
+    if (!suggestions) return false;
+
+    return Boolean(
+        suggestions.freeActivities?.length ||
+        suggestions.downtime?.length ||
+        suggestions.cafes?.length ||
+        suggestions.restaurants?.length
+    );
+}
+
+function getSpotMapsUrl(spot: any, destinationName: string) {
+    if (spot.coordinates?.lat && spot.coordinates?.lon) {
+        return `https://www.google.com/maps/search/?api=1&query=${spot.coordinates.lat},${spot.coordinates.lon}`;
+    }
+
+    const query = [spot.name, spot.address, destinationName]
+        .filter(Boolean)
+        .join(', ');
+
+    return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`;
+}
+
+function formatSpotType(type?: string) {
+    return type ? type.replace(/_/g, ' ') : undefined;
+}
+
+function SpotLinkCard({
+    spot,
+    destinationName,
+    icon,
+    iconClassName,
+    iconContainerClassName,
+    children,
+}: {
+    spot: any;
+    destinationName: string;
+    icon: React.ReactNode;
+    iconClassName?: string;
+    iconContainerClassName: string;
+    children?: React.ReactNode;
+}) {
+    const mapsUrl = getSpotMapsUrl(spot, destinationName);
+    const rating = typeof spot.rating === 'number' ? spot.rating.toFixed(1) : null;
+
+    return (
+        <a
+            href={mapsUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label={`Open ${spot.name} in Google Maps`}
+            className="group block rounded-3xl border border-[var(--border)] bg-surface-light p-4 text-text-main-light transition-colors duration-200 hover:border-primary/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+        >
+            <div className="flex items-start gap-3">
+                <div className={`w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 ${iconContainerClassName}`}>
+                    <span className={iconClassName}>{icon}</span>
+                </div>
+                <div className="flex-1 min-w-0">
+                    <div className="flex items-start justify-between gap-3">
+                        <h4 className="font-bold text-text-main-light mb-1 group-hover:text-primary transition-colors">{spot.name}</h4>
+                        <ExternalLink className="w-4 h-4 mt-0.5 flex-shrink-0 text-text-sub-light/50 group-hover:text-primary transition-colors" />
+                    </div>
+
+                    <div className="space-y-1 text-xs text-text-sub-light">
+                        {formatSpotType(spot.type) && <p className="capitalize">{formatSpotType(spot.type)}</p>}
+                        {spot.address && <p className="line-clamp-1">{spot.address}</p>}
+                        {(rating || spot.priceLevel) && (
+                            <p className="font-semibold">
+                                {rating && <span>{rating} rating</span>}
+                                {rating && spot.priceLevel && <span> · </span>}
+                                {spot.priceLevel && <span>{spot.priceLevel}</span>}
+                            </p>
+                        )}
+                    </div>
+
+                    {spot.description && (
+                        <p className="text-sm text-text-sub-light line-clamp-2 mt-2">{spot.description}</p>
+                    )}
+
+                    {children}
+                </div>
+            </div>
+        </a>
+    );
+}
 
 export default function DestinationDetails() {
     const params = useParams();
@@ -53,10 +138,8 @@ export default function DestinationDetails() {
 
     // Sync localSuggestions with destination.suggestions when destination loads/changes
     useEffect(() => {
-        if (destination?.suggestions) {
-            setLocalSuggestions(destination.suggestions);
-        }
-    }, [destination?.suggestions]);
+        setLocalSuggestions(destination?.suggestions ?? null);
+    }, [id, destination?.suggestions]);
 
     // Refresh suggestions action
     const refreshSuggestionsAction = useAction(api.refresh_suggestions.refreshSuggestions);
@@ -64,6 +147,7 @@ export default function DestinationDetails() {
     // Track if we have initiated gathering to prevent loops
     const gatheringRef = useRef(false);
     const refreshCheckRef = useRef(false);
+    const suggestionsRefreshRef = useRef<string | null>(null);
 
     // Viator Activities Data
     // @ts-ignore
@@ -132,6 +216,27 @@ export default function DestinationDetails() {
             .catch(console.error);
     }, [id, destination, checkAndRefreshIfStale, incrementSearchCount]);
 
+    useEffect(() => {
+        if (!id || !destination || suggestionsRefreshRef.current === id) return;
+        if (hasSuggestionContent(destination.suggestions)) return;
+
+        suggestionsRefreshRef.current = id;
+        setIsRefreshing(true);
+
+        refreshSuggestionsAction({ destinationName: id })
+            .then((result: any) => {
+                if (!result.success) {
+                    console.error('Refresh suggestions failed:', result.error);
+                }
+            })
+            .catch((e: any) => {
+                console.error('Refresh suggestions failed:', e);
+            })
+            .finally(() => {
+                setIsRefreshing(false);
+            });
+    }, [id, destination, refreshSuggestionsAction]);
+
     // Show loading overlay while connecting or gathering data
     if (destination === undefined || isGathering) {
         return (
@@ -148,6 +253,8 @@ export default function DestinationDetails() {
 
     const { allScores, radarChart, dataQuality } = destination;
     const isUnreliable = dataQuality && !dataQuality.hasReliableOverallScore;
+    const suggestions = localSuggestions ?? destination.suggestions;
+    const shouldShowSuggestionsSection = hasSuggestionContent(suggestions) || isRefreshing;
 
     // Transform radar chart to 1-10 scale
     const radarData = radarChart?.map((item: any) => ({
@@ -183,7 +290,7 @@ export default function DestinationDetails() {
 
                         <Link 
                             href={`/country/${encodeURIComponent(destination.country)}`}
-                            className="inline-flex items-center gap-2 px-3 py-1 mb-4 rounded-full bg-gradient-to-r from-primary to-primary-dark text-white border border-white/10 backdrop-blur-md text-xs font-extrabold uppercase tracking-wider transition-colors cursor-pointer"
+                            className="inline-flex items-center gap-2 px-3 py-1 mb-4 rounded-full bg-primary/90 text-primary-foreground border border-white/20 backdrop-blur-md text-xs font-extrabold uppercase tracking-wider transition-colors cursor-pointer"
                         >
                             <span className="material-symbols-outlined text-sm">public</span>
                             {destination.country}
@@ -230,7 +337,7 @@ export default function DestinationDetails() {
 
                         {/* Detailed Metrics Breakdown */}
                         <Card className="p-8">
-                            <div className="flex items-center justify-between mb-8 pb-6 border-b border-slate-100">
+                            <div className="flex items-center justify-between mb-8 pb-6 border-b border-[var(--border)]">
                                 <div className="flex items-center gap-3">
                                     <div>
                                         <div className="flex items-center gap-2">
@@ -310,7 +417,7 @@ export default function DestinationDetails() {
                                             max={10}
                                             label="Healthy Options"
                                             icon={<Utensils className="w-4 h-4" />}
-                                            color="bg-orange-400"
+                                            color="bg-accent-strong"
                                         />
                                     </div>
                                 </div>
@@ -332,8 +439,8 @@ export default function DestinationDetails() {
                                         <Radar
                                             name={destination.name}
                                             dataKey="A"
-                                            stroke="#FF6B6B"
-                                            fill="#FF6B6B"
+                                            stroke="#3F7C79"
+                                            fill="#3F7C79"
                                             fillOpacity={0.3}
                                         />
                                         <ChartTooltip />
@@ -407,14 +514,14 @@ export default function DestinationDetails() {
                                         <div className="flex items-center justify-between">
                                             <span className="text-sm text-text-sub-light">Cafés</span>
                                             <div className="flex items-center gap-1">
-                                                <Utensils className="w-4 h-4 text-orange-500" />
+                                    <Utensils className="w-4 h-4 text-accent-strong" />
                                                 <span className="font-bold text-sm">{hood.scores.cafes}/10</span>
                                             </div>
                                         </div>
                                         <div className="flex items-center justify-between">
                                             <span className="text-sm text-text-sub-light">Restaurants</span>
                                             <div className="flex items-center gap-1">
-                                                <Utensils className="w-4 h-4 text-red-500" />
+                                    <Utensils className="w-4 h-4 text-secondary" />
                                                 <span className="font-bold text-sm">{hood.scores.restaurants}/10</span>
                                             </div>
                                         </div>
@@ -441,165 +548,130 @@ export default function DestinationDetails() {
             )}
 
             {/* Local Suggestions Section */}
-            {destination.suggestions && (
+            {shouldShowSuggestionsSection && (
                 <div className="px-4 md:px-20 mt-16 flex justify-center">
                     <div className="w-full max-w-7xl">
                         <div className="mb-8">
-                            <div className="flex items-center justify-between">
-                                <div className="inline-flex items-center gap-1.5 px-3 py-1 mb-4 rounded-full bg-accent/10 text-accent border border-accent/20 text-[10px] font-black uppercase tracking-widest">
-                                    <Smile className="w-3 h-3" />
-                                    Parent Approved
-                                </div>
-                                <button
-                                    onClick={async () => {
-                                        setIsRefreshing(true);
-                                        try {
-                                            const result = await refreshSuggestionsAction({ destinationName: id });
-                                            if (result.success) {
-                                                // Re-fetch destination to get updated suggestions
-                                                // The Convex query will update reactively since we patched the DB
-                                            }
-                                        } catch (e) {
-                                            console.error('Refresh suggestions failed:', e);
-                                        } finally {
-                                            setIsRefreshing(false);
-                                        }
-                                    }}
-                                    disabled={isRefreshing}
-                                    className="inline-flex items-center gap-1.5 px-3 py-1 mb-4 rounded-full bg-white border border-slate-200 text-text-sub-light hover:border-primary/30 hover:text-primary text-xs font-bold transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                                    title="Refresh suggestions from local APIs"
-                                >
-                                    <RefreshCw className={`w-3 h-3 ${isRefreshing ? 'animate-spin' : ''}`} />
-                                    {isRefreshing ? 'Refreshing...' : 'Refresh'}
-                                </button>
+                            <div className="inline-flex items-center gap-1.5 px-3 py-1 mb-4 rounded-full bg-accent/35 text-accent-strong border border-accent-strong/20 text-[10px] font-black uppercase tracking-widest">
+                                <Smile className="w-3 h-3" />
+                                Parent Approved
                             </div>
                             <h2 className="text-3xl font-black text-text-main-light mb-2">Family-Friendly Spots</h2>
                             <p className="text-text-sub-light text-lg">Curated recommendations in <span className="text-primary font-bold">{destination.name}</span></p>
                         </div>
 
+                        {isRefreshing && !hasSuggestionContent(suggestions) && (
+                            <Card className="p-6 mb-12 flex items-center gap-3 text-text-sub-light">
+                                <LoadingSpinner />
+                                <span className="font-semibold">Finding family-friendly spots...</span>
+                            </Card>
+                        )}
+
                         {/* Free Activities */}
-                        {destination.suggestions.freeActivities && destination.suggestions.freeActivities.length > 0 && (
+                        {suggestions?.freeActivities && suggestions.freeActivities.length > 0 && (
                             <div className="mb-12">
                                 <h3 className="text-2xl font-bold text-text-main-light mb-4 flex items-center gap-2">
                                     <Trees className="w-6 h-6 text-green-500" />
                                     Free Activities & Parks
                                 </h3>
                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                    {destination.suggestions.freeActivities.slice(0, 6).map((activity: any, idx: number) => (
-                                        <Card key={idx} className="p-4 transition-colors duration-200">
-                                            <div className="flex items-start gap-3">
-                                                <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                                                    <Trees className="w-5 h-5 text-green-600" />
-                                                </div>
-                                                <div className="flex-1">
-                                                    <h4 className="font-bold text-text-main-light mb-1">{activity.name}</h4>
-                                                    <p className="text-xs text-text-sub-light capitalize mb-2">{activity.type}</p>
-                                                    {activity.description && (
-                                                        <p className="text-sm text-text-sub-light line-clamp-2">{activity.description}</p>
-                                                    )}
-                                                </div>
-                                            </div>
-                                        </Card>
+                                    {suggestions.freeActivities.slice(0, 6).map((activity: any, idx: number) => (
+                                        <SpotLinkCard
+                                            key={idx}
+                                            spot={activity}
+                                            destinationName={destination.name}
+                                            icon={<Trees className="w-5 h-5 text-green-600" />}
+                                            iconContainerClassName="bg-green-100"
+                                        />
                                     ))}
                                 </div>
                             </div>
                         )}
 
                         {/* Downtime Spots */}
-                        {destination.suggestions.downtime && destination.suggestions.downtime.length > 0 && (
+                        {suggestions?.downtime && suggestions.downtime.length > 0 && (
                             <div className="mb-12">
                                 <h3 className="text-2xl font-bold text-text-main-light mb-4 flex items-center gap-2">
                                     <CloudSun className="w-6 h-6 text-blue-500" />
                                     Quiet Downtime Spots
                                 </h3>
                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                    {destination.suggestions.downtime.slice(0, 6).map((spot: any, idx: number) => (
-                                        <Card key={idx} className="p-4 transition-colors duration-200">
-                                            <div className="flex items-start gap-3">
-                                                <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                                                    <CloudSun className="w-5 h-5 text-blue-600" />
-                                                </div>
-                                                <div className="flex-1">
-                                                    <h4 className="font-bold text-text-main-light mb-1">{spot.name}</h4>
-                                                    <p className="text-xs text-text-sub-light capitalize mb-2">{spot.type}</p>
-                                                    {spot.description && (
-                                                        <p className="text-sm text-text-sub-light line-clamp-2">{spot.description}</p>
-                                                    )}
-                                                </div>
-                                            </div>
-                                        </Card>
+                                    {suggestions.downtime.slice(0, 6).map((spot: any, idx: number) => (
+                                        <SpotLinkCard
+                                            key={idx}
+                                            spot={spot}
+                                            destinationName={destination.name}
+                                            icon={<CloudSun className="w-5 h-5 text-blue-600" />}
+                                            iconContainerClassName="bg-blue-100"
+                                        />
                                     ))}
                                 </div>
                             </div>
                         )}
 
                         {/* Cafés */}
-                        {destination.suggestions.cafes && destination.suggestions.cafes.length > 0 && (
+                        {suggestions?.cafes && suggestions.cafes.length > 0 && (
                             <div className="mb-12">
                                 <h3 className="text-2xl font-bold text-text-main-light mb-4 flex items-center gap-2">
-                                    <Utensils className="w-6 h-6 text-orange-500" />
+                                    <Utensils className="w-6 h-6 text-accent-strong" />
                                     Family-Friendly Cafés
                                 </h3>
                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                    {destination.suggestions.cafes.slice(0, 6).map((cafe: any, idx: number) => (
-                                        <Card key={idx} className="p-4 transition-colors duration-200">
-                                            <div className="flex items-start gap-3">
-                                                <div className="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                                                    <Utensils className="w-5 h-5 text-orange-600" />
+                                    {suggestions.cafes.slice(0, 6).map((cafe: any, idx: number) => (
+                                        <SpotLinkCard
+                                            key={idx}
+                                            spot={cafe}
+                                            destinationName={destination.name}
+                                            icon={<Utensils className="w-5 h-5 text-accent-strong" />}
+                                            iconContainerClassName="bg-accent/35"
+                                        >
+                                            {cafe.cuisine && (
+                                                <p className="text-xs text-text-sub-light mt-1">{cafe.cuisine}</p>
+                                            )}
+                                            {cafe.kidFeatures && cafe.kidFeatures.length > 0 && (
+                                                <div className="flex flex-wrap gap-1 mt-2">
+                                                    {cafe.kidFeatures.slice(0, 2).map((feature: string) => (
+                                                        <Badge key={feature} variant="subtle-accent" className="text-xs">
+                                                            {feature.replace('_', ' ')}
+                                                        </Badge>
+                                                    ))}
                                                 </div>
-                                                <div className="flex-1">
-                                                    <h4 className="font-bold text-text-main-light mb-1">{cafe.name}</h4>
-                                                    {cafe.cuisine && (
-                                                        <p className="text-xs text-text-sub-light mb-2">{cafe.cuisine}</p>
-                                                    )}
-                                                    {cafe.kidFeatures && cafe.kidFeatures.length > 0 && (
-                                                        <div className="flex flex-wrap gap-1 mt-2">
-                                                            {cafe.kidFeatures.slice(0, 2).map((feature: string) => (
-                                                                <Badge key={feature} variant="subtle-accent" className="text-xs">
-                                                                    {feature.replace('_', ' ')}
-                                                                </Badge>
-                                                            ))}
-                                                        </div>
-                                                    )}
-                                                </div>
-                                            </div>
-                                        </Card>
+                                            )}
+                                        </SpotLinkCard>
                                     ))}
                                 </div>
                             </div>
                         )}
 
                         {/* Restaurants */}
-                        {destination.suggestions.restaurants && destination.suggestions.restaurants.length > 0 && (
+                        {suggestions?.restaurants && suggestions.restaurants.length > 0 && (
                             <div className="mb-12">
                                 <h3 className="text-2xl font-bold text-text-main-light mb-4 flex items-center gap-2">
-                                    <Utensils className="w-6 h-6 text-red-500" />
+                                    <Utensils className="w-6 h-6 text-secondary" />
                                     Kid-Friendly Restaurants
                                 </h3>
                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                    {destination.suggestions.restaurants.slice(0, 6).map((restaurant: any, idx: number) => (
-                                        <Card key={idx} className="p-4 transition-colors duration-200">
-                                            <div className="flex items-start gap-3">
-                                                <div className="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                                                    <Utensils className="w-5 h-5 text-red-600" />
+                                    {suggestions.restaurants.slice(0, 6).map((restaurant: any, idx: number) => (
+                                        <SpotLinkCard
+                                            key={idx}
+                                            spot={restaurant}
+                                            destinationName={destination.name}
+                                            icon={<Utensils className="w-5 h-5 text-secondary" />}
+                                            iconContainerClassName="bg-secondary/10"
+                                        >
+                                            {restaurant.cuisine && (
+                                                <p className="text-xs text-text-sub-light mt-1">{restaurant.cuisine}</p>
+                                            )}
+                                            {restaurant.kidFeatures && restaurant.kidFeatures.length > 0 && (
+                                                <div className="flex flex-wrap gap-1 mt-2">
+                                                    {restaurant.kidFeatures.slice(0, 2).map((feature: string) => (
+                                                        <Badge key={feature} variant="subtle-accent" className="text-xs">
+                                                            {feature.replace('_', ' ')}
+                                                        </Badge>
+                                                    ))}
                                                 </div>
-                                                <div className="flex-1">
-                                                    <h4 className="font-bold text-text-main-light mb-1">{restaurant.name}</h4>
-                                                    {restaurant.cuisine && (
-                                                        <p className="text-xs text-text-sub-light mb-2">{restaurant.cuisine}</p>
-                                                    )}
-                                                    {restaurant.kidFeatures && restaurant.kidFeatures.length > 0 && (
-                                                        <div className="flex flex-wrap gap-1 mt-2">
-                                                            {restaurant.kidFeatures.slice(0, 2).map((feature: string) => (
-                                                                <Badge key={feature} variant="subtle-accent" className="text-xs">
-                                                                    {feature.replace('_', ' ')}
-                                                                </Badge>
-                                                            ))}
-                                                        </div>
-                                                    )}
-                                                </div>
-                                            </div>
-                                        </Card>
+                                            )}
+                                        </SpotLinkCard>
                                     ))}
                                 </div>
                             </div>
@@ -620,7 +692,7 @@ export default function DestinationDetails() {
                             <h2 className="text-3xl font-black text-text-main-light mb-2">Book Activities</h2>
                             <p className="text-text-sub-light text-lg">Hand-picked for under-10s in <span className="text-primary font-bold">{destination.name}</span></p>
                         </div>
-                        <div className="hidden md:flex items-center gap-2 text-sm text-text-sub-light bg-surface-light px-4 py-2 rounded-full border border-slate-100">
+                        <div className="hidden md:flex items-center gap-2 text-sm text-text-sub-light bg-surface-light px-4 py-2 rounded-full border border-[var(--border)]">
                             <span className="font-semibold text-primary">Powered by Viator</span>
                             <ExternalLink className="w-4 h-4" />
                         </div>
@@ -646,15 +718,15 @@ export default function DestinationDetails() {
                                             {activity.duration}
                                         </div>
                                         {activity.badge && (
-                                            <div className="absolute top-2 left-2 bg-accent text-accent-foreground px-2 py-1 rounded-md text-xs font-bold">
+                                        <div className="absolute top-2 left-2 bg-accent text-accent-foreground px-2 py-1 rounded-md text-xs font-bold">
                                                 {activity.badge}
                                             </div>
                                         )}
                                     </div>
                                     <div className="p-5 flex flex-col flex-grow">
-                                        <div className="flex items-center gap-1 mb-2 text-accent">
+                                        <div className="flex items-center gap-1 mb-2 text-accent-strong">
                                             {[...Array(5)].map((_, i) => (
-                                                <svg key={i} className={`w-3 h-3 ${i < Math.floor(activity.rating) ? 'fill-current' : 'text-slate-300'}`} fill="currentColor" viewBox="0 0 20 20">
+                                                <svg key={i} className={`w-3 h-3 ${i < Math.floor(activity.rating) ? 'fill-current' : 'text-text-sub-light/30'}`} fill="currentColor" viewBox="0 0 20 20">
                                                     <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
                                                 </svg>
                                             ))}
@@ -666,7 +738,7 @@ export default function DestinationDetails() {
                                             Family Friendly
                                         </p>
 
-                                        <div className="mt-auto flex items-center justify-between pt-4 border-t border-slate-50">
+                                        <div className="mt-auto flex items-center justify-between pt-4 border-t border-[var(--border)]">
                                             <div>
                                                 <p className="text-xs text-text-sub-light">From</p>
                                                 <p className="font-black text-lg text-primary">${activity.price?.toFixed(2)}</p>
@@ -700,7 +772,7 @@ export default function DestinationDetails() {
             {isUnreliable && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-in fade-in duration-300">
                     <Card className="max-w-md w-full p-8 text-center space-y-6 scale-100">
-                        <div className="mx-auto w-20 h-20 bg-accent/20 rounded-full flex items-center justify-center text-accent mb-2">
+                        <div className="mx-auto w-20 h-20 bg-accent/35 rounded-full flex items-center justify-center text-accent-strong mb-2">
                             <AlertTriangle className="w-10 h-10" />
                         </div>
                         <div>

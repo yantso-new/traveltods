@@ -4,27 +4,28 @@
   --font-display: "Plus Jakarta Sans", sans-serif;
   --font-nunito: "Nunito", sans-serif;
 
-  --color-primary: #FF6B6B;
+  --color-primary: #3F7C79;
   --color-primary-foreground: #FFFFFF;
-  --color-primary-dark: #EE5253;
+  --color-primary-dark: #2F625F;
 
-  --color-secondary: #4ECDC4;
+  --color-secondary: #4D7467;
   --color-secondary-foreground: #FFFFFF;
 
-  --color-accent: #FFE66D;
-  --color-accent-foreground: #101922;
+  --color-accent: #F4D58D;
+  --color-accent-strong: #8A6425;
+  --color-accent-foreground: #263735;
 
-  --color-background-light: #FFFDF9;
-  --color-background-dark: #101922;
+  --color-background-light: #FBFAF4;
+  --color-background-dark: #13221f;
 
   --color-surface-light: #ffffff;
-  --color-surface-dark: #1c2a36;
+  --color-surface-dark: #1c2c28;
 
-  --color-text-main-light: #2D3436;
-  --color-text-main-dark: #e7edf3;
+  --color-text-main-light: #263735;
+  --color-text-main-dark: #edf4ef;
 
-  --color-text-sub-light: #525b5e;
-  --color-text-sub-dark: #94a3b8;
+  --color-text-sub-light: #526460;
+  --color-text-sub-dark: #a9b8b3;
 }
 
 /* Custom Scrollbar */
@@ -37,12 +38,12 @@
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
+  background: #cfdcd6;
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #94a3b8;
+  background: #9eb0a9;
 }
 
 /* Base Styles */
@@ -55,10 +56,10 @@
   --card-foreground: var(--color-text-main-light);
   --popover: var(--color-surface-light);
   --popover-foreground: var(--color-text-main-light);
-  --muted: #f1f5f9;
+  --muted: #eef4ef;
   --muted-foreground: var(--color-text-sub-light);
-  --border: #e2e8f0;
-  --input: #e2e8f0;
+  --border: #dde8e2;
+  --input: #d6e2dc;
   --ring: var(--color-primary);
 }
 
@@ -70,10 +71,10 @@
   --card-foreground: var(--color-text-main-dark);
   --popover: var(--color-surface-dark);
   --popover-foreground: var(--color-text-main-dark);
-  --muted: #1e293b;
+  --muted: #22342f;
   --muted-foreground: var(--color-text-sub-dark);
-  --border: #334155;
-  --input: #334155;
+  --border: #35514a;
+  --input: #35514a;
   --ring: var(--color-primary);
 }
 

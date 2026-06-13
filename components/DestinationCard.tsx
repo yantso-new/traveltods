@@ -68,12 +68,12 @@ export const DestinationCard: React.FC<Props> = ({ destination, onClick }) => {
 
   // Clean pill variants — no shadows
   const pillVariants = [
-    "bg-primary text-white",
-    "bg-secondary text-white",
+    "bg-primary text-primary-foreground",
+    "bg-secondary text-secondary-foreground",
     "bg-accent text-accent-foreground",
-    "bg-gradient-to-r from-primary to-primary-dark text-white",
-    "bg-gradient-to-r from-secondary to-teal-500 text-white",
-    "bg-gradient-to-r from-amber-400 to-accent text-accent-foreground"
+    "bg-primary/90 text-primary-foreground",
+    "bg-secondary/90 text-secondary-foreground",
+    "bg-accent/95 text-accent-foreground"
   ];
   const pillClass = pillVariants[bestTag.length % pillVariants.length];
 
@@ -104,14 +104,14 @@ export const DestinationCard: React.FC<Props> = ({ destination, onClick }) => {
         </div>
       </div>
 
-      <div className="flex flex-col p-6 gap-4 bg-surface-light border-t border-slate-50 flex-grow">
+      <div className="flex flex-col p-6 gap-4 bg-surface-light border-t border-[var(--border)] flex-grow">
         <div>
           <div className="flex justify-between items-start w-full">
             <h3 className="text-xl font-bold text-text-main-light capitalize">
               {destination.name.split(',')[0].trim()}
             </h3>
             <div className="flex items-center gap-1">
-              <span className="material-symbols-outlined text-accent text-lg" style={{ fontVariationSettings: "'FILL' 1" }}>star</span>
+              <span className="material-symbols-outlined text-accent-strong text-lg" style={{ fontVariationSettings: "'FILL' 1" }}>star</span>
               <span className="text-text-main-light font-bold text-sm">{displayScore}</span>
             </div>
           </div>

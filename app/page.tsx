@@ -122,11 +122,10 @@ export default function Home() {
         <Hero onSearchTermChange={setSearchTerm} />
 
         {/* Listings Section */}
-        <section className="py-16 px-4 md:px-20 flex justify-center bg-gradient-to-b from-transparent to-orange-50/50">
+        <section className="py-16 px-4 md:px-20 flex justify-center bg-muted/40">
           <div className="w-full max-w-7xl flex flex-col gap-10">
             <div className="flex flex-col md:flex-row md:items-end justify-between gap-8">
               <div className="relative">
-                <div className="absolute -top-6 -left-6 size-16 bg-accent/30 rounded-full blur-xl animate-pulse"></div>
                 <h2 className="relative text-text-main-light text-3xl md:text-5xl font-black leading-tight tracking-tight">Top Picks for Families</h2>
                 <p className="relative text-lg text-text-sub-light mt-3 font-medium">
                   Curated destinations with the highest <span className="text-primary font-bold">toddler happiness</span> ratings.
@@ -137,7 +136,7 @@ export default function Home() {
               <div className="relative min-w-[200px]">
                 <button
                   onClick={() => setIsFilterOpen(!isFilterOpen)}
-                  className="flex items-center justify-between w-full gap-3 px-6 py-4 bg-white rounded-2xl border border-slate-200 font-bold text-text-main-light hover:border-primary/30 transition-colors active:scale-[0.985]"
+                  className="flex items-center justify-between w-full gap-3 px-6 py-4 bg-white rounded-2xl border border-[var(--border)] font-bold text-text-main-light hover:border-primary/30 transition-colors active:scale-[0.985]"
                 >
                   <div className="flex items-center gap-2">
                     <span className="material-symbols-outlined text-primary">{selectedFilter.icon}</span>
@@ -152,15 +151,15 @@ export default function Home() {
                       className="fixed inset-0 z-30"
                       onClick={() => setIsFilterOpen(false)}
                     />
-                    <div className="absolute right-0 mt-3 w-full bg-white rounded-2xl border border-slate-200 overflow-hidden z-40 animate-scaleIn origin-top-right">
+                    <div className="absolute right-0 mt-3 w-full bg-white rounded-2xl border border-[var(--border)] overflow-hidden z-40 animate-scaleIn origin-top-right">
                       <div className="p-2">
                         {filters.map(filter => (
                           <button
                             key={filter.name}
                             onClick={() => handleFilterChange(filter.name)}
                             className={`flex items-center gap-3 w-full px-4 py-3 rounded-xl text-sm font-bold transition-all ${activeFilter === filter.name
-                              ? 'bg-primary/10 text-primary'
-                              : 'text-text-sub-light hover:bg-slate-50'
+                      ? 'bg-primary/10 text-primary'
+                      : 'text-text-sub-light hover:bg-muted'
                               }`}
                           >
                             <span className="material-symbols-outlined text-xl">{filter.icon}</span>
@@ -177,7 +176,7 @@ export default function Home() {
             {convexDestinations === undefined && dbDestinations.length === 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 md:gap-8">
                 {Array.from({ length: 8 }).map((_, i) => (
-                  <div key={i} className="h-[400px] rounded-3xl bg-slate-100 animate-pulse" />
+                  <div key={i} className="h-[400px] rounded-3xl bg-muted animate-pulse" />
                 ))}
               </div>
             ) : displayedDestinations.length > 0 ? (
@@ -205,9 +204,9 @@ export default function Home() {
                 )}
               </>
             ) : (
-              <div className="text-center py-20 bg-white/40 backdrop-blur-sm rounded-[3rem] border-2 border-dashed border-slate-200 transition-colors">
-                <div className="bg-slate-100 w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-6">
-                  <span className="material-symbols-outlined text-5xl text-slate-400">search_off</span>
+              <div className="text-center py-20 bg-white/40 backdrop-blur-sm rounded-[3rem] border-2 border-dashed border-[var(--border)] transition-colors">
+                <div className="bg-muted w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-6">
+                  <span className="material-symbols-outlined text-5xl text-text-sub-light/60">search_off</span>
                 </div>
                 <h3 className="text-2xl font-black text-text-main-light">No matches found</h3>
                 <p className="text-text-sub-light mt-3 max-w-md mx-auto leading-relaxed">
@@ -235,7 +234,7 @@ export default function Home() {
         <BlogSection />
 
         {/* Browse by Country Section */}
-        <section className="py-16 px-4 md:px-20 bg-gradient-to-b from-orange-50/50 to-white">
+        <section className="py-16 px-4 md:px-20 bg-background-light">
           <div className="max-w-7xl mx-auto">
             <div className="text-center mb-12">
               <h2 className="text-4xl md:text-5xl font-black text-text-main-light mb-4">

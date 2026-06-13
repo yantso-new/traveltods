@@ -37,10 +37,10 @@ export default function CountryPage() {
                 <Navbar />
                 <div className="px-4 md:px-20 py-12">
                     <div className="max-w-7xl mx-auto">
-                        <div className="h-64 bg-slate-200 animate-pulse rounded-3xl mb-8" />
+                        <div className="h-64 bg-muted animate-pulse rounded-3xl mb-8" />
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                             {[1, 2, 3, 4, 5, 6].map(i => (
-                                <div key={i} className="h-96 bg-slate-200 animate-pulse rounded-3xl" />
+                                <div key={i} className="h-96 bg-muted animate-pulse rounded-3xl" />
                             ))}
                         </div>
                     </div>
@@ -63,11 +63,8 @@ export default function CountryPage() {
             <Navbar />
 
             {/* Hero Section */}
-            <div className="relative bg-gradient-to-br from-primary via-primary-dark to-secondary overflow-hidden">
-                <div className="absolute inset-0 opacity-10">
-                    <div className="absolute top-0 right-0 w-96 h-96 bg-white rounded-full blur-3xl" />
-                    <div className="absolute bottom-0 left-0 w-96 h-96 bg-accent rounded-full blur-3xl" />
-                </div>
+            <div className="relative bg-primary overflow-hidden">
+                <div className="absolute inset-0 bg-[linear-gradient(135deg,rgba(255,255,255,0.12),rgba(255,255,255,0))]" />
                 
                 <div className="relative px-4 md:px-20 py-16 md:py-24">
                     <div className="max-w-7xl mx-auto">

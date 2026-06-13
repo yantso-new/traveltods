@@ -27,7 +27,7 @@
 
 - [ ] **Hamburger button missing `aria-expanded`** — Screen readers can't announce menu open/close state. `components/Navbar.tsx`
 - [ ] **Search icon button has no `aria-label`** — Icon-only interactive element is inaccessible. `components/Navbar.tsx`
-- [ ] **`text-sub-light` contrast** — `#636e72` on `#FFFDF9` may fall below WCAG AA. Verify and adjust in `app/globals.css`.
+- [x] **`text-sub-light` contrast** — Updated to `#526460` on `#FBFAF4` and verified above WCAG AA in `app/globals.css`.
 - [ ] **Modal focus trap incomplete** — Tab key cycles to elements behind the WaitlistModal. Implement proper focus trapping. `components/WaitlistModal.tsx`
 
 ## Quick Wins

@@ -43,7 +43,7 @@ export default function BlogPage() {
 
             <main className="flex-1">
                 {/* Hero */}
-                <section className="relative py-20 md:py-28 px-4 md:px-20 bg-gradient-to-br from-primary/5 via-secondary/5 to-accent/5">
+                <section className="relative py-20 md:py-28 px-4 md:px-20 bg-muted/40">
                     <div className="max-w-7xl mx-auto">
                         <Link
                             href="/"
@@ -54,9 +54,6 @@ export default function BlogPage() {
                         </Link>
 
                         <div className="relative">
-                            <div className="absolute -top-8 -left-8 size-24 bg-primary/20 rounded-full blur-2xl"></div>
-                            <div className="absolute top-0 right-0 size-32 bg-secondary/20 rounded-full blur-2xl"></div>
-
                             <h1 className="relative text-4xl md:text-6xl font-black text-text-main-light leading-tight tracking-tight mb-4">
                                 Travel Tips & Stories
                             </h1>
@@ -68,7 +65,7 @@ export default function BlogPage() {
                 </section>
 
                 {/* Filters */}
-                <section className="sticky top-0 z-40 bg-background-light/95 backdrop-blur-sm border-b border-slate-100 py-4 px-4 md:px-20">
+                <section className="sticky top-0 z-40 bg-background-light/95 backdrop-blur-sm border-b border-[var(--border)] py-4 px-4 md:px-20">
                     <div className="max-w-7xl mx-auto flex flex-col md:flex-row gap-4 items-start md:items-center justify-between">
                         {/* Category Tabs */}
                         <div className="flex gap-2 overflow-x-auto pb-2 md:pb-0">
@@ -78,7 +75,7 @@ export default function BlogPage() {
                                     onClick={() => setActiveCategory(category.id)}
                                     className={`px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-colors cursor-pointer ${activeCategory === category.id
                                             ? 'bg-primary text-white'
-                                            : 'bg-slate-100 text-text-sub-light hover:bg-slate-200'
+                                            : 'bg-muted text-text-sub-light hover:bg-[var(--border)]'
                                         }`}
                                 >
                                     {category.label}
@@ -94,7 +91,7 @@ export default function BlogPage() {
                                 placeholder="Search articles..."
                                 value={searchTerm}
                                 onChange={e => setSearchTerm(e.target.value)}
-                                className="w-full pl-10 pr-4 py-2 rounded-xl bg-slate-100 border border-transparent focus:border-primary focus:bg-white outline-none text-sm transition-all cursor-text"
+                                className="w-full pl-10 pr-4 py-2 rounded-xl bg-muted border border-transparent focus:border-primary focus:bg-white outline-none text-sm transition-all cursor-text"
                             />
                         </div>
                     </div>
@@ -125,12 +122,12 @@ export default function BlogPage() {
                                 ))}
                             </div>
                         ) : (
-                            <div className="text-center py-20 bg-white/50 rounded-3xl border border-dashed border-stone-300">
-                                <div className="bg-stone-50 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-                                    <Search className="w-6 h-6 text-stone-300" />
+                            <div className="text-center py-20 bg-white/50 rounded-3xl border border-dashed border-[var(--border)]">
+                                <div className="bg-muted w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                                    <Search className="w-6 h-6 text-text-sub-light/50" />
                                 </div>
-                                <h3 className="text-xl font-semibold text-stone-700">No articles found</h3>
-                                <p className="text-stone-400 mt-2">
+                                <h3 className="text-xl font-semibold text-text-main-light">No articles found</h3>
+                                <p className="text-text-sub-light mt-2">
                                     Try adjusting your search or filter.
                                 </p>
                             </div>

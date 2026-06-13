@@ -128,8 +128,8 @@ export function WaitlistModal({ isOpen, onClose }: WaitlistModalProps) {
                 ref={modalRef}
                 className="relative w-full max-w-md bg-surface-light rounded-3xl animate-scaleIn overflow-hidden"
             >
-                {/* Decorative gradient header */}
-                <div className="absolute top-0 left-0 right-0 h-32 bg-gradient-to-br from-primary via-primary-dark to-secondary opacity-90" />
+                {/* Decorative soft header */}
+                <div className="absolute top-0 left-0 right-0 h-32 bg-primary opacity-95" />
 
                 {/* Close button */}
                 <button
@@ -153,7 +153,7 @@ export function WaitlistModal({ isOpen, onClose }: WaitlistModalProps) {
                         <>
                             {/* Header */}
                             <div className="text-center mb-6">
-                                <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-accent text-accent-foreground border border-white/20 backdrop-blur-md text-xs font-extrabold mb-3">
+                                <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-accent text-accent-foreground border border-accent-strong/20 backdrop-blur-md text-xs font-extrabold mb-3">
                                     <Sparkles className="w-3 h-3" />
                                     Get early access updates
                                 </div>
@@ -179,7 +179,7 @@ export function WaitlistModal({ isOpen, onClose }: WaitlistModalProps) {
                                         value={email}
                                         onChange={(e) => setEmail(e.target.value)}
                                         required
-                                        className="h-14 text-base rounded-2xl border-orange-100 focus:border-primary bg-white"
+                                        className="h-14 text-base rounded-2xl border-[var(--input)] focus:border-primary bg-white"
                                         aria-label="Email address"
                                     />
                                     {error ? (
@@ -212,7 +212,7 @@ export function WaitlistModal({ isOpen, onClose }: WaitlistModalProps) {
                             </form>
 
                             {/* Member benefits */}
-                            <div className="mt-8 pt-6 border-t border-slate-100 grid grid-cols-2 gap-4">
+                            <div className="mt-8 pt-6 border-t border-[var(--border)] grid grid-cols-2 gap-4">
                                 <div className="flex flex-col items-center text-center">
                                     <div className="text-primary font-black text-sm mb-0.5">Toddler-friendly</div>
                                     <div className="text-[10px] text-text-sub-light uppercase tracking-wider font-bold">Destinations</div>

@@ -4,31 +4,32 @@ This document outlines the core design language, tokens, and components for the 
 
 ## 🎨 Color Palette
 
-The TravelTods palette is designed to be vibrant, family-friendly, and premium, with high contrast for accessibility.
+The TravelTods palette is designed to feel calm, family-friendly, and premium. It uses soft coastal greens and warm sand accents, with darker accessible variants where text or icons need WCAG AA contrast.
 
-### 🔴 Primary Colors
+### Primary Colors
 Used for main actions, high-priority UI elements, and branding.
-- **Primary:** `#FF6B6B` (`--color-primary`) - Vibrant Coral
-- **Primary Dark:** `#EE5253` (`--color-primary-dark`)
+- **Primary:** `#3F7C79` (`--color-primary`) - Accessible coastal teal
+- **Primary Dark:** `#2F625F` (`--color-primary-dark`)
 - **Primary Foreground:** `#FFFFFF` (`--color-primary-foreground`)
 
-### 🟢 Secondary Colors
+### Secondary Colors
 Used for success states, secondary highlights, and nature-related themes.
-- **Secondary:** `#4ECDC4` (`--color-secondary`) - Fresh Turquoise
+- **Secondary:** `#4D7467` (`--color-secondary`) - Muted sage
 - **Secondary Foreground:** `#FFFFFF` (`--color-secondary-foreground`)
 
-### 🟡 Accent Colors
-Used for attention-grabbing elements like badges and warnings.
-- **Accent:** `#FFE66D` (`--color-accent`) - Sunny Yellow
-- **Accent Foreground:** `#101922` (`--color-accent-foreground`)
+### Accent Colors
+Used for gentle emphasis, badges, ratings, and warm moments.
+- **Accent:** `#F4D58D` (`--color-accent`) - Warm pastel sand
+- **Accent Strong:** `#8A6425` (`--color-accent-strong`) - Accessible text/icon accent
+- **Accent Foreground:** `#263735` (`--color-accent-foreground`)
 
-### 🌑 Neutral & Surface Colors
-| Token | Light Mode (`#FFFDF9`) | Dark Mode (`#101922`) | Description |
+### Neutral & Surface Colors
+| Token | Light Mode (`#FBFAF4`) | Dark Mode (`#13221f`) | Description |
 |-------|------------------------|-----------------------|-------------|
-| **Background** | `#FFFDF9` | `#101922` | Root background color |
-| **Surface** | `#FFFFFF` | `#1c2a36` | Cards, modals, and pops |
-| **Text Main** | `#2D3436` | `#e7edf3` | Primary reading content |
-| **Text Sub** | `#636e72` | `#94a3b8` | Supporting text/captions |
+| **Background** | `#FBFAF4` | `#13221f` | Root background color |
+| **Surface** | `#FFFFFF` | `#1c2c28` | Cards, modals, and pops |
+| **Text Main** | `#263735` | `#edf4ef` | Primary reading content |
+| **Text Sub** | `#526460` | `#a9b8b3` | Supporting text/captions |
 
 ---
 
@@ -79,12 +80,12 @@ We use a standard 4px or 8px grid system for spacing.
 Used for metadata, categories, and status indicators. **High visibility is critical** - badges must be readable against any background.
 
 #### Variants
-- **Solid Primary:** `bg-primary text-white shadow-lg shadow-primary/30 backdrop-blur-md border border-white/20`
-- **Solid Secondary:** `bg-secondary text-white shadow-lg shadow-secondary/30 backdrop-blur-md border border-white/20`
-- **Solid Accent:** `bg-accent text-accent-foreground shadow-lg shadow-accent/40 backdrop-blur-md border border-white/20`
-- **Gradient Primary:** `bg-gradient-to-r from-primary to-primary-dark text-white shadow-lg shadow-primary/40`
-- **Gradient Secondary:** `bg-gradient-to-r from-secondary to-teal-500 text-white shadow-lg shadow-secondary/40`
-- **Gradient Accent:** `bg-gradient-to-r from-amber-400 to-accent text-accent-foreground shadow-lg shadow-accent/50`
+- **Solid Primary:** `bg-primary text-primary-foreground backdrop-blur-md border border-white/20`
+- **Solid Secondary:** `bg-secondary text-secondary-foreground backdrop-blur-md border border-white/20`
+- **Solid Accent:** `bg-accent text-accent-foreground backdrop-blur-md border border-white/30`
+- **Soft Primary:** `bg-primary text-primary-foreground border border-primary-dark/20`
+- **Soft Secondary:** `bg-secondary text-secondary-foreground border border-secondary/20`
+- **Soft Accent:** `bg-accent text-accent-foreground border border-accent-strong/20`
 
 #### Typography
 - **Font Weight:** `font-extrabold` (800) for maximum readability
@@ -99,10 +100,10 @@ Used for metadata, categories, and status indicators. **High visibility is criti
 
 #### Usage Rules
 1. Use **solid backgrounds** for critical information (categories, status)
-2. Use **gradients** for featured or premium items
+2. Use soft solid fills instead of bright gradients for featured or premium items
 3. Always include `backdrop-blur-md` when overlaying images
 4. Ensure text contrast ratio ≥ 4.5:1 (WCAG AA)
-5. Add white border for definition on busy backgrounds
+5. Use `text-accent-strong` for accent text or icons on light backgrounds
 6. Never use `shadow-*`, `hover:shadow-*`, or `hover:-translate-y-*` — these are banned
 
 ### ⌨️ Form Elements
