@@ -133,7 +133,7 @@ export default function DestinationDetails() {
     const incrementSearchCount = useMutation(api.destinations.incrementSearchCount);
 
     const [isGathering, setIsGathering] = useState(false);
-    const [isRefreshing, setIsRefreshing] = useState(false);
+    const [isInitialDataLoading, setIsInitialDataLoading] = useState(false);
     const [localSuggestions, setLocalSuggestions] = useState<any>(null);
 
     // Sync localSuggestions with destination.suggestions when destination loads/changes
@@ -146,29 +146,13 @@ export default function DestinationDetails() {
 
     // Track if we have initiated gathering to prevent loops
     const gatheringRef = useRef(false);
-    const refreshCheckRef = useRef(false);
-    const suggestionsRefreshRef = useRef<string | null>(null);
+    const initialLoadRef = useRef<string | null>(null);
 
     // Viator Activities Data
     // @ts-ignore
     const fetchActivities = useAction(api.viator.fetchActivities);
     const [activities, setActivities] = useState<any[]>([]);
     const [isLoadingActivities, setIsLoadingActivities] = useState(false);
-
-    useEffect(() => {
-        if (id) {
-            setIsLoadingActivities(true);
-            fetchActivities({ destinationName: id })
-                .then((data: any) => {
-                    setActivities(data);
-                    setIsLoadingActivities(false);
-                })
-                .catch((err: any) => {
-                    console.error("Failed to fetch activities:", err);
-                    setIsLoadingActivities(false);
-                });
-        }
-    }, [id, fetchActivities]);
 
     // Gather new destination if not found
     useEffect(() => {
@@ -195,50 +179,59 @@ export default function DestinationDetails() {
         }
     }, [id, destination, gatherDestination, isGathering]);
 
-    // Check for stale data and refresh if needed (lazy refresh for non-top-100)
+    // Before showing the page, finish startup data refreshes so users do not see partial content.
     useEffect(() => {
-        if (!id || !destination || refreshCheckRef.current) return;
+        if (!id || !destination || initialLoadRef.current === id) return;
 
-        refreshCheckRef.current = true;
+        initialLoadRef.current = id;
+        setIsInitialDataLoading(true);
+        setIsLoadingActivities(true);
 
-        // Increment search count for popularity tracking
-        incrementSearchCount({ name: id }).catch(console.error);
+        const needsSuggestions = !hasSuggestionContent(destination.suggestions);
 
-        // Check if data is stale and needs refresh
-        checkAndRefreshIfStale({ name: id })
-            .then(result => {
-                if (result.needsRefresh && result.reason === "stale_data_refreshed") {
-                    setIsRefreshing(true);
-                    // The query will update automatically when the refresh completes
-                    setTimeout(() => setIsRefreshing(false), 3000);
-                }
+        const activityPromise = fetchActivities({ destinationName: id })
+            .then((data: any) => {
+                setActivities(data);
             })
-            .catch(console.error);
-    }, [id, destination, checkAndRefreshIfStale, incrementSearchCount]);
-
-    useEffect(() => {
-        if (!id || !destination || suggestionsRefreshRef.current === id) return;
-        if (hasSuggestionContent(destination.suggestions)) return;
-
-        suggestionsRefreshRef.current = id;
-        setIsRefreshing(true);
-
-        refreshSuggestionsAction({ destinationName: id })
-            .then((result: any) => {
-                if (!result.success) {
-                    console.error('Refresh suggestions failed:', result.error);
-                }
-            })
-            .catch((e: any) => {
-                console.error('Refresh suggestions failed:', e);
+            .catch((err: any) => {
+                console.error("Failed to fetch activities:", err);
+                setActivities([]);
             })
             .finally(() => {
-                setIsRefreshing(false);
+                setIsLoadingActivities(false);
             });
-    }, [id, destination, refreshSuggestionsAction]);
+
+        const refreshPromise = checkAndRefreshIfStale({ name: id })
+            .catch((err: any) => {
+                console.error("Stale data refresh check failed:", err);
+                return null;
+            });
+
+        const suggestionsPromise = needsSuggestions
+            ? refreshSuggestionsAction({ destinationName: id })
+                .then((result: any) => {
+                    if (!result.success) {
+                        console.error('Refresh suggestions failed:', result.error);
+                    }
+                })
+                .catch((err: any) => {
+                    console.error('Refresh suggestions failed:', err);
+                })
+            : Promise.resolve();
+
+        Promise.all([
+            incrementSearchCount({ name: id }).catch(console.error),
+            refreshPromise,
+            suggestionsPromise,
+            activityPromise,
+        ])
+            .finally(() => {
+                setIsInitialDataLoading(false);
+            })
+    }, [id, destination, checkAndRefreshIfStale, fetchActivities, incrementSearchCount, refreshSuggestionsAction]);
 
     // Show loading overlay while connecting or gathering data
-    if (destination === undefined || isGathering) {
+    if (destination === undefined || isGathering || isInitialDataLoading) {
         return (
             <div className="min-h-screen bg-background-light">
                 <Navbar />
@@ -254,7 +247,7 @@ export default function DestinationDetails() {
     const { allScores, radarChart, dataQuality } = destination;
     const isUnreliable = dataQuality && !dataQuality.hasReliableOverallScore;
     const suggestions = localSuggestions ?? destination.suggestions;
-    const shouldShowSuggestionsSection = hasSuggestionContent(suggestions) || isRefreshing;
+    const shouldShowSuggestionsSection = hasSuggestionContent(suggestions);
 
     // Transform radar chart to 1-10 scale
     const radarData = radarChart?.map((item: any) => ({
@@ -306,18 +299,6 @@ export default function DestinationDetails() {
 
                     {/* Left Column: Stats & Description */}
                     <div className="lg:col-span-2 space-y-8">
-
-
-
-                        {/* Refreshing indicator */}
-                        {isRefreshing && (
-                            <Card className="p-4 bg-secondary/10 border border-secondary/20">
-                                <div className="flex items-center gap-3 text-secondary">
-                                    <LoadingSpinner />
-                                    <span className="font-semibold">Refreshing data with latest sources...</span>
-                                </div>
-                            </Card>
-                        )}
 
                         {/* Main Info Card */}
                         <Card className="p-8">
@@ -559,13 +540,6 @@ export default function DestinationDetails() {
                             <h2 className="text-3xl font-black text-text-main-light mb-2">Family-Friendly Spots</h2>
                             <p className="text-text-sub-light text-lg">Curated recommendations in <span className="text-primary font-bold">{destination.name}</span></p>
                         </div>
-
-                        {isRefreshing && !hasSuggestionContent(suggestions) && (
-                            <Card className="p-6 mb-12 flex items-center gap-3 text-text-sub-light">
-                                <LoadingSpinner />
-                                <span className="font-semibold">Finding family-friendly spots...</span>
-                            </Card>
-                        )}
 
                         {/* Free Activities */}
                         {suggestions?.freeActivities && suggestions.freeActivities.length > 0 && (

@@ -125,47 +125,55 @@ export const refreshSuggestions = action({
         const coords = destination.coordinates;
         console.log(`[refreshSuggestions] Refreshing for ${args.destinationName} at ${coords.lat},${coords.lon}`);
 
-        // 1. Fetch from Foursquare (primary — reliable)
-        const foursquareData = await withRetry(
-            () => searchFamilyVenues(coords.lat, coords.lon, "both", 20),
-            "Foursquare venues", 2, 2000
-        );
+        const fetchOverpassSuggestions = async () => {
+            let overpassSuggestions: { freeActivities: any[]; downtime: any[]; cafes: any[]; restaurants: any[] } = { freeActivities: [], downtime: [], cafes: [], restaurants: [] };
+            for (let attempt = 0; attempt < 2; attempt++) {
+                if (attempt > 0) {
+                    const delay = 1500;
+                    console.log(`[refreshSuggestions] Overpass retry ${attempt + 1}/2 after ${delay}ms delay`);
+                    await new Promise(r => setTimeout(r, delay));
+                }
+                const result = await getFamilySuggestions(coords.lat, coords.lon, 3000);
+                const hasData = result.freeActivities.length > 0 || result.cafes.length > 0 || result.downtime.length > 0 || result.restaurants.length > 0;
+                if (hasData) {
+                    overpassSuggestions = result;
+                    console.log(`[refreshSuggestions] Overpass attempt ${attempt + 1} succeeded with ${result.freeActivities.length} activities`);
+                    break;
+                }
+                console.warn(`[refreshSuggestions] Overpass attempt ${attempt + 1} returned empty`);
+            }
+            return overpassSuggestions;
+        };
 
-        // 2. Fetch from Overpass with manual retry loop (Overpass returns empty on HTTP errors, doesn't throw)
-        let overpassSuggestions: { freeActivities: any[]; downtime: any[]; cafes: any[]; restaurants: any[] } = { freeActivities: [], downtime: [], cafes: [], restaurants: [] };
-        for (let attempt = 0; attempt < 4; attempt++) {
-            if (attempt > 0) {
-                const delay = 3000 * Math.pow(2, attempt - 1);
-                console.log(`[refreshSuggestions] Overpass retry ${attempt + 1}/4 after ${delay}ms delay`);
-                await new Promise(r => setTimeout(r, delay));
+        const fetchNeighborhoods = async () => {
+            let neighborhoods: any[] = [];
+            const cityName = args.destinationName.split(',')[0].trim();
+            for (let attempt = 0; attempt < 2; attempt++) {
+                if (attempt > 0) {
+                    const delay = 1500;
+                    console.log(`[refreshSuggestions] Neighborhoods retry ${attempt + 1}/2 after ${delay}ms delay`);
+                    await new Promise(r => setTimeout(r, delay));
+                }
+                const result = await getNeighborhoods(coords.lat, coords.lon, cityName);
+                if (result.length > 0) {
+                    neighborhoods = result;
+                    console.log(`[refreshSuggestions] Neighborhoods attempt ${attempt + 1} succeeded with ${result.length} hoods`);
+                    break;
+                }
+                console.warn(`[refreshSuggestions] Neighborhoods attempt ${attempt + 1} returned empty`);
             }
-            const result = await getFamilySuggestions(coords.lat, coords.lon, 3000);
-            const hasData = result.freeActivities.length > 0 || result.cafes.length > 0 || result.downtime.length > 0 || result.restaurants.length > 0;
-            if (hasData) {
-                overpassSuggestions = result;
-                console.log(`[refreshSuggestions] Overpass attempt ${attempt + 1} succeeded with ${result.freeActivities.length} activities`);
-                break;
-            }
-            console.warn(`[refreshSuggestions] Overpass attempt ${attempt + 1} returned empty (likely 429 rate limit)`);
-        }
+            return neighborhoods;
+        };
 
-        // 3. Fetch neighborhoods with similar retry loop
-        let neighborhoods: any[] = [];
-        const cityName = args.destinationName.split(',')[0].trim();
-        for (let attempt = 0; attempt < 3; attempt++) {
-            if (attempt > 0) {
-                const delay = 4000 * Math.pow(2, attempt - 1);
-                console.log(`[refreshSuggestions] Neighborhoods retry ${attempt + 1}/3 after ${delay}ms delay`);
-                await new Promise(r => setTimeout(r, delay));
-            }
-            const result = await getNeighborhoods(coords.lat, coords.lon, cityName);
-            if (result.length > 0) {
-                neighborhoods = result;
-                console.log(`[refreshSuggestions] Neighborhoods attempt ${attempt + 1} succeeded with ${result.length} hoods`);
-                break;
-            }
-            console.warn(`[refreshSuggestions] Neighborhoods attempt ${attempt + 1} returned empty (likely 429 rate limit)`);
-        }
+        // Fetch independent APIs concurrently to keep the full-page loading phase short.
+        const [foursquareData, overpassSuggestions, neighborhoods] = await Promise.all([
+            withRetry(
+                () => searchFamilyVenues(coords.lat, coords.lon, "both", 20),
+                "Foursquare venues", 1, 1000
+            ),
+            fetchOverpassSuggestions(),
+            fetchNeighborhoods(),
+        ]);
 
         const mergedSuggestions = {
             freeActivities: overpassSuggestions.freeActivities.slice(0, 8),
