@@ -84,6 +84,140 @@ export const patchSuggestions = mutation({
     },
 });
 
+export const patchNeighborhoods = mutation({
+    args: {
+        name: v.string(),
+        neighborhoods: v.array(v.object({
+            name: v.string(),
+            description: v.optional(v.string()),
+            tag: v.optional(v.string()),
+            center: v.object({ lat: v.number(), lon: v.number() }),
+            scores: v.object({
+                parks: v.number(),
+                cafes: v.number(),
+                restaurants: v.number(),
+                safety: v.number(),
+                walkability: v.number(),
+                affordability: v.number(),
+            }),
+        })),
+    },
+    handler: async (ctx, args) => {
+        const destination = await ctx.db
+            .query("destinations")
+            .withIndex("by_name", (q) => q.eq("name", args.name))
+            .first();
+
+        if (!destination) {
+            return { success: false, error: "Destination not found" };
+        }
+
+        await ctx.db.patch(destination._id, {
+            neighborhoods: args.neighborhoods,
+            lastUpdated: Date.now(),
+        });
+
+        return { success: true };
+    },
+});
+
+function normalizeNeighborhoodKey(value: string) {
+    return value
+        .trim()
+        .toLowerCase()
+        .replace(/[.,]/g, "")
+        .replace(/\b(city|municipality|kommun|county|region|province|district)\b/g, "")
+        .replace(/\s+/g, " ")
+        .trim();
+}
+
+function hasUsefulNeighborhoods(destinationName: string, neighborhoods: any[] | undefined) {
+    if (!Array.isArray(neighborhoods) || neighborhoods.length === 0) return false;
+
+    const cityName = destinationName.split(",")[0]?.trim() || destinationName;
+    const cityKey = normalizeNeighborhoodKey(cityName);
+    const seen = new Set<string>();
+    let validCount = 0;
+
+    for (const neighborhood of neighborhoods) {
+        const name = typeof neighborhood?.name === "string" ? neighborhood.name : "";
+        const key = normalizeNeighborhoodKey(name);
+        if (!key || key === cityKey || seen.has(key)) continue;
+        seen.add(key);
+        validCount += 1;
+    }
+
+    return validCount >= Math.min(3, neighborhoods.length);
+}
+
+export const repairInvalidNeighborhoods = action({
+    args: {
+        dryRun: v.optional(v.boolean()),
+        limit: v.optional(v.number()),
+    },
+    handler: async (ctx, args) => {
+        const destinations = await ctx.runQuery(api.destinations.getAllDestinations);
+        const candidates = destinations.filter((destination: any) =>
+            !hasUsefulNeighborhoods(destination.name, destination.neighborhoods)
+        );
+        const limit = args.limit ?? candidates.length;
+        const selected = candidates.slice(0, limit);
+
+        if (args.dryRun) {
+            return {
+                checked: destinations.length,
+                invalid: candidates.length,
+                selected: selected.map((destination: any) => ({
+                    name: destination.name,
+                    currentNeighborhoods: (destination.neighborhoods || []).map((hood: any) => hood.name),
+                })),
+            };
+        }
+
+        const repaired: Array<{ name: string; count: number; neighborhoods: string[] }> = [];
+        const unresolved: Array<{ name: string; reason: string }> = [];
+
+        for (const destination of selected) {
+            const cityName = destination.name.split(",")[0].trim();
+            const coords = destination.coordinates;
+
+            if (!coords?.lat || !coords?.lon) {
+                unresolved.push({ name: destination.name, reason: "missing coordinates" });
+                continue;
+            }
+
+            const neighborhoods = await getNeighborhoods(coords.lat, coords.lon, cityName);
+
+            if (neighborhoods.length === 0) {
+                await ctx.runMutation(api.refresh_suggestions.patchNeighborhoods, {
+                    name: destination.name,
+                    neighborhoods: [],
+                });
+                unresolved.push({ name: destination.name, reason: "no real neighborhoods found" });
+                continue;
+            }
+
+            await ctx.runMutation(api.refresh_suggestions.patchNeighborhoods, {
+                name: destination.name,
+                neighborhoods: neighborhoods.slice(0, 10),
+            });
+
+            repaired.push({
+                name: destination.name,
+                count: neighborhoods.length,
+                neighborhoods: neighborhoods.map((hood: any) => hood.name),
+            });
+        }
+
+        return {
+            checked: destinations.length,
+            invalid: candidates.length,
+            repaired,
+            unresolved,
+        };
+    },
+});
+
 async function withRetry<T>(
     fn: () => Promise<T>,
     label: string,

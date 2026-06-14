@@ -59,6 +59,32 @@ function formatSpotType(type?: string) {
     return type ? type.replace(/_/g, ' ') : undefined;
 }
 
+function normalizeNeighborhoodKey(value: string) {
+    return value
+        .trim()
+        .toLowerCase()
+        .replace(/[.,]/g, '')
+        .replace(/\b(city|municipality|kommun|county|region|province|district)\b/g, '')
+        .replace(/\s+/g, ' ')
+        .trim();
+}
+
+function filterRealNeighborhoods(neighborhoods: any[] | undefined, destinationName: string) {
+    if (!Array.isArray(neighborhoods)) return [];
+
+    const cityName = destinationName.split(',')[0]?.trim() || destinationName;
+    const cityKey = normalizeNeighborhoodKey(cityName);
+    const seen = new Set<string>();
+
+    return neighborhoods.filter((hood) => {
+        const name = typeof hood?.name === 'string' ? hood.name : '';
+        const key = normalizeNeighborhoodKey(name);
+        if (!key || key === cityKey || seen.has(key)) return false;
+        seen.add(key);
+        return true;
+    });
+}
+
 function SpotLinkCard({
     spot,
     destinationName,
@@ -135,6 +161,7 @@ export default function DestinationDetails() {
     const [isGathering, setIsGathering] = useState(false);
     const [isInitialDataLoading, setIsInitialDataLoading] = useState(false);
     const [localSuggestions, setLocalSuggestions] = useState<any>(null);
+    const realNeighborhoods = filterRealNeighborhoods(destination?.neighborhoods, destination?.name ?? id);
 
     // Sync localSuggestions with destination.suggestions when destination loads/changes
     useEffect(() => {
@@ -460,7 +487,7 @@ export default function DestinationDetails() {
             </div>
 
             {/* Neighborhoods Section */}
-            {destination.neighborhoods && destination.neighborhoods.length > 0 && (
+            {realNeighborhoods.length > 0 && (
                 <div className="px-4 md:px-20 mt-16 flex justify-center">
                     <div className="w-full max-w-7xl">
                         <div className="mb-8">
@@ -473,7 +500,7 @@ export default function DestinationDetails() {
                         </div>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                            {destination.neighborhoods.slice(0, 6).map((hood: any, idx: number) => (
+                            {realNeighborhoods.slice(0, 6).map((hood: any, idx: number) => (
                                 <Card key={`${hood.name}-${idx}`} className="p-6 transition-colors duration-200">
                                     <div className="flex items-start justify-between mb-4">
                                         <div>
