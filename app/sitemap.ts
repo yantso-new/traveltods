@@ -1,12 +1,7 @@
 import type { MetadataRoute } from "next";
 import { BLOG_POSTS } from "@/blogData";
 import { MOCK_DESTINATIONS } from "@/constants";
-
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://traveltods.com";
-
-function absoluteUrl(path: string) {
-  return new URL(path, siteUrl).toString();
-}
+import { absoluteUrl } from "@/site";
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const now = new Date();

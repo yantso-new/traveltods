@@ -1,6 +1,5 @@
 import type { MetadataRoute } from "next";
-
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://traveltods.com";
+import { absoluteUrl } from "@/site";
 
 export default function robots(): MetadataRoute.Robots {
   return {
@@ -8,6 +7,6 @@ export default function robots(): MetadataRoute.Robots {
       userAgent: "*",
       allow: "/",
     },
-    sitemap: `${siteUrl}/sitemap.xml`,
+    sitemap: absoluteUrl("/sitemap.xml"),
   };
 }
