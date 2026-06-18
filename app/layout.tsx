@@ -4,6 +4,7 @@ import "./globals.css";
 import { Footer } from "@/components/Footer";
 import ConvexClientProvider from "./ConvexClientProvider";
 import { Analytics } from "@vercel/analytics/next";
+import { getSiteUrl } from "@/site";
 
 const plusJakartaSans = Plus_Jakarta_Sans({
   variable: "--font-display",
@@ -12,8 +13,47 @@ const plusJakartaSans = Plus_Jakarta_Sans({
 });
 
 export const metadata: Metadata = {
-  title: "TravelTods - Family Travel Made Easy",
-  description: "Discover top-rated, safe, and engaging destinations perfect for kids under 10.",
+  metadataBase: new URL(getSiteUrl()),
+  title: {
+    default: "TravelTods - Family Travel Made Easy",
+    template: "%s | TravelTods",
+  },
+  description: "Discover top-rated, safe, stroller-friendly, and engaging destinations for families traveling with kids under 10.",
+  alternates: {
+    canonical: "/",
+  },
+  openGraph: {
+    type: "website",
+    siteName: "TravelTods",
+    title: "TravelTods - Family Travel Made Easy",
+    description: "Find family-friendly destinations for toddlers and kids under 10, with parent-focused safety, stroller, activity, and budget signals.",
+    url: "/",
+    images: [
+      {
+        url: "/hero-family.png",
+        width: 1200,
+        height: 630,
+        alt: "Family traveling together",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "TravelTods - Family Travel Made Easy",
+    description: "Find family-friendly destinations for toddlers and kids under 10.",
+    images: ["/hero-family.png"],
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+      "max-video-preview": -1,
+    },
+  },
 };
 
 export default function RootLayout({

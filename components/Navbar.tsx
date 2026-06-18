@@ -73,6 +73,7 @@ export function Navbar() {
                         <div className="hidden lg:flex items-center gap-8 flex-shrink-0">
                             <nav className="flex items-center gap-8">
                                 <a className="text-sm font-bold text-text-main-light hover:text-primary transition-colors" href="/">Home</a>
+                                <a className="text-sm font-bold text-text-main-light hover:text-primary transition-colors" href="/blog">Blog</a>
                             </nav>
                             <Button variant="primary" className="rounded-full h-11 px-7" onClick={() => setIsWaitlistOpen(true)}>
                                 <span className="truncate">Join Community</span>
@@ -122,6 +123,7 @@ export function Navbar() {
                     <div className={`lg:hidden overflow-hidden transition-all duration-300 ease-in-out bg-surface-light border-t border-[var(--border)] mt-2 ${isMenuOpen ? 'max-h-64 opacity-100 py-4' : 'max-h-0 opacity-0'}`}>
                         <nav className="flex flex-col gap-4 px-2">
                             <a className="text-base font-bold text-text-main-light px-4 py-2 rounded-xl hover:bg-muted transition-colors" href="/">Home</a>
+                            <a className="text-base font-bold text-text-main-light px-4 py-2 rounded-xl hover:bg-muted transition-colors" href="/blog">Blog</a>
                             <div className="px-4 pt-2">
                                 <Button variant="primary" className="w-full rounded-2xl h-12" onClick={() => {
                                     setIsMenuOpen(false);

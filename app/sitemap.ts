@@ -2,6 +2,7 @@ import type { MetadataRoute } from "next";
 import { BLOG_POSTS } from "@/blogData";
 import { MOCK_DESTINATIONS } from "@/constants";
 import { absoluteUrl } from "@/site";
+import { countryPath, destinationPath } from "@/seo";
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const now = new Date();
@@ -29,15 +30,13 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: post.featured ? 0.8 : 0.6,
     })),
     ...MOCK_DESTINATIONS.map((destination) => ({
-      url: absoluteUrl(
-        `/destination/${encodeURIComponent(`${destination.name}, ${destination.country}`)}`
-      ),
+      url: absoluteUrl(destinationPath(destination)),
       lastModified: now,
       changeFrequency: "monthly" as const,
       priority: 0.7,
     })),
     ...countries.map((country) => ({
-      url: absoluteUrl(`/country/${encodeURIComponent(country)}`),
+      url: absoluteUrl(countryPath(country)),
       lastModified: now,
       changeFrequency: "monthly" as const,
       priority: 0.6,

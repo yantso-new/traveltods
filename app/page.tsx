@@ -14,6 +14,7 @@ import { Hero } from '@/components/Hero';
 import { BlogSection } from '@/components/BlogSection';
 import { Footer } from '@/components/Footer';
 import { BrowseByCountry } from '@/components/BrowseByCountry';
+import { jsonLd, websiteJsonLd } from '@/seo';
 
 const INITIAL_DISPLAY_COUNT = 12;
 
@@ -116,6 +117,10 @@ export default function Home() {
 
   return (
     <div className="relative flex min-h-screen flex-col bg-background-light text-text-main-light transition-colors duration-200">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: jsonLd(websiteJsonLd()) }}
+      />
       <Navbar />
 
       <main className="flex-1">
