@@ -7,6 +7,13 @@ import { useQuery } from 'convex/react';
 import { api } from '@/convex/_generated/api';
 import { Card } from '@/components/ui';
 
+interface CountrySummary {
+    name: string;
+    destinationCount: number;
+    avgFamilyScore: number | null;
+    topDestination: string | null;
+}
+
 class ErrorBoundary extends Component<
   { children: React.ReactNode; fallback?: React.ReactNode },
   { hasError: boolean }
@@ -41,7 +48,7 @@ class ErrorBoundary extends Component<
 
 function BrowseByCountryInner() {
     const router = useRouter();
-    const countries = useQuery(api.destinations.getAllCountries, {});
+    const countries = useQuery(api.destinations.getAllCountries, {}) as CountrySummary[] | undefined;
 
     if (countries === undefined) {
         return (
@@ -67,7 +74,7 @@ function BrowseByCountryInner() {
 
     return (
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-            {topCountries.map((country: any) => (
+            {topCountries.map((country) => (
                 <Card
                     key={country.name}
                     onClick={() => router.push(`/country/${encodeURIComponent(country.name)}`)}
@@ -93,7 +100,9 @@ function BrowseByCountryInner() {
                         <div className="flex items-center gap-2 text-sm">
                             <Star className="w-4 h-4 text-accent-strong fill-accent-strong" />
                             <span className="text-text-sub-light font-medium">
-                                Avg score: {Math.round(country.avgFamilyScore / 10)}/10
+                                {country.avgFamilyScore === null
+                                    ? 'Score pending review'
+                                    : `Avg score: ${(country.avgFamilyScore / 10).toFixed(1)}/10`}
                             </span>
                         </div>
 

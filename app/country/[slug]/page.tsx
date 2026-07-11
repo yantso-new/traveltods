@@ -30,6 +30,9 @@ export async function generateMetadata({ params }: CountryRouteProps): Promise<M
     alternates: {
       canonical: countryPath(country),
     },
+    robots: destinations.length
+      ? { index: true, follow: true }
+      : { index: false, follow: false, noarchive: true },
     openGraph: {
       title,
       description: `Family-friendly destination ideas and parent planning notes for ${country}.`,

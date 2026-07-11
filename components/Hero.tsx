@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { DestinationAutocomplete } from '@/components/DestinationAutocomplete';
 import { LoadingOverlay } from '@/components/LoadingOverlay';
+import { track } from '@vercel/analytics';
 
 interface HeroProps {
     onSearchTermChange: (term: string) => void;
@@ -51,8 +52,8 @@ export function Hero({ onSearchTermChange }: HeroProps) {
                         <div className="relative z-20 flex flex-col items-start justify-center min-h-[500px] p-6 md:p-16 max-w-3xl gap-8">
                             <div className="space-y-4">
                                 <div className="inline-flex items-center gap-2 px-3 py-1 mb-4 rounded-full bg-primary/90 text-primary-foreground border border-white/20 backdrop-blur-md text-xs font-extrabold uppercase tracking-wider transform -rotate-1">
-                                    <span className="material-symbols-outlined text-base">verified</span>
-                                    Parent Verified
+                                    <span className="material-symbols-outlined text-base">family_restroom</span>
+                                    Family-first planning
                                 </div>
                                 <h1 className="text-white text-4xl md:text-5xl lg:text-7xl font-black leading-[0.95] tracking-tight drop-shadow-sm">
                                     Adventures tailored for <span className="text-accent">tiny travelers</span>
@@ -72,11 +73,13 @@ export function Hero({ onSearchTermChange }: HeroProps) {
                                         className="w-full"
                                         onSelect={(dest) => {
                                             const destinationName = `${dest.name}, ${dest.country}`;
+                                            track('Destination Search', { destination: destinationName, method: 'autocomplete' });
                                             setLoadingDestination(destinationName);
                                             onSearchTermChange(destinationName);
                                             router.push(`/destination/${encodeURIComponent(destinationName)}`);
                                         }}
                                         onSearch={(query) => {
+                                            track('Destination Search', { destination: query, method: 'free_text' });
                                             setLoadingDestination(query);
                                             onSearchTermChange(query);
                                             router.push(`/destination/${encodeURIComponent(query)}`);
@@ -92,6 +95,7 @@ export function Hero({ onSearchTermChange }: HeroProps) {
                                         <button
                                             key={destinationName}
                                             onClick={() => {
+                                                track('Destination Search', { destination: destinationName, method: 'popular' });
                                                 setLoadingDestination(destinationName);
                                                 onSearchTermChange(destinationName);
                                                 router.push(`/destination/${encodeURIComponent(destinationName)}`);

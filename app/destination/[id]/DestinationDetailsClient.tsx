@@ -31,6 +31,7 @@ import { ResponsiveContainer, RadarChart, PolarGrid, PolarAngleAxis, Radar, Tool
 // Convex Imports
 import { useQuery, useAction, useMutation } from 'convex/react';
 import { api } from '@/convex/_generated/api';
+import { track } from '@vercel/analytics';
 
 function hasSuggestionContent(suggestions: any) {
     if (!suggestions) return false;
@@ -41,6 +42,15 @@ function hasSuggestionContent(suggestions: any) {
         suggestions.cafes?.length ||
         suggestions.restaurants?.length
     );
+}
+
+function withTimeout<T>(promise: Promise<T>, timeoutMs: number, label: string) {
+    return Promise.race([
+        promise,
+        new Promise<never>((_, reject) => {
+            window.setTimeout(() => reject(new Error(`${label} timed out`)), timeoutMs);
+        }),
+    ]);
 }
 
 function getSpotMapsUrl(spot: any, destinationName: string) {
@@ -159,7 +169,6 @@ export default function DestinationDetails() {
     const incrementSearchCount = useMutation(api.destinations.incrementSearchCount);
 
     const [isGathering, setIsGathering] = useState(false);
-    const [isInitialDataLoading, setIsInitialDataLoading] = useState(false);
     const [localSuggestions, setLocalSuggestions] = useState<any>(null);
     const realNeighborhoods = filterRealNeighborhoods(destination?.neighborhoods, destination?.name ?? id);
 
@@ -197,7 +206,7 @@ export default function DestinationDetails() {
             gatheringRef.current = true;
             setIsGathering(true);
 
-            gatherDestination({ city, country })
+            withTimeout(gatherDestination({ city, country }), 15000, 'Destination gathering')
                 .then(() => setIsGathering(false))
                 .catch(e => {
                     console.error("Gathering failed", e);
@@ -206,17 +215,17 @@ export default function DestinationDetails() {
         }
     }, [id, destination, gatherDestination, isGathering]);
 
-    // Before showing the page, finish startup data refreshes so users do not see partial content.
+    // Refresh noncritical data in the background. Existing destination content
+    // remains visible while activities and suggestions update.
     useEffect(() => {
         if (!id || !destination || initialLoadRef.current === id) return;
 
         initialLoadRef.current = id;
-        setIsInitialDataLoading(true);
         setIsLoadingActivities(true);
 
         const needsSuggestions = !hasSuggestionContent(destination.suggestions);
 
-        const activityPromise = fetchActivities({ destinationName: id })
+        const activityPromise = withTimeout(fetchActivities({ destinationName: id }), 12000, 'Activity loading')
             .then((data: any) => {
                 setActivities(data);
             })
@@ -228,14 +237,14 @@ export default function DestinationDetails() {
                 setIsLoadingActivities(false);
             });
 
-        const refreshPromise = checkAndRefreshIfStale({ name: id })
+        const refreshPromise = withTimeout(checkAndRefreshIfStale({ name: id }), 12000, 'Destination refresh')
             .catch((err: any) => {
                 console.error("Stale data refresh check failed:", err);
                 return null;
             });
 
         const suggestionsPromise = needsSuggestions
-            ? refreshSuggestionsAction({ destinationName: id })
+            ? withTimeout(refreshSuggestionsAction({ destinationName: id }), 12000, 'Suggestion loading')
                 .then((result: any) => {
                     if (!result.success) {
                         console.error('Refresh suggestions failed:', result.error);
@@ -246,19 +255,16 @@ export default function DestinationDetails() {
                 })
             : Promise.resolve();
 
-        Promise.all([
+        void Promise.allSettled([
             incrementSearchCount({ name: id }).catch(console.error),
             refreshPromise,
             suggestionsPromise,
             activityPromise,
-        ])
-            .finally(() => {
-                setIsInitialDataLoading(false);
-            })
+        ]);
     }, [id, destination, checkAndRefreshIfStale, fetchActivities, incrementSearchCount, refreshSuggestionsAction]);
 
     // Show loading overlay while connecting or gathering data
-    if (destination === undefined || isGathering || isInitialDataLoading) {
+    if (destination === undefined || isGathering) {
         return (
             <div className="min-h-screen bg-background-light">
                 <Navbar />
@@ -338,7 +344,7 @@ export default function DestinationDetails() {
                             </p>
                             <div className="flex flex-wrap gap-2 mt-8">
                                 {destination.tags?.map((tag: string) => (
-                                    <Badge key={tag} variant="subtle-primary" className="px-4 py-2 text-sm">{tag}</Badge>
+                                    <Badge key={tag} variant="subtle-primary" className="px-4 py-2 text-sm">{tag === 'Verified' ? 'Data Reviewed' : tag}</Badge>
                                 ))}
                             </div>
                         </Card>
@@ -708,7 +714,14 @@ export default function DestinationDetails() {
                             ))
                         ) : activities.length > 0 ? (
                             activities.map((activity) => (
-                                <Card key={activity.id} className="group overflow-hidden border-none cursor-pointer h-full flex flex-col transition-colors duration-200" onClick={() => window.open(activity.productUrl, '_blank')}>
+                                <Card key={activity.id} className="group overflow-hidden border-none cursor-pointer h-full flex flex-col transition-colors duration-200" onClick={() => {
+                                    track('Affiliate Activity Click', {
+                                        destination: destination.name,
+                                        activity: activity.title,
+                                        provider: 'Viator',
+                                    });
+                                    window.open(activity.productUrl, '_blank', 'noopener,noreferrer');
+                                }}>
                                     <div className="relative h-48 overflow-hidden">
                                         <img
                                             src={activity.image || '/placeholder.jpg'}
@@ -761,7 +774,13 @@ export default function DestinationDetails() {
                     <div className="mt-10 text-center">
                         <Button
                             className="bg-accent hover:bg-accent/90 text-accent-foreground font-bold px-8 py-6 h-auto text-lg transition-colors duration-200"
-                            onClick={() => window.open('https://www.viator.com', '_blank')}
+                            onClick={() => {
+                                track('Affiliate Marketplace Click', {
+                                    destination: destination.name,
+                                    provider: 'Viator',
+                                });
+                                window.open('https://www.viator.com', '_blank', 'noopener,noreferrer');
+                            }}
                         >
                             View All Family Activities
                             <ExternalLink className="w-5 h-5 ml-2 opacity-70" />

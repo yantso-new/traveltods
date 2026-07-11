@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { MapPin, TrendingUp, Award, ArrowLeft } from 'lucide-react';
 import { useQuery } from 'convex/react';
 import { api } from '@/convex/_generated/api';
+import type { Doc } from '@/convex/_generated/dataModel';
 import { Navbar } from '@/components/Navbar';
 import { DestinationCard } from '@/components/DestinationCard';
 import { Button, Card, Badge } from '@/components/ui';
@@ -17,7 +18,7 @@ export default function CountryPage() {
     const country = countrySlug ? decodeURIComponent(countrySlug) : '';
 
     // Fetch destinations for this country
-    const destinations = useQuery(api.destinations.getDestinationsByCountry, { country });
+    const destinations = useQuery(api.destinations.getDestinationsByCountry, { country }) as Doc<'destinations'>[] | undefined;
 
     if (!country) {
         return (
@@ -50,9 +51,13 @@ export default function CountryPage() {
     }
 
     // Calculate country stats
-    const avgScore = destinations.length > 0
-        ? Math.round(destinations.reduce((sum: number, d: any) => sum + (d.allScores?.familyScore || 0), 0) / destinations.length / 10)
-        : 0;
+    const ratedDestinations = destinations.filter((destination) => (
+        destination.dataQuality?.hasReliableOverallScore &&
+        typeof destination.allScores?.familyScore === 'number'
+    ));
+    const avgScore = ratedDestinations.length > 0
+        ? (ratedDestinations.reduce((sum, destination) => sum + (destination.allScores.familyScore ?? 0), 0) / ratedDestinations.length / 10).toFixed(1)
+        : null;
     
     const topDestination = destinations[0];
     const totalParks = destinations.reduce((sum: number, d: any) => sum + (d.suggestions?.freeActivities?.length || 0), 0);
@@ -84,7 +89,7 @@ export default function CountryPage() {
                         </div>
 
                         <p className="text-xl text-white/90 mb-8 max-w-2xl">
-                            Discover {destinations.length} family-friendly {destinations.length === 1 ? 'destination' : 'destinations'} with verified scores and local recommendations.
+                            Discover {destinations.length} family-friendly {destinations.length === 1 ? 'destination' : 'destinations'} with reviewed planning signals and local recommendations.
                         </p>
 
                         {/* Country Stats */}
@@ -94,7 +99,7 @@ export default function CountryPage() {
                                     <Award className="w-5 h-5 text-accent" />
                                     <span className="text-sm text-white/80 font-medium">Avg Score</span>
                                 </div>
-                                <p className="text-3xl font-black text-white">{avgScore}/10</p>
+                                <p className="text-3xl font-black text-white">{avgScore ? `${avgScore}/10` : 'Pending'}</p>
                             </div>
 
                             <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-4 border border-white/20">

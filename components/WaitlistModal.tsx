@@ -6,6 +6,7 @@ import { useMutation } from 'convex/react';
 import { api } from '@/convex/_generated/api';
 import { Button, Input } from '@/components/ui';
 import { X, Sparkles, Rocket, Users } from 'lucide-react';
+import { track } from '@vercel/analytics';
 
 interface WaitlistModalProps {
     isOpen: boolean;
@@ -92,6 +93,7 @@ export function WaitlistModal({ isOpen, onClose }: WaitlistModalProps) {
 
         try {
             await joinWaitlist({ email, source: 'waitlist_modal' });
+            track('Waitlist Signup', { source: 'waitlist_modal' });
             setIsSubmitted(true);
         } catch {
             setError('We could not save your email. Please try again.');
@@ -218,7 +220,7 @@ export function WaitlistModal({ isOpen, onClose }: WaitlistModalProps) {
                                     <div className="text-[10px] text-text-sub-light uppercase tracking-wider font-bold">Destinations</div>
                                 </div>
                                 <div className="flex flex-col items-center text-center">
-                                    <div className="text-secondary font-black text-sm mb-0.5">Parent-tested</div>
+                                    <div className="text-secondary font-black text-sm mb-0.5">Parent-focused</div>
                                     <div className="text-[10px] text-text-sub-light uppercase tracking-wider font-bold">Travel Tips</div>
                                 </div>
                             </div>

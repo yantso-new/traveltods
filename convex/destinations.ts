@@ -245,6 +245,31 @@ export const getDestinationInventory = query({
     },
 });
 
+// Public SEO inventory. Only destinations with reliable scoring and enough
+// editorial copy should be exposed to search engines or included in sitemaps.
+export const getPublishedDestinationInventory = query({
+    args: {},
+    handler: async (ctx) => {
+        const destinations = await ctx.db.query("destinations").collect();
+
+        return destinations
+            .filter((destination) => {
+                return Boolean(
+                    destination.dataQuality?.hasReliableOverallScore &&
+                    destination.description &&
+                    destination.description.trim().length >= 120 &&
+                    destination.shortDescription &&
+                    destination.shortDescription.trim().length >= 40
+                );
+            })
+            .map((destination) => ({
+                name: destination.name,
+                country: destination.country,
+                lastUpdated: destination.lastUpdated,
+            }));
+    },
+});
+
 export const getCountryDestinationCount = query({
     args: { country: v.string() },
     handler: async (ctx, args) => {
@@ -344,6 +369,11 @@ export const getTopRatedDestinations = query({
 
         // Filter for destinations with familyScore >= 80 (rating 8+)
         const topRated = allDestinations
+            .filter((destination) => (
+                !isUnknownCountry(destination.country) &&
+                destination.dataQuality?.hasReliableOverallScore &&
+                typeof destination.allScores?.familyScore === "number"
+            ))
             .sort((a, b) => (b.allScores?.familyScore || 0) - (a.allScores?.familyScore || 0));
 
         // Apply limit if provided
@@ -401,29 +431,38 @@ export const getAllCountries = query({
         // Group by country and calculate stats
         const countryMap = new Map<string, {
             count: number;
+            ratedCount: number;
             totalScore: number;
             topScore: number;
-            topDestination: string;
+            topDestination: string | null;
         }>();
 
         for (const dest of destinations) {
             const country = dest.country;
-            if (!country) continue;
+            if (!country || isUnknownCountry(country)) continue;
 
-            const score = dest.allScores?.familyScore ?? 0;
+            const hasReliableScore = Boolean(
+                dest.dataQuality?.hasReliableOverallScore &&
+                typeof dest.allScores?.familyScore === "number"
+            );
+            const score = hasReliableScore ? dest.allScores.familyScore! : null;
 
             if (!countryMap.has(country)) {
                 countryMap.set(country, {
                     count: 1,
-                    totalScore: score,
-                    topScore: score,
-                    topDestination: dest.name,
+                    ratedCount: score === null ? 0 : 1,
+                    totalScore: score ?? 0,
+                    topScore: score ?? -1,
+                    topDestination: score === null ? null : dest.name,
                 });
             } else {
                 const stats = countryMap.get(country)!;
                 stats.count++;
-                stats.totalScore += score;
-                if (score > stats.topScore) {
+                if (score !== null) {
+                    stats.ratedCount++;
+                    stats.totalScore += score;
+                }
+                if (score !== null && score > stats.topScore) {
                     stats.topScore = score;
                     stats.topDestination = dest.name;
                 }
@@ -434,7 +473,9 @@ export const getAllCountries = query({
         const countries = Array.from(countryMap.entries()).map(([name, stats]) => ({
             name,
             destinationCount: stats.count,
-            avgFamilyScore: Math.round(stats.totalScore / stats.count),
+            avgFamilyScore: stats.ratedCount > 0
+                ? Math.round(stats.totalScore / stats.ratedCount)
+                : null,
             topDestination: stats.topDestination,
         }));
 
@@ -599,7 +640,7 @@ export const gatherDestination = action({
 
         // Dynamic tags based on scores and data quality
         const tags: string[] = [];
-        if (dataQuality.hasReliableOverallScore) tags.push("Verified");
+        if (dataQuality.hasReliableOverallScore) tags.push("Data Reviewed");
         if (allScores.safety >= 80) tags.push("Safe");
         if (allScores.costAffordability >= 70) tags.push("Budget-Friendly");
         if (allScores.weatherComfort >= 75) tags.push("Great Weather");
@@ -631,7 +672,7 @@ export const gatherDestination = action({
         };
 
         // 7. Save to DB with all new fields
-        console.log(`Saving verified destination to DB: ${fullName}`);
+        console.log(`Saving destination with reviewed data to DB: ${fullName}`);
         await ctx.runMutation(api.destinations.saveDestination, {
             name: fullName,
             country,

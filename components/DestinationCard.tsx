@@ -3,6 +3,7 @@ import { useRouter } from 'next/navigation';
 import { Destination, DestinationMetrics } from '@/types';
 import { Card } from '@/components/ui';
 import { Heart } from 'lucide-react';
+import { track } from '@vercel/analytics';
 
 interface Props {
   destination: Destination;
@@ -15,7 +16,8 @@ export const DestinationCard: React.FC<Props> = ({ destination, onClick }) => {
 
   useEffect(() => {
     const saved = localStorage.getItem(`saved_${destination.id}`);
-    if (saved === 'true') setIsSaved(true);
+    const updateSavedState = window.setTimeout(() => setIsSaved(saved === 'true'), 0);
+    return () => window.clearTimeout(updateSavedState);
   }, [destination.id]);
 
   const toggleSave = (e: React.MouseEvent) => {
@@ -23,6 +25,10 @@ export const DestinationCard: React.FC<Props> = ({ destination, onClick }) => {
     const newState = !isSaved;
     setIsSaved(newState);
     localStorage.setItem(`saved_${destination.id}`, String(newState));
+    track('Destination Saved', {
+      destination: destination.id,
+      saved: newState,
+    });
   };
 
   // Use familyScore if available, otherwise calculate from metrics
@@ -79,7 +85,13 @@ export const DestinationCard: React.FC<Props> = ({ destination, onClick }) => {
 
   return (
     <Card
-      onClick={onClick}
+      onClick={() => {
+        track('Destination Opened', {
+          destination: destination.id,
+          country: destination.country,
+        });
+        onClick();
+      }}
       className="group flex flex-col overflow-hidden h-full md:h-[22rem] border-2 border-transparent transition-colors duration-200"
     >
       <div className="relative h-48 md:h-[11rem] overflow-hidden">
