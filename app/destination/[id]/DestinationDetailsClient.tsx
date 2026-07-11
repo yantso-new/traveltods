@@ -26,12 +26,11 @@ import { Button, Badge, ProgressBar, Card, LoadingSpinner, Tooltip } from '@/com
 import { Navbar } from '@/components/Navbar';
 import { LoadingOverlay } from '@/components/LoadingOverlay';
 
-import { ResponsiveContainer, RadarChart, PolarGrid, PolarAngleAxis, Radar, Tooltip as ChartTooltip } from 'recharts';
-
 // Convex Imports
 import { useQuery, useAction, useMutation } from 'convex/react';
 import { api } from '@/convex/_generated/api';
 import { track } from '@vercel/analytics';
+import { DestinationHero } from '@/components/DestinationHero';
 
 function hasSuggestionContent(suggestions: any) {
     if (!suggestions) return false;
@@ -154,7 +153,7 @@ function SpotLinkCard({
     );
 }
 
-export default function DestinationDetails() {
+export default function DestinationDetails({ hideChrome = false }: { hideChrome?: boolean }) {
     const params = useParams();
     // Decode URI since the ID is "Copenhagen, Denmark"
     const rawId = params?.id as string;
@@ -265,6 +264,8 @@ export default function DestinationDetails() {
 
     // Show loading overlay while connecting or gathering data
     if (destination === undefined || isGathering) {
+        if (hideChrome) return null;
+
         return (
             <div className="min-h-screen bg-background-light">
                 <Navbar />
@@ -277,16 +278,10 @@ export default function DestinationDetails() {
         return <div className="p-10 text-center text-text-main-light">Destination not found and could not be gathered.</div>;
     }
 
-    const { allScores, radarChart, dataQuality } = destination;
+    const { allScores, dataQuality } = destination;
     const isUnreliable = dataQuality && !dataQuality.hasReliableOverallScore;
     const suggestions = localSuggestions ?? destination.suggestions;
     const shouldShowSuggestionsSection = hasSuggestionContent(suggestions);
-
-    // Transform radar chart to 1-10 scale
-    const radarData = radarChart?.map((item: any) => ({
-        ...item,
-        A: Math.round(item.A / 10)
-    }));
 
     const handleGoHome = () => {
         router.push('/');
@@ -295,59 +290,21 @@ export default function DestinationDetails() {
 
     return (
         <div className="min-h-screen bg-background-light text-text-main-light transition-colors duration-200 pb-20">
-            {/* Header */}
-            <Navbar />
+            {!hideChrome && <Navbar />}
+            {!hideChrome && (
+                <DestinationHero
+                    name={destination.name}
+                    country={destination.country}
+                    image={destination.image}
+                    shortDescription={destination.shortDescription}
+                />
+            )}
 
-            {/* Hero Banner */}
-            <div className="relative h-[40vh] md:h-[50vh] w-full overflow-hidden">
-                <div
-                    className="absolute inset-0 bg-cover bg-center"
-                    style={{ backgroundImage: `url("${destination.image || '/placeholder.jpg'}")` }}
-                ></div>
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
-                <div className="absolute bottom-0 left-0 w-full px-4 md:px-20 pb-20 flex justify-center">
-                    <div className="max-w-7xl w-full">
-                        {/* Breadcrumbs */}
-                        <div className="flex items-center gap-2 mb-6 text-white/80 text-sm font-bold uppercase tracking-widest backdrop-blur-sm w-fit px-3 py-1 rounded-lg bg-black/10 border border-white/10">
-                            <Link href="/" className="hover:text-primary transition-colors cursor-pointer">Home</Link>
-                            <span className="text-white/40">/</span>
-                            <span className="text-white">Destination</span>
-                        </div>
-
-                        <Link 
-                            href={`/country/${encodeURIComponent(destination.country)}`}
-                            className="inline-flex items-center gap-2 px-3 py-1 mb-4 rounded-full bg-primary/90 text-primary-foreground border border-white/20 backdrop-blur-md text-xs font-extrabold uppercase tracking-wider transition-colors cursor-pointer"
-                        >
-                            <span className="material-symbols-outlined text-sm">public</span>
-                            {destination.country}
-                        </Link>
-                        <h1 className="text-4xl md:text-6xl font-black text-white mb-4 drop-shadow-md tracking-tight leading-none">{destination.name}</h1>
-                        <p className="text-white/90 text-lg md:text-xl max-w-2xl font-medium leading-relaxed drop-shadow-sm">{destination.shortDescription}</p>
-                    </div>
-                </div>
-            </div>
-
-            <div className="px-4 md:px-20 -mt-10 relative z-10 flex justify-center">
+            <div className={`px-4 md:px-20 relative z-10 flex justify-center ${hideChrome ? 'mt-8' : '-mt-10'}`}>
                 <div className="w-full max-w-7xl grid grid-cols-1 lg:grid-cols-3 gap-8">
 
                     {/* Left Column: Stats & Description */}
                     <div className="lg:col-span-2 space-y-8">
-
-                        {/* Main Info Card */}
-                        <Card className="p-8">
-                            <div className="flex items-center gap-2 mb-6 text-primary">
-                                <span className="material-symbols-outlined">info</span>
-                                <h2 className="text-xl font-bold uppercase tracking-wide text-text-sub-light">About</h2>
-                            </div>
-                            <p className="text-text-main-light leading-loose text-lg font-light">
-                                {destination.description}
-                            </p>
-                            <div className="flex flex-wrap gap-2 mt-8">
-                                {destination.tags?.map((tag: string) => (
-                                    <Badge key={tag} variant="subtle-primary" className="px-4 py-2 text-sm">{tag === 'Verified' ? 'Data Reviewed' : tag}</Badge>
-                                ))}
-                            </div>
-                        </Card>
 
                         {/* Detailed Metrics Breakdown */}
                         <Card className="p-8">
@@ -439,30 +396,8 @@ export default function DestinationDetails() {
                         </Card>
                     </div>
 
-                    {/* Right Column: Visualization & AI Chat */}
+                    {/* Right Column: Affiliate offers */}
                     <div className="space-y-8">
-
-                        {/* Radar Chart */}
-                        <Card className="p-6 flex flex-col items-center justify-center bg-surface-light">
-                            <h3 className="text-sm font-bold uppercase tracking-wider text-text-sub-light mb-6 self-start">Metrics Visualized</h3>
-                            <div className="w-full h-[280px]">
-                                <ResponsiveContainer width="100%" height="100%">
-                                    <RadarChart cx="50%" cy="50%" outerRadius="70%" data={radarData}>
-                                        <PolarGrid stroke="#e2e8f0" />
-                                        <PolarAngleAxis dataKey="subject" tick={{ fill: '#94a3b8', fontSize: 10, fontWeight: 600 }} />
-                                        <Radar
-                                            name={destination.name}
-                                            dataKey="A"
-                                            stroke="#3F7C79"
-                                            fill="#3F7C79"
-                                            fillOpacity={0.3}
-                                        />
-                                        <ChartTooltip />
-                                    </RadarChart>
-                                </ResponsiveContainer>
-                            </div>
-                        </Card>
-
                         {/* Affiliate: Baby Gear Rental (BabyQuip) */}
                         <Card className="overflow-hidden border-2 border-transparent transition-colors duration-200">
                             <div className="p-6 space-y-4">

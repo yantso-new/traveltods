@@ -9,6 +9,8 @@ import {
 } from "@/seo";
 import { absoluteUrl } from "@/site";
 import { getPublishedDestination } from "@/lib/published-destinations";
+import { Navbar } from "@/components/Navbar";
+import { DestinationHero } from "@/components/DestinationHero";
 import DestinationDetailsClient from "./DestinationDetailsClient";
 
 interface DestinationRouteProps {
@@ -171,21 +173,30 @@ export default async function DestinationPage({ params }: DestinationRouteProps)
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: jsonLd(structuredData) }}
       />
-      {destination && <DestinationSeoSummary destination={destination} />}
-      <DestinationDetailsClient />
+      {destination ? (
+        <>
+          <Navbar />
+          <DestinationHero
+            name={destination.name}
+            country={destination.country}
+            image={destination.image}
+            shortDescription={destination.shortDescription}
+          />
+          <DestinationSeoSummary destination={destination} />
+          <DestinationDetailsClient hideChrome />
+        </>
+      ) : (
+        <DestinationDetailsClient />
+      )}
     </>
   );
 }
 
 function DestinationSeoSummary({ destination }: { destination: DestinationSeoData }) {
   return (
-    <section className="bg-background-light px-4 py-10 md:px-20">
+    <section className="bg-background-light px-4 pt-10 pb-0 md:px-20">
       <div className="mx-auto max-w-7xl rounded-2xl border border-[var(--border)] bg-surface-light p-6 md:p-8">
-        <p className="text-sm font-bold uppercase tracking-widest text-primary">Family destination guide</p>
-        <h1 className="mt-3 text-3xl font-black text-text-main-light md:text-5xl">
-          {destination.city} with kids
-        </h1>
-        <p className="mt-4 max-w-3xl text-base leading-relaxed text-text-sub-light md:text-lg">
+        <p className="max-w-3xl text-base leading-relaxed text-text-sub-light md:text-lg">
           {destination.description}
         </p>
         <div className="mt-6 grid gap-4 md:grid-cols-3">
