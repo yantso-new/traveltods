@@ -1,12 +1,10 @@
 'use client';
 
 import React, { useState } from 'react';
-import Link from 'next/link';
-import { ArrowLeft, Clock, Calendar, Twitter, Linkedin, Link2, Check, ExternalLink, MapPin } from 'lucide-react';
+import { Clock, Calendar, Twitter, Linkedin, Link2, Check, ExternalLink, MapPin } from 'lucide-react';
 import { getPostBySlug, getRelatedPosts } from '@/blogData';
 import { BlogCard } from '@/components/BlogCard';
 import { Navbar } from '@/components/Navbar';
-import { Badge } from '@/components/ui';
 
 interface BlogPostPageProps {
     slug: string;
@@ -200,38 +198,10 @@ export default function BlogPostPageClient({ slug }: BlogPostPageProps) {
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent" />
 
-                {/* Floating badge on hero */}
-                <div className="absolute bottom-8 left-4 md:left-20">
-                    <div className="flex flex-col gap-2">
-                        <Badge
-                            variant={post.category === 'destinations' ? 'solid-primary' : 'solid-secondary'}
-                            className="capitalize text-sm font-bold w-fit"
-                        >
-                            {post.category}
-                        </Badge>
-                        <a
-                            href={post.image.creditUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-xs text-white/80 hover:text-white underline underline-offset-4"
-                        >
-                            Image: {post.image.creditLabel}
-                        </a>
-                    </div>
-                </div>
             </div>
 
             {/* Article Content */}
             <article className="relative max-w-4xl mx-auto px-4 md:px-8 py-12 md:py-16">
-                {/* Back Link */}
-                <Link
-                    href="/blog"
-                    className="inline-flex items-center gap-2 text-text-sub-light hover:text-primary transition-colors mb-8 font-medium group"
-                >
-                    <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
-                    Back to Blog
-                </Link>
-
                 {/* Title */}
                 <h1 className="text-4xl md:text-6xl font-black text-text-main-light leading-tight mb-6">
                     {post.title}
