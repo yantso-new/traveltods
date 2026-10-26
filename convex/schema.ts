@@ -7,7 +7,17 @@ export default defineSchema({
         createdAt: v.number(),
         updatedAt: v.number(),
         source: v.optional(v.string()),
-    }).index("by_email", ["email"]),
+    })
+        .index("by_email", ["email"])
+        .index("by_created_at", ["createdAt"]),
+
+    // Short-lived cache of mapped Viator activities, one row per destination.
+    // Keeps the public viator.fetchActivities action from burning Viator quota.
+    viatorActivityCache: defineTable({
+        destinationId: v.id("destinations"),
+        fetchedAt: v.number(),
+        activities: v.array(v.any()),
+    }).index("by_destination", ["destinationId"]),
 
     destinations: defineTable({
         name: v.string(),
