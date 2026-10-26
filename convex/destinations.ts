@@ -28,6 +28,13 @@ import {
 
 const UNKNOWN_COUNTRY = "unknown";
 
+// Trust labels must only come from a real verification record, never from code.
+const TRUST_TAGS = new Set(["verified", "data reviewed"]);
+
+function isTrustTag(tag: string) {
+    return TRUST_TAGS.has(tag.trim().toLowerCase());
+}
+
 function capitalizeWord(word: string) {
     if (word === word.toUpperCase() && word.length > 1) {
         return word;
@@ -201,6 +208,7 @@ export const saveDestination = internalMutation({
             ...args,
             name,
             country,
+            tags: args.tags?.filter((tag) => !isTrustTag(tag)),
             lastUpdated: Date.now(),
         };
 
@@ -507,6 +515,41 @@ export const incrementSearchCount = internalMutation({
     },
 });
 
+// One-off cleanup: remove "Verified" / "Data Reviewed" tags from destinations.
+// Batched and idempotent: processes one page per call and returns the next cursor.
+// Run repeatedly until `isDone` is true, e.g.
+//   npx convex run destinations:stripTrustTags
+//   npx convex run destinations:stripTrustTags '{"cursor": "<continueCursor>"}'
+export const stripTrustTags = internalMutation({
+    args: {
+        cursor: v.optional(v.string()),
+        batchSize: v.optional(v.number()),
+    },
+    handler: async (ctx, args) => {
+        const numItems = Math.min(Math.max(args.batchSize ?? 100, 1), 200);
+        const page = await ctx.db
+            .query("destinations")
+            .paginate({ cursor: args.cursor ?? null, numItems });
+
+        let updated = 0;
+        for (const destination of page.page) {
+            const tags = destination.tags;
+            if (!tags || !tags.some(isTrustTag)) continue;
+            await ctx.db.patch(destination._id, {
+                tags: tags.filter((tag) => !isTrustTag(tag)),
+            });
+            updated++;
+        }
+
+        return {
+            scanned: page.page.length,
+            updated,
+            isDone: page.isDone,
+            continueCursor: page.continueCursor,
+        };
+    },
+});
+
 // Update isTop100 flags for all destinations (internal mutation for cron)
 export const updateTop100Flags = internalMutation({
     handler: async (ctx) => {
@@ -638,9 +681,9 @@ export const gatherDestination = internalAction({
             cityImage = wikiData.imageUrl;
         }
 
-        // Dynamic tags based on scores and data quality
+        // Dynamic tags derived from computed scores. Never mint trust labels
+        // ("Verified" / "Data Reviewed") here: those require a human verification record.
         const tags: string[] = [];
-        if (dataQuality.hasReliableOverallScore) tags.push("Data Reviewed");
         if (allScores.safety >= 80) tags.push("Safe");
         if (allScores.costAffordability >= 70) tags.push("Budget-Friendly");
         if (allScores.weatherComfort >= 75) tags.push("Great Weather");
@@ -672,7 +715,7 @@ export const gatherDestination = internalAction({
         };
 
         // 7. Save to DB with all new fields
-        console.log(`Saving destination with reviewed data to DB: ${fullName}`);
+        console.log(`Saving destination to DB: ${fullName}`);
         await ctx.runMutation(internal.destinations.saveDestination, {
             name: fullName,
             country,
