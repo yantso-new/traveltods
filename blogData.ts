@@ -44,22 +44,25 @@ export const BLOG_CATEGORIES: { id: BlogCategory | 'all'; label: string }[] = [
 
 const LAST_UPDATED = '2026-05-18';
 
-const unsplashPhoto = (id: string) => ({
-    url: `https://unsplash.com/photos/${id}/download?w=1200&q=80`,
+// Image URLs were resolved once from unsplash.com/photos/{id}/download. Hotlink
+// images.unsplash.com directly: the download endpoint is a redirect and is not
+// meant for hotlinking. Keep the photo page as the credit link.
+const unsplashPhoto = (id: string, imageUrl: string) => ({
+    url: imageUrl,
     creditUrl: `https://unsplash.com/photos/${id}`,
 });
 
 const IMAGE_URLS: Record<string, { url: string; creditUrl?: string }> = {
-    'lisbon-family-travel': unsplashPhoto('GwNkrz7Q9XY'),
-    'porto-portugal-family': unsplashPhoto('zllGA-8RW5M'),
-    'algarve-family-beach': unsplashPhoto('wK0IqOKVOI4'),
-    'madeira-portugal-family': unsplashPhoto('fyz4vI1g-xM'),
-    'azores-family-travel': unsplashPhoto('4Hn6ThgpqBE'),
-    'barcelona-family-travel': unsplashPhoto('cNFPCAV23lM'),
-    'madrid-family-travel': unsplashPhoto('VIzeB9tB-J0'),
-    'seville-family-travel': unsplashPhoto('M7DS8qqyG3E'),
-    'valencia-family-travel': unsplashPhoto('jKywkUgB4X4'),
-    'malaga-family-travel': unsplashPhoto('RpPOIyQf0ow'),
+    'lisbon-family-travel': unsplashPhoto('GwNkrz7Q9XY', 'https://images.unsplash.com/photo-1762882450531-c99aca0ba328?ixlib=rb-4.1.0&q=80&fm=jpg&crop=entropy&cs=srgb&w=1200'),
+    'porto-portugal-family': unsplashPhoto('zllGA-8RW5M', 'https://images.unsplash.com/photo-1762294946283-6921938e9937?ixlib=rb-4.1.0&q=80&fm=jpg&crop=entropy&cs=srgb&w=1200'),
+    'algarve-family-beach': unsplashPhoto('wK0IqOKVOI4', 'https://images.unsplash.com/photo-1763656260381-cfe20f35e9b2?ixlib=rb-4.1.0&q=80&fm=jpg&crop=entropy&cs=srgb&w=1200'),
+    'madeira-portugal-family': unsplashPhoto('fyz4vI1g-xM', 'https://images.unsplash.com/photo-1683554824285-fd10843e764b?ixlib=rb-4.1.0&q=80&fm=jpg&crop=entropy&cs=srgb&w=1200'),
+    'azores-family-travel': unsplashPhoto('4Hn6ThgpqBE', 'https://images.unsplash.com/photo-1738422525916-de6995b29c89?ixlib=rb-4.1.0&q=80&fm=jpg&crop=entropy&cs=srgb&w=1200'),
+    'barcelona-family-travel': unsplashPhoto('cNFPCAV23lM', 'https://images.unsplash.com/photo-1665417126017-504a495b3a2f?ixlib=rb-4.1.0&q=80&fm=jpg&crop=entropy&cs=srgb&w=1200'),
+    'madrid-family-travel': unsplashPhoto('VIzeB9tB-J0', 'https://images.unsplash.com/photo-1620134913518-e14280cfc6d8?ixlib=rb-4.1.0&q=80&fm=jpg&crop=entropy&cs=srgb&w=1200'),
+    'seville-family-travel': unsplashPhoto('M7DS8qqyG3E', 'https://images.unsplash.com/photo-1763043014054-345898a33797?ixlib=rb-4.1.0&q=80&fm=jpg&crop=entropy&cs=srgb&w=1200'),
+    'valencia-family-travel': unsplashPhoto('jKywkUgB4X4', 'https://images.unsplash.com/photo-1577990432593-6bf35f43beed?ixlib=rb-4.1.0&q=80&fm=jpg&crop=entropy&cs=srgb&w=1200'),
+    'malaga-family-travel': unsplashPhoto('RpPOIyQf0ow', 'https://images.unsplash.com/photo-1769204269131-73555637700f?ixlib=rb-4.1.0&q=80&fm=jpg&crop=entropy&cs=srgb&w=1200'),
     'family-airport-travel': { url: 'https://images.unsplash.com/photo-1436491865332-7a61a109cc05?w=1200&q=80' },
     'family-packing-travel': { url: 'https://images.unsplash.com/photo-1488646953014-85cb44e25828?w=1200&q=80' },
     'child-sleep-travel': { url: 'https://images.unsplash.com/photo-1541781774459-bb2af2f05b55?w=1200&q=80' },
