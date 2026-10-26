@@ -6,6 +6,7 @@ import { MapPin, TrendingUp, Star, AlertTriangle } from 'lucide-react';
 import { useQuery } from 'convex/react';
 import { api } from '@/convex/_generated/api';
 import { Card } from '@/components/ui';
+import { SHOW_SCORES } from '@/config';
 
 interface CountrySummary {
     name: string;
@@ -97,6 +98,7 @@ function BrowseByCountryInner() {
                             </span>
                         </div>
 
+                        {SHOW_SCORES && (
                         <div className="flex items-center gap-2 text-sm">
                             <Star className="w-4 h-4 text-accent-strong fill-accent-strong" />
                             <span className="text-text-sub-light font-medium">
@@ -105,8 +107,9 @@ function BrowseByCountryInner() {
                                     : `Avg score: ${(country.avgFamilyScore / 10).toFixed(1)}/10`}
                             </span>
                         </div>
+                        )}
 
-                        {country.topDestination && (
+                        {SHOW_SCORES && country.topDestination && (
                             <div className="pt-2 border-t border-[var(--border)]">
                                 <p className="text-xs text-text-sub-light">
                                     Top pick: <span className="font-semibold text-primary">{country.topDestination}</span>

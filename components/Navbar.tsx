@@ -6,6 +6,7 @@ import { Button } from '@/components/ui';
 import { DestinationAutocomplete } from '@/components/DestinationAutocomplete';
 import { Search } from 'lucide-react';
 import { WaitlistModal } from '@/components/WaitlistModal';
+import { WAITLIST_CTA_LABEL } from '@/config';
 
 export function Navbar() {
     const router = useRouter();
@@ -76,7 +77,7 @@ export function Navbar() {
                                 <a className="text-sm font-bold text-text-main-light hover:text-primary transition-colors" href="/blog">Blog</a>
                             </nav>
                             <Button variant="primary" className="rounded-full h-11 px-7" onClick={() => setIsWaitlistOpen(true)}>
-                                <span className="truncate">Join Community</span>
+                                <span className="truncate">{WAITLIST_CTA_LABEL}</span>
                             </Button>
                         </div>
 
@@ -129,7 +130,7 @@ export function Navbar() {
                                     setIsMenuOpen(false);
                                     setIsWaitlistOpen(true);
                                 }}>
-                                    Join Pioneers
+                                    {WAITLIST_CTA_LABEL}
                                 </Button>
                             </div>
                         </nav>

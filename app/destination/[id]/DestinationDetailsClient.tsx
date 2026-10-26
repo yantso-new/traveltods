@@ -31,6 +31,7 @@ import { useQuery, useAction } from 'convex/react';
 import { api } from '@/convex/_generated/api';
 import { track } from '@vercel/analytics';
 import { DestinationHero } from '@/components/DestinationHero';
+import { SHOW_SCORES } from '@/config';
 
 function hasSuggestionContent(suggestions: any) {
     if (!suggestions) return false;
@@ -238,6 +239,7 @@ export default function DestinationDetails({ hideChrome = false }: { hideChrome?
                     <div className="lg:col-span-2 space-y-8">
 
                         {/* Detailed Metrics Breakdown */}
+                        {SHOW_SCORES && (
                         <Card className="p-8">
                             <div className="flex items-center justify-between mb-8 pb-6 border-b border-[var(--border)]">
                                 <div className="flex items-center gap-3">
@@ -325,6 +327,7 @@ export default function DestinationDetails({ hideChrome = false }: { hideChrome?
                                 </div>
                             </div>
                         </Card>
+                        )}
                     </div>
 
                     {/* Right Column: Affiliate offers */}
@@ -384,6 +387,7 @@ export default function DestinationDetails({ hideChrome = false }: { hideChrome?
                                     </div>
 
                                     <div className="space-y-3">
+                                        {SHOW_SCORES && (<>
                                         <div className="flex items-center justify-between">
                                             <span className="text-sm text-text-sub-light">Parks & Playgrounds</span>
                                             <div className="flex items-center gap-1">
@@ -419,6 +423,7 @@ export default function DestinationDetails({ hideChrome = false }: { hideChrome?
                                                 <span className="font-bold text-sm">{hood.scores.walkability}/10</span>
                                             </div>
                                         </div>
+                                        </>)}
                                     </div>
                                 </Card>
                             ))}
@@ -434,7 +439,7 @@ export default function DestinationDetails({ hideChrome = false }: { hideChrome?
                         <div className="mb-8">
                             <div className="inline-flex items-center gap-1.5 px-3 py-1 mb-4 rounded-full bg-accent/35 text-accent-strong border border-accent-strong/20 text-[10px] font-black uppercase tracking-widest">
                                 <Smile className="w-3 h-3" />
-                                Parent Approved
+                                Local Picks
                             </div>
                             <h2 className="text-3xl font-black text-text-main-light mb-2">Family-Friendly Spots</h2>
                             <p className="text-text-sub-light text-lg">Curated recommendations in <span className="text-primary font-bold">{destination.name}</span></p>

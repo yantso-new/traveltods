@@ -8,6 +8,7 @@ import {
   relatedBlogPostsForDestination,
   truncateDescription,
 } from "@/seo";
+import { SHOW_SCORES } from "@/config";
 import { absoluteUrl } from "@/site";
 import { getDestinationRecord, isPublishedDestination } from "@/lib/published-destinations";
 import { Navbar } from "@/components/Navbar";
@@ -213,12 +214,12 @@ function DestinationSeoSummary({ destination }: { destination: DestinationSeoDat
         </p>
         <div className="mt-6 grid gap-4 md:grid-cols-3">
           <SeoFact title="Best age fit" value="Toddlers and kids under 10" />
-          <SeoFact title="Stroller notes" value={`Stroller score ${destination.scores.strollerFriendly}/10 with sidewalks ${destination.scores.sidewalks}/10.`} />
-          <SeoFact title="Safety notes" value={`Safety score ${destination.scores.safety}/10 for parent planning.`} />
+          {SHOW_SCORES && <SeoFact title="Stroller notes" value={`Stroller score ${destination.scores.strollerFriendly}/10 with sidewalks ${destination.scores.sidewalks}/10.`} />}
+          {SHOW_SCORES && <SeoFact title="Safety notes" value={`Safety score ${destination.scores.safety}/10 for parent planning.`} />}
         </div>
         <div className="mt-6 grid gap-4 md:grid-cols-3">
-          <SeoFact title="Outdoor ease" value={`Playground score ${destination.scores.playgrounds}/10 with sidewalks ${destination.scores.sidewalks}/10.`} />
-          <SeoFact title="Rainy-day options" value={`Kid activity score ${destination.scores.kidActivities}/10 for museums, attractions, and indoor stops.`} />
+          {SHOW_SCORES && <SeoFact title="Outdoor ease" value={`Playground score ${destination.scores.playgrounds}/10 with sidewalks ${destination.scores.sidewalks}/10.`} />}
+          {SHOW_SCORES && <SeoFact title="Rainy-day options" value={`Kid activity score ${destination.scores.kidActivities}/10 for museums, attractions, and indoor stops.`} />}
           <SeoFact title="Planning approach" value="Plan one anchor activity per half day, then keep meals, playgrounds, and rest stops close together." />
         </div>
         {destination.relatedPosts.length > 0 && (
@@ -234,7 +235,7 @@ function DestinationSeoSummary({ destination }: { destination: DestinationSeoDat
           </div>
         )}
         <p className="mt-6 text-xs font-medium text-text-sub-light">
-          Scores combine public destination data and family-planning signals. <a href="/methodology" className="font-bold text-primary hover:underline">Review the methodology</a> and verify time-sensitive details before booking.
+          {SHOW_SCORES && "Scores combine public destination data and family-planning signals. "}<a href="/methodology" className="font-bold text-primary hover:underline">Review the methodology</a> and verify time-sensitive details before booking.
           {destination.lastUpdated ? ` Data updated ${new Date(destination.lastUpdated).toLocaleDateString("en-GB", { month: "long", year: "numeric" })}.` : ""}
         </p>
       </div>

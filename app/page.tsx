@@ -133,7 +133,7 @@ export default function Home() {
               <div className="relative">
                 <h2 className="relative text-text-main-light text-3xl md:text-5xl font-black leading-tight tracking-tight">Top Picks for Families</h2>
                 <p className="relative text-lg text-text-sub-light mt-3 font-medium">
-                  Curated destinations with the highest <span className="text-primary font-bold">toddler happiness</span> ratings.
+                  Curated destinations for families with <span className="text-primary font-bold">young children</span>.
                 </p>
               </div>
 
