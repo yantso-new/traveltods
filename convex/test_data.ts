@@ -1,12 +1,12 @@
 import { v } from "convex/values";
-import { action } from "./_generated/server";
+import { internalAction } from "./_generated/server";
 import { getNeighborhoods, getFamilySuggestions } from "./lib/api_clients";
 import { searchFamilyVenues } from "./lib/foursquare";
 
 /**
  * Test action to debug neighborhood and suggestion data fetching
  */
-export const testDestinationData = action({
+export const testDestinationData = internalAction({
   args: {
     lat: v.number(),
     lon: v.number(),

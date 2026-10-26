@@ -1,6 +1,6 @@
 import { v } from "convex/values";
-import { action, mutation, query, internalMutation } from "./_generated/server";
-import { api } from "./_generated/api";
+import { internalAction, internalMutation, query } from "./_generated/server";
+import { api, internal } from "./_generated/api";
 import {
     calculateAllScores,
     getRadarChartData,
@@ -66,7 +66,7 @@ function isUnknownCountry(country: string) {
 }
 
 // Mutation to save or update a destination (updated for new schema)
-export const saveDestination = mutation({
+export const saveDestination = internalMutation({
     args: {
         name: v.string(),
         country: v.string(),
@@ -300,7 +300,7 @@ export const getDestinationsWithUnknownCountry = query({
     },
 });
 
-export const deleteDestinationsWithUnknownCountry = mutation({
+export const deleteDestinationsWithUnknownCountry = internalMutation({
     args: {},
     handler: async (ctx) => {
         const destinations = await ctx.db.query("destinations").collect();
@@ -321,7 +321,7 @@ export const deleteDestinationsWithUnknownCountry = mutation({
     },
 });
 
-export const normalizeDestinationCasing = mutation({
+export const normalizeDestinationCasing = internalMutation({
     args: {},
     handler: async (ctx) => {
         const destinations = await ctx.db.query("destinations").collect();
@@ -486,7 +486,7 @@ export const getAllCountries = query({
 });
 
 // Increment search count when a destination is viewed
-export const incrementSearchCount = mutation({
+export const incrementSearchCount = internalMutation({
     args: { name: v.string() },
     handler: async (ctx, args) => {
         const destination = await ctx.db
@@ -539,7 +539,7 @@ export const updateTop100Flags = internalMutation({
 });
 
 // Action to gather data and compute scores (UPDATED with new APIs)
-export const gatherDestination = action({
+export const gatherDestination = internalAction({
     args: {
         city: v.string(),
         country: v.string(),
@@ -673,7 +673,7 @@ export const gatherDestination = action({
 
         // 7. Save to DB with all new fields
         console.log(`Saving destination with reviewed data to DB: ${fullName}`);
-        await ctx.runMutation(api.destinations.saveDestination, {
+        await ctx.runMutation(internal.destinations.saveDestination, {
             name: fullName,
             country,
             coordinates: coords,
@@ -708,12 +708,12 @@ export const gatherDestination = action({
         });
 
         // 8. Increment search count
-        await ctx.runMutation(api.destinations.incrementSearchCount, { name: fullName });
+        await ctx.runMutation(internal.destinations.incrementSearchCount, { name: fullName });
 
         if (!args.skipCountryBackfill) {
             const countryCount = await ctx.runQuery(api.destinations.getCountryDestinationCount, { country });
             if (countryCount < MIN_DESTINATIONS_PER_COUNTRY) {
-                await ctx.runAction(api.destinations.backfillCountryDestinations, {
+                await ctx.runAction(internal.destinations.backfillCountryDestinations, {
                     country,
                     minimum: MIN_DESTINATIONS_PER_COUNTRY,
                 });
@@ -728,7 +728,7 @@ export const gatherDestination = action({
     },
 });
 
-export const backfillCountryDestinations = action({
+export const backfillCountryDestinations = internalAction({
     args: {
         country: v.string(),
         minimum: v.optional(v.number()),
@@ -764,7 +764,7 @@ export const backfillCountryDestinations = action({
         const failures: { city: string; error: string }[] = [];
 
         for (const city of planned) {
-            const result: any = await ctx.runAction(api.destinations.gatherDestination, {
+            const result: any = await ctx.runAction(internal.destinations.gatherDestination, {
                 city,
                 country,
                 skipCountryBackfill: true,
@@ -789,7 +789,7 @@ export const backfillCountryDestinations = action({
 });
 
 // Mutation to update just the image for a destination
-export const updateDestinationImage = mutation({
+export const updateDestinationImage = internalMutation({
     args: {
         name: v.string(),
         image: v.string(),
@@ -823,7 +823,7 @@ const FALLBACK_IMAGE_IDS = [
 ];
 
 // Action to refresh images for destinations with fallback images
-export const refreshDestinationImages = action({
+export const refreshDestinationImages = internalAction({
     args: {
         destinationNames: v.optional(v.array(v.string())), // If empty, refresh all with fallbacks
     },
@@ -871,7 +871,7 @@ export const refreshDestinationImages = action({
                 }
 
                 // Update the image
-                await ctx.runMutation(api.destinations.updateDestinationImage, {
+                await ctx.runMutation(internal.destinations.updateDestinationImage, {
                     name: dest.name,
                     image: finalImage,
                 });
