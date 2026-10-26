@@ -1,5 +1,5 @@
 import { v } from "convex/values";
-import { action, internalAction } from "./_generated/server";
+import { internalAction } from "./_generated/server";
 import { api, internal } from "./_generated/api";
 import { FALLBACK_IMAGES } from "./lib/api_clients";
 
@@ -15,7 +15,7 @@ function isStale(lastUpdated: number): boolean {
 async function refreshDestination(ctx: any, dest: any) {
     const [city, country] = dest.name.split(',').map((s: string) => s.trim());
 
-    await ctx.runAction(api.destinations.gatherDestination, {
+    await ctx.runAction(internal.destinations.gatherDestination, {
         city: city || dest.name,
         country: country || dest.country || "Unknown"
     });
@@ -63,7 +63,7 @@ async function refreshTop100Handler(ctx: any) {
  * TIER 2: Check and refresh if stale (lazy, on-demand)
  * Called when a user views a destination
  */
-export const checkAndRefreshIfStale = action({
+export const checkAndRefreshIfStale = internalAction({
     args: {
         name: v.string(),
     },
@@ -94,7 +94,7 @@ export const checkAndRefreshIfStale = action({
 
             const [city, country] = args.name.split(',').map((s: string) => s.trim());
 
-            await ctx.runAction(api.destinations.gatherDestination, {
+            await ctx.runAction(internal.destinations.gatherDestination, {
                 city: city || args.name,
                 country: country || destination.country || "Unknown"
             });
@@ -127,7 +127,7 @@ export const refreshTop100DestinationsInternal = internalAction({
 /**
  * Manual refresh for all destinations (admin function)
  */
-export const refreshAllDestinations = action({
+export const refreshAllDestinations = internalAction({
     args: {},
     handler: async (ctx) => {
         const destinations = await ctx.runQuery(api.destinations.getAllDestinations);
@@ -158,7 +158,7 @@ export const refreshAllDestinations = action({
 /**
  * Manual refresh for top 100 only (admin function)
  */
-export const refreshTop100Destinations = action({
+export const refreshTop100Destinations = internalAction({
     args: {},
     handler: async (ctx) => {
         return refreshTop100Handler(ctx);
@@ -168,7 +168,7 @@ export const refreshTop100Destinations = action({
 /**
  * Batch update: Populate suggestions and neighborhoods for destinations missing them
  */
-export const populateNewFields = action({
+export const populateNewFields = internalAction({
     args: {
         batchSize: v.optional(v.number()), // How many to process per run (default: 10)
     },
