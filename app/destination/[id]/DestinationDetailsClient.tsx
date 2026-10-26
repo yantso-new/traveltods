@@ -207,6 +207,9 @@ export default function DestinationDetails({ hideChrome = false }: { hideChrome?
     }
 
     if (!destination) {
+        // With hideChrome, the server has already rendered the page for a
+        // static destination that has no database row yet.
+        if (hideChrome) return null;
         return <div className="p-10 text-center text-text-main-light">Destination not found.</div>;
     }
 
