@@ -27,7 +27,7 @@ import { Navbar } from '@/components/Navbar';
 import { LoadingOverlay } from '@/components/LoadingOverlay';
 
 // Convex Imports
-import { useQuery, useAction, useMutation } from 'convex/react';
+import { useQuery, useAction } from 'convex/react';
 import { api } from '@/convex/_generated/api';
 import { track } from '@vercel/analytics';
 import { DestinationHero } from '@/components/DestinationHero';
@@ -161,26 +161,10 @@ export default function DestinationDetails({ hideChrome = false }: { hideChrome?
 
     const router = useRouter();
 
-    // Convex Data
+    // Convex Data. Read-only: this view never creates or refreshes records.
     const destination = useQuery(api.destinations.getDestination, { name: id });
-    const gatherDestination = useAction(api.destinations.gatherDestination);
-    const checkAndRefreshIfStale = useAction(api.update_all.checkAndRefreshIfStale);
-    const incrementSearchCount = useMutation(api.destinations.incrementSearchCount);
-
-    const [isGathering, setIsGathering] = useState(false);
-    const [localSuggestions, setLocalSuggestions] = useState<any>(null);
     const realNeighborhoods = filterRealNeighborhoods(destination?.neighborhoods, destination?.name ?? id);
 
-    // Sync localSuggestions with destination.suggestions when destination loads/changes
-    useEffect(() => {
-        setLocalSuggestions(destination?.suggestions ?? null);
-    }, [id, destination?.suggestions]);
-
-    // Refresh suggestions action
-    const refreshSuggestionsAction = useAction(api.refresh_suggestions.refreshSuggestions);
-
-    // Track if we have initiated gathering to prevent loops
-    const gatheringRef = useRef(false);
     const initialLoadRef = useRef<string | null>(null);
 
     // Viator Activities Data
@@ -189,42 +173,14 @@ export default function DestinationDetails({ hideChrome = false }: { hideChrome?
     const [activities, setActivities] = useState<any[]>([]);
     const [isLoadingActivities, setIsLoadingActivities] = useState(false);
 
-    // Gather new destination if not found
-    useEffect(() => {
-        if (!id) return;
-
-        if (destination === null && !gatheringRef.current && !isGathering) {
-            const parts = id.split(',');
-            const city = parts[0]?.trim();
-            const country = parts[1]?.trim();
-
-            if (!city || !country) {
-                return;
-            }
-
-            gatheringRef.current = true;
-            setIsGathering(true);
-
-            withTimeout(gatherDestination({ city, country }), 15000, 'Destination gathering')
-                .then(() => setIsGathering(false))
-                .catch(e => {
-                    console.error("Gathering failed", e);
-                    setIsGathering(false);
-                });
-        }
-    }, [id, destination, gatherDestination, isGathering]);
-
-    // Refresh noncritical data in the background. Existing destination content
-    // remains visible while activities and suggestions update.
+    // Load activities once per destination. The page stays visible meanwhile.
     useEffect(() => {
         if (!id || !destination || initialLoadRef.current === id) return;
 
         initialLoadRef.current = id;
         setIsLoadingActivities(true);
 
-        const needsSuggestions = !hasSuggestionContent(destination.suggestions);
-
-        const activityPromise = withTimeout(fetchActivities({ destinationName: id }), 12000, 'Activity loading')
+        void withTimeout(fetchActivities({ destinationName: id }), 12000, 'Activity loading')
             .then((data: any) => {
                 setActivities(data);
             })
@@ -235,35 +191,10 @@ export default function DestinationDetails({ hideChrome = false }: { hideChrome?
             .finally(() => {
                 setIsLoadingActivities(false);
             });
+    }, [id, destination, fetchActivities]);
 
-        const refreshPromise = withTimeout(checkAndRefreshIfStale({ name: id }), 12000, 'Destination refresh')
-            .catch((err: any) => {
-                console.error("Stale data refresh check failed:", err);
-                return null;
-            });
-
-        const suggestionsPromise = needsSuggestions
-            ? withTimeout(refreshSuggestionsAction({ destinationName: id }), 12000, 'Suggestion loading')
-                .then((result: any) => {
-                    if (!result.success) {
-                        console.error('Refresh suggestions failed:', result.error);
-                    }
-                })
-                .catch((err: any) => {
-                    console.error('Refresh suggestions failed:', err);
-                })
-            : Promise.resolve();
-
-        void Promise.allSettled([
-            incrementSearchCount({ name: id }).catch(console.error),
-            refreshPromise,
-            suggestionsPromise,
-            activityPromise,
-        ]);
-    }, [id, destination, checkAndRefreshIfStale, fetchActivities, incrementSearchCount, refreshSuggestionsAction]);
-
-    // Show loading overlay while connecting or gathering data
-    if (destination === undefined || isGathering) {
+    // Show loading overlay while connecting
+    if (destination === undefined) {
         if (hideChrome) return null;
 
         return (
@@ -275,12 +206,12 @@ export default function DestinationDetails({ hideChrome = false }: { hideChrome?
     }
 
     if (!destination) {
-        return <div className="p-10 text-center text-text-main-light">Destination not found and could not be gathered.</div>;
+        return <div className="p-10 text-center text-text-main-light">Destination not found.</div>;
     }
 
     const { allScores, dataQuality } = destination;
     const isUnreliable = dataQuality && !dataQuality.hasReliableOverallScore;
-    const suggestions = localSuggestions ?? destination.suggestions;
+    const suggestions = destination.suggestions;
     const shouldShowSuggestionsSection = hasSuggestionContent(suggestions);
 
     const handleGoHome = () => {
