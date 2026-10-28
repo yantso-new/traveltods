@@ -10,6 +10,7 @@ import type { Doc } from '@/convex/_generated/dataModel';
 import { Navbar } from '@/components/Navbar';
 import { DestinationCard } from '@/components/DestinationCard';
 import { Button, Card, Badge } from '@/components/ui';
+import { SHOW_SCORES } from '@/config';
 
 export default function CountryPage() {
     const params = useParams();
@@ -89,11 +90,12 @@ export default function CountryPage() {
                         </div>
 
                         <p className="text-xl text-white/90 mb-8 max-w-2xl">
-                            Discover {destinations.length} family-friendly {destinations.length === 1 ? 'destination' : 'destinations'} with reviewed planning signals and local recommendations.
+                            Discover {destinations.length} family-friendly {destinations.length === 1 ? 'destination' : 'destinations'} with planning notes and local recommendations.
                         </p>
 
                         {/* Country Stats */}
                         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-3xl">
+                            {SHOW_SCORES && (
                             <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-4 border border-white/20">
                                 <div className="flex items-center gap-2 mb-2">
                                     <Award className="w-5 h-5 text-accent" />
@@ -101,6 +103,7 @@ export default function CountryPage() {
                                 </div>
                                 <p className="text-3xl font-black text-white">{avgScore ? `${avgScore}/10` : 'Pending'}</p>
                             </div>
+                            )}
 
                             <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-4 border border-white/20">
                                 <div className="flex items-center gap-2 mb-2">
@@ -139,11 +142,11 @@ export default function CountryPage() {
                                 Top Destinations in {country}
                             </h2>
                             <p className="text-text-sub-light">
-                                Ranked by family-friendliness score
+                                {SHOW_SCORES ? 'Ranked by family-friendliness score' : 'Family-friendly options, in no particular order'}
                             </p>
                         </div>
                         
-                        {topDestination && (
+                        {SHOW_SCORES && topDestination && (
                             <Badge variant="gradient-primary" className="px-4 py-2">
                                 <Award className="w-4 h-4 mr-2" />
                                 Top Pick: {topDestination.name}

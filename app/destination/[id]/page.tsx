@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { notFound } from "next/navigation";
 import { cache } from "react";
 import {
   breadcrumbJsonLd,
@@ -7,11 +8,16 @@ import {
   relatedBlogPostsForDestination,
   truncateDescription,
 } from "@/seo";
+import { SHOW_SCORES } from "@/config";
 import { absoluteUrl } from "@/site";
-import { getPublishedDestination } from "@/lib/published-destinations";
+import { getDestinationRecord, isPublishedDestination } from "@/lib/published-destinations";
 import { Navbar } from "@/components/Navbar";
 import { DestinationHero } from "@/components/DestinationHero";
 import DestinationDetailsClient from "./DestinationDetailsClient";
+
+// Convex reads happen per request. A statically generated route would fail
+// with "Page changed from static to dynamic" on the first database-backed id.
+export const dynamic = "force-dynamic";
 
 interface DestinationRouteProps {
   params: Promise<{ id: string }>;
@@ -39,61 +45,71 @@ function scoreOutOfTen(value?: number) {
   return Math.max(0, Math.min(10, Math.round((value ?? 0) / 10)));
 }
 
-const resolveDestination = cache(async (id: string): Promise<DestinationSeoData | null> => {
+interface ResolvedDestination {
+  destination: DestinationSeoData;
+  // Unpublished database rows are still reachable by URL, but never indexed.
+  indexable: boolean;
+}
+
+// Returns null only when no record exists. Lookup failures throw, so an outage
+// is a 500 rather than a false 404.
+const resolveDestination = cache(async (id: string): Promise<ResolvedDestination | null> => {
   const decodedId = decodeURIComponent(id);
   const staticDestination = getStaticDestination(decodedId);
 
   if (staticDestination) {
     return {
-      name: `${staticDestination.name}, ${staticDestination.country}`,
-      city: staticDestination.name,
-      country: staticDestination.country,
-      description: staticDestination.description,
-      shortDescription: staticDestination.shortDescription,
-      image: staticDestination.image,
-      scores: {
-        safety: staticDestination.metrics.safety,
-        strollerFriendly: staticDestination.metrics.strollerFriendly,
-        sidewalks: staticDestination.metrics.sidewalks,
-        playgrounds: staticDestination.metrics.playgrounds,
-        kidActivities: staticDestination.metrics.kidActivities,
+      indexable: true,
+      destination: {
+        name: `${staticDestination.name}, ${staticDestination.country}`,
+        city: staticDestination.name,
+        country: staticDestination.country,
+        description: staticDestination.description,
+        shortDescription: staticDestination.shortDescription,
+        image: staticDestination.image,
+        scores: {
+          safety: staticDestination.metrics.safety,
+          strollerFriendly: staticDestination.metrics.strollerFriendly,
+          sidewalks: staticDestination.metrics.sidewalks,
+          playgrounds: staticDestination.metrics.playgrounds,
+          kidActivities: staticDestination.metrics.kidActivities,
+        },
+        relatedPosts: relatedBlogPostsForDestination(staticDestination),
       },
-      relatedPosts: relatedBlogPostsForDestination(staticDestination),
     };
   }
 
-  const publishedDestination = await getPublishedDestination(decodedId);
-  if (!publishedDestination) return null;
+  const record = await getDestinationRecord(decodedId);
+  if (!record) return null;
 
   return {
-    name: publishedDestination.name,
-    city: publishedDestination.name.split(",")[0]?.trim() || publishedDestination.name,
-    country: publishedDestination.country,
-    description: publishedDestination.description || "",
-    shortDescription: publishedDestination.shortDescription || "",
-    image: publishedDestination.image,
-    lastUpdated: publishedDestination.lastUpdated,
-    scores: {
-      safety: scoreOutOfTen(publishedDestination.allScores.safety),
-      strollerFriendly: scoreOutOfTen(publishedDestination.allScores.strollerFriendly),
-      sidewalks: scoreOutOfTen(publishedDestination.allScores.sidewalks),
-      playgrounds: scoreOutOfTen(publishedDestination.allScores.playgrounds),
-      kidActivities: scoreOutOfTen(publishedDestination.allScores.kidActivities),
+    indexable: isPublishedDestination(record),
+    destination: {
+      name: record.name,
+      city: record.name.split(",")[0]?.trim() || record.name,
+      country: record.country,
+      description: record.description || "",
+      shortDescription: record.shortDescription || "",
+      image: record.image,
+      lastUpdated: record.lastUpdated,
+      scores: {
+        safety: scoreOutOfTen(record.allScores.safety),
+        strollerFriendly: scoreOutOfTen(record.allScores.strollerFriendly),
+        sidewalks: scoreOutOfTen(record.allScores.sidewalks),
+        playgrounds: scoreOutOfTen(record.allScores.playgrounds),
+        kidActivities: scoreOutOfTen(record.allScores.kidActivities),
+      },
+      relatedPosts: [],
     },
-    relatedPosts: [],
   };
 });
 
-export function generateStaticParams() {
-  return [];
-}
-
 export async function generateMetadata({ params }: DestinationRouteProps): Promise<Metadata> {
   const { id } = await params;
-  const destination = await resolveDestination(id);
+  const resolved = await resolveDestination(id);
   const decodedId = decodeURIComponent(id);
 
-  if (!destination) {
+  if (!resolved || !resolved.indexable) {
     return {
       title: `${decodedId} Family Travel Guide`,
       description: `TravelTods is still verifying family travel information for ${decodedId}.`,
@@ -107,6 +123,8 @@ export async function generateMetadata({ params }: DestinationRouteProps): Promi
       },
     };
   }
+
+  const { destination } = resolved;
 
   const title = `${destination.city} with Kids: Family Travel Guide`;
   const description = truncateDescription(
@@ -139,33 +157,34 @@ export async function generateMetadata({ params }: DestinationRouteProps): Promi
 
 export default async function DestinationPage({ params }: DestinationRouteProps) {
   const { id } = await params;
-  const destination = await resolveDestination(id);
+  const resolved = await resolveDestination(id);
 
-  const structuredData = destination
-    ? [
-        {
-          "@context": "https://schema.org",
-          "@type": "TouristDestination",
-          name: destination.name,
-          description: destination.description,
-          image: destination.image,
-          url: absoluteUrl(`/destination/${encodeURIComponent(destination.name)}`),
-          address: {
-            "@type": "PostalAddress",
-            addressCountry: destination.country,
-          },
-          touristType: ["Families", "Parents traveling with kids", "Toddlers"],
-        },
-        breadcrumbJsonLd([
-          { name: "Home", path: "/" },
-          { name: destination.country, path: `/country/${encodeURIComponent(destination.country)}` },
-          { name: destination.city, path: `/destination/${encodeURIComponent(destination.name)}` },
-        ]),
-      ]
-    : breadcrumbJsonLd([
-        { name: "Home", path: "/" },
-        { name: decodeURIComponent(id), path: `/destination/${id}` },
-      ]);
+  if (!resolved) notFound();
+
+  // Unpublished rows get the client view only: no SEO summary and no structured data.
+  if (!resolved.indexable) return <DestinationDetailsClient />;
+
+  const { destination } = resolved;
+  const structuredData = [
+    {
+      "@context": "https://schema.org",
+      "@type": "TouristDestination",
+      name: destination.name,
+      description: destination.description,
+      image: destination.image,
+      url: absoluteUrl(`/destination/${encodeURIComponent(destination.name)}`),
+      address: {
+        "@type": "PostalAddress",
+        addressCountry: destination.country,
+      },
+      touristType: ["Families", "Parents traveling with kids", "Toddlers"],
+    },
+    breadcrumbJsonLd([
+      { name: "Home", path: "/" },
+      { name: destination.country, path: `/country/${encodeURIComponent(destination.country)}` },
+      { name: destination.city, path: `/destination/${encodeURIComponent(destination.name)}` },
+    ]),
+  ];
 
   return (
     <>
@@ -173,21 +192,15 @@ export default async function DestinationPage({ params }: DestinationRouteProps)
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: jsonLd(structuredData) }}
       />
-      {destination ? (
-        <>
-          <Navbar />
-          <DestinationHero
-            name={destination.name}
-            country={destination.country}
-            image={destination.image}
-            shortDescription={destination.shortDescription}
-          />
-          <DestinationSeoSummary destination={destination} />
-          <DestinationDetailsClient hideChrome />
-        </>
-      ) : (
-        <DestinationDetailsClient />
-      )}
+      <Navbar />
+      <DestinationHero
+        name={destination.name}
+        country={destination.country}
+        image={destination.image}
+        shortDescription={destination.shortDescription}
+      />
+      <DestinationSeoSummary destination={destination} />
+      <DestinationDetailsClient hideChrome />
     </>
   );
 }
@@ -201,12 +214,12 @@ function DestinationSeoSummary({ destination }: { destination: DestinationSeoDat
         </p>
         <div className="mt-6 grid gap-4 md:grid-cols-3">
           <SeoFact title="Best age fit" value="Toddlers and kids under 10" />
-          <SeoFact title="Stroller notes" value={`Stroller score ${destination.scores.strollerFriendly}/10 with sidewalks ${destination.scores.sidewalks}/10.`} />
-          <SeoFact title="Safety notes" value={`Safety score ${destination.scores.safety}/10 for parent planning.`} />
+          {SHOW_SCORES && <SeoFact title="Stroller notes" value={`Stroller score ${destination.scores.strollerFriendly}/10 with sidewalks ${destination.scores.sidewalks}/10.`} />}
+          {SHOW_SCORES && <SeoFact title="Safety notes" value={`Safety score ${destination.scores.safety}/10 for parent planning.`} />}
         </div>
         <div className="mt-6 grid gap-4 md:grid-cols-3">
-          <SeoFact title="Outdoor ease" value={`Playground score ${destination.scores.playgrounds}/10 with sidewalks ${destination.scores.sidewalks}/10.`} />
-          <SeoFact title="Rainy-day options" value={`Kid activity score ${destination.scores.kidActivities}/10 for museums, attractions, and indoor stops.`} />
+          {SHOW_SCORES && <SeoFact title="Outdoor ease" value={`Playground score ${destination.scores.playgrounds}/10 with sidewalks ${destination.scores.sidewalks}/10.`} />}
+          {SHOW_SCORES && <SeoFact title="Rainy-day options" value={`Kid activity score ${destination.scores.kidActivities}/10 for museums, attractions, and indoor stops.`} />}
           <SeoFact title="Planning approach" value="Plan one anchor activity per half day, then keep meals, playgrounds, and rest stops close together." />
         </div>
         {destination.relatedPosts.length > 0 && (
@@ -222,7 +235,7 @@ function DestinationSeoSummary({ destination }: { destination: DestinationSeoDat
           </div>
         )}
         <p className="mt-6 text-xs font-medium text-text-sub-light">
-          Scores combine public destination data and family-planning signals. <a href="/methodology" className="font-bold text-primary hover:underline">Review the methodology</a> and verify time-sensitive details before booking.
+          {SHOW_SCORES && "Scores combine public destination data and family-planning signals. "}<a href="/methodology" className="font-bold text-primary hover:underline">Review the methodology</a> and verify time-sensitive details before booking.
           {destination.lastUpdated ? ` Data updated ${new Date(destination.lastUpdated).toLocaleDateString("en-GB", { month: "long", year: "numeric" })}.` : ""}
         </p>
       </div>

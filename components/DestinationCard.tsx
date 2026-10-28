@@ -4,6 +4,7 @@ import { Destination, DestinationMetrics } from '@/types';
 import { Card } from '@/components/ui';
 import { Heart } from 'lucide-react';
 import { track } from '@vercel/analytics';
+import { SHOW_SCORES } from '@/config';
 
 interface Props {
   destination: Destination;
@@ -95,9 +96,11 @@ export const DestinationCard: React.FC<Props> = ({ destination, onClick }) => {
       className="group flex flex-col overflow-hidden h-full md:h-[22rem] border-2 border-transparent transition-colors duration-200"
     >
       <div className="relative h-48 md:h-[11rem] overflow-hidden">
-        <div className={`absolute top-4 left-4 z-10 px-3 py-1.5 rounded-lg text-xs font-extrabold backdrop-blur-md border border-white/20 ${pillClass}`}>
-          {bestTag}
-        </div>
+        {SHOW_SCORES && (
+          <div className={`absolute top-4 left-4 z-10 px-3 py-1.5 rounded-lg text-xs font-extrabold backdrop-blur-md border border-white/20 ${pillClass}`}>
+            {bestTag}
+          </div>
+        )}
 
         {/* Save Toggle */}
         <button
@@ -122,10 +125,12 @@ export const DestinationCard: React.FC<Props> = ({ destination, onClick }) => {
             <h3 className="text-xl font-bold text-text-main-light capitalize">
               {destination.name.split(',')[0].trim()}
             </h3>
-            <div className="flex items-center gap-1">
-              <span className="material-symbols-outlined text-accent-strong text-lg" style={{ fontVariationSettings: "'FILL' 1" }}>star</span>
-              <span className="text-text-main-light font-bold text-sm">{displayScore}</span>
-            </div>
+            {SHOW_SCORES && (
+              <div className="flex items-center gap-1">
+                <span className="material-symbols-outlined text-accent-strong text-lg" style={{ fontVariationSettings: "'FILL' 1" }}>star</span>
+                <span className="text-text-main-light font-bold text-sm">{displayScore}</span>
+              </div>
+            )}
           </div>
           <div className="flex items-center gap-1 text-text-sub-light mt-1">
             <button 

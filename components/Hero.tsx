@@ -59,7 +59,7 @@ export function Hero({ onSearchTermChange }: HeroProps) {
                                     Adventures tailored for <span className="text-accent">tiny travelers</span>
                                 </h1>
                                 <h2 className="text-white/90 text-base md:text-xl font-medium max-w-xl leading-relaxed drop-shadow-md">
-                                    Discover top-rated, safe, and engaging destinations perfect for kids under 10. Filter by stroller access, nap-friendliness, and more.
+                                    Discover family-friendly destinations for kids under 10.
                                 </h2>
                             </div>
 

@@ -5,6 +5,7 @@ import { createPortal } from 'react-dom';
 import { useMutation } from 'convex/react';
 import { api } from '@/convex/_generated/api';
 import { Button, Input } from '@/components/ui';
+import { WAITLIST_CTA_LABEL } from '@/config';
 import { X, Sparkles, Rocket, Users } from 'lucide-react';
 import { track } from '@vercel/analytics';
 
@@ -163,7 +164,7 @@ export function WaitlistModal({ isOpen, onClose }: WaitlistModalProps) {
                                     id="waitlist-modal-title"
                                     className="text-2xl md:text-3xl font-black text-text-main-light mb-2"
                                 >
-                                    Join the Community
+                                    {WAITLIST_CTA_LABEL}
                                 </h2>
                                 <p className="text-text-sub-light text-sm leading-relaxed">
                                     Be among the first{' '}
@@ -207,7 +208,7 @@ export function WaitlistModal({ isOpen, onClose }: WaitlistModalProps) {
                                     ) : (
                                         <span className="flex items-center justify-center gap-2">
                                             <Rocket className="w-5 h-5" />
-                                            Join Community
+                                            {WAITLIST_CTA_LABEL}
                                         </span>
                                     )}
                                 </Button>

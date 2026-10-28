@@ -1,7 +1,7 @@
 // @ts-nocheck -- Convex actions have circular type deps with generated api; checked by convex dev
 import { v } from "convex/values";
-import { action, mutation } from "./_generated/server";
-import { api } from "./_generated/api";
+import { internalAction, internalMutation } from "./_generated/server";
+import { api, internal } from "./_generated/api";
 import { getFamilySuggestions, getNeighborhoods } from "./lib/api_clients";
 import { searchFamilyVenues } from "./lib/foursquare";
 
@@ -10,7 +10,7 @@ import { searchFamilyVenues } from "./lib/foursquare";
 // ---------------------------------------------------------------------------
 
 // Mutation defined BEFORE the action to avoid circular type inference
-export const patchSuggestions = mutation({
+export const patchSuggestions = internalMutation({
     args: {
         name: v.string(),
         suggestions: v.object({
@@ -84,7 +84,7 @@ export const patchSuggestions = mutation({
     },
 });
 
-export const patchNeighborhoods = mutation({
+export const patchNeighborhoods = internalMutation({
     args: {
         name: v.string(),
         neighborhoods: v.array(v.object({
@@ -150,7 +150,7 @@ function hasUsefulNeighborhoods(destinationName: string, neighborhoods: any[] | 
     return validCount >= Math.min(3, neighborhoods.length);
 }
 
-export const repairInvalidNeighborhoods = action({
+export const repairInvalidNeighborhoods = internalAction({
     args: {
         dryRun: v.optional(v.boolean()),
         limit: v.optional(v.number()),
@@ -189,7 +189,7 @@ export const repairInvalidNeighborhoods = action({
             const neighborhoods = await getNeighborhoods(coords.lat, coords.lon, cityName);
 
             if (neighborhoods.length === 0) {
-                await ctx.runMutation(api.refresh_suggestions.patchNeighborhoods, {
+                await ctx.runMutation(internal.refresh_suggestions.patchNeighborhoods, {
                     name: destination.name,
                     neighborhoods: [],
                 });
@@ -197,7 +197,7 @@ export const repairInvalidNeighborhoods = action({
                 continue;
             }
 
-            await ctx.runMutation(api.refresh_suggestions.patchNeighborhoods, {
+            await ctx.runMutation(internal.refresh_suggestions.patchNeighborhoods, {
                 name: destination.name,
                 neighborhoods: neighborhoods.slice(0, 10),
             });
@@ -243,7 +243,7 @@ async function withRetry<T>(
     throw new Error(`Unreachable: ${label}`);
 }
 
-export const refreshSuggestions = action({
+export const refreshSuggestions = internalAction({
     args: {
         destinationName: v.string(),
     },
@@ -338,7 +338,7 @@ export const refreshSuggestions = action({
                 : overpassSuggestions.restaurants.slice(0, 8),
         };
 
-        await ctx.runMutation(api.refresh_suggestions.patchSuggestions, {
+        await ctx.runMutation(internal.refresh_suggestions.patchSuggestions, {
             name: args.destinationName,
             suggestions: mergedSuggestions,
             neighborhoods: neighborhoods.slice(0, 10),

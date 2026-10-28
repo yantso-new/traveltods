@@ -1,4 +1,4 @@
-import { mutation } from "./_generated/server";
+import { internalMutation } from "./_generated/server";
 import { calculateAllScores, getRadarChartData, ScoreInputs } from "./lib/scores";
 
 // Real data for European cities based on 2024-2025 research
@@ -225,7 +225,7 @@ const cities = [
     },
 ];
 
-export const seedDestinations = mutation({
+export const seedDestinations = internalMutation({
     args: {},
     handler: async (ctx) => {
         for (const city of cities) {

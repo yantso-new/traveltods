@@ -1,5 +1,5 @@
 import { v } from "convex/values";
-import { action, internalMutation } from "./_generated/server";
+import { action, internalMutation, internalQuery } from "./_generated/server";
 import { api, internal } from "./_generated/api";
 import { getViatorDestinationId, searchViatorProducts } from "./lib/viator";
 
@@ -17,11 +17,57 @@ export const saveViatorId = internalMutation({
     },
 });
 
+// Cached activities are served for 24h. Empty results (which also cover upstream
+// failures, since searchViatorProducts swallows errors) are only cached for 1h.
+const ACTIVITY_CACHE_TTL_MS = 24 * 60 * 60 * 1000;
+const EMPTY_ACTIVITY_CACHE_TTL_MS = 60 * 60 * 1000;
+const MAX_DESTINATION_NAME_LENGTH = 200;
+
+export const getCachedActivities = internalQuery({
+    args: { destinationId: v.id("destinations") },
+    handler: async (ctx, args) => {
+        const cached = await ctx.db
+            .query("viatorActivityCache")
+            .withIndex("by_destination", (q) => q.eq("destinationId", args.destinationId))
+            .first();
+        if (!cached) return null;
+
+        const ttl = cached.activities.length > 0 ? ACTIVITY_CACHE_TTL_MS : EMPTY_ACTIVITY_CACHE_TTL_MS;
+        if (Date.now() - cached.fetchedAt > ttl) return null;
+        return cached.activities;
+    },
+});
+
+export const saveCachedActivities = internalMutation({
+    args: {
+        destinationId: v.id("destinations"),
+        activities: v.array(v.any()),
+    },
+    handler: async (ctx, args) => {
+        const existing = await ctx.db
+            .query("viatorActivityCache")
+            .withIndex("by_destination", (q) => q.eq("destinationId", args.destinationId))
+            .first();
+        const row = { activities: args.activities, fetchedAt: Date.now() };
+        if (existing) {
+            await ctx.db.patch(existing._id, row);
+        } else {
+            await ctx.db.insert("viatorActivityCache", { destinationId: args.destinationId, ...row });
+        }
+    },
+});
+
+// Public on purpose (the destination page calls it), so it must stay cheap to abuse:
+// it only runs for destinations that already exist, never creates rows, and serves
+// cached results for 24h before calling Viator again.
 export const fetchActivities = action({
     args: {
         destinationName: v.string(), // "City, Country" or just "City"
     },
-    handler: async (ctx, args) => {
+    handler: async (ctx, args): Promise<any[]> => {
+        if (args.destinationName.length > MAX_DESTINATION_NAME_LENGTH) {
+            return [];
+        }
         console.log(`[Viator Action] fetchActivities called for: ${args.destinationName}`);
 
         // 1. Get the destination from DB to check if we already have an ID
@@ -31,6 +77,15 @@ export const fetchActivities = action({
             console.error(`[Viator Action] Destination not found in DB: ${args.destinationName}`);
             return [];
         }
+
+        const cachedActivities: any[] | null = await ctx.runQuery(internal.viator.getCachedActivities, {
+            destinationId: destination._id,
+        });
+        if (cachedActivities) {
+            console.log(`[Viator Action] Serving ${cachedActivities.length} cached activities for ${destination.name}`);
+            return cachedActivities;
+        }
+
         console.log(`[Viator Action] Found destination DB record: ${destination.name}, stored viatorId: ${destination.viatorDestinationId ?? "none"}`);
 
 
@@ -64,7 +119,7 @@ export const fetchActivities = action({
         console.log(`[Viator Action] Mapped ${products.length} products for ${args.destinationName}`);
 
         // 4. Map to our format (handles both v1 and v2 API response formats)
-        return products.map((p: any) => ({
+        const activities = products.map((p: any) => ({
             id: p.productCode || p.code,
             title: p.title || p.name,
             // v1 uses thumbnailURL, v2 uses images array
@@ -87,5 +142,11 @@ export const fetchActivities = action({
             // Include badge if available
             badge: p.specialOfferAvailable ? "Special Offer" : undefined,
         }));
+
+        await ctx.runMutation(internal.viator.saveCachedActivities, {
+            destinationId: destination._id,
+            activities,
+        });
+        return activities;
     },
 });

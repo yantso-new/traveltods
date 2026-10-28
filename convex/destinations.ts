@@ -1,6 +1,6 @@
 import { v } from "convex/values";
-import { action, mutation, query, internalMutation } from "./_generated/server";
-import { api } from "./_generated/api";
+import { internalAction, internalMutation, query } from "./_generated/server";
+import { api, internal } from "./_generated/api";
 import {
     calculateAllScores,
     getRadarChartData,
@@ -27,6 +27,13 @@ import {
 } from "./lib/country_destinations";
 
 const UNKNOWN_COUNTRY = "unknown";
+
+// Trust labels must only come from a real verification record, never from code.
+const TRUST_TAGS = new Set(["verified", "data reviewed"]);
+
+function isTrustTag(tag: string) {
+    return TRUST_TAGS.has(tag.trim().toLowerCase());
+}
 
 function capitalizeWord(word: string) {
     if (word === word.toUpperCase() && word.length > 1) {
@@ -66,7 +73,7 @@ function isUnknownCountry(country: string) {
 }
 
 // Mutation to save or update a destination (updated for new schema)
-export const saveDestination = mutation({
+export const saveDestination = internalMutation({
     args: {
         name: v.string(),
         country: v.string(),
@@ -201,6 +208,7 @@ export const saveDestination = mutation({
             ...args,
             name,
             country,
+            tags: args.tags?.filter((tag) => !isTrustTag(tag)),
             lastUpdated: Date.now(),
         };
 
@@ -300,7 +308,7 @@ export const getDestinationsWithUnknownCountry = query({
     },
 });
 
-export const deleteDestinationsWithUnknownCountry = mutation({
+export const deleteDestinationsWithUnknownCountry = internalMutation({
     args: {},
     handler: async (ctx) => {
         const destinations = await ctx.db.query("destinations").collect();
@@ -321,7 +329,7 @@ export const deleteDestinationsWithUnknownCountry = mutation({
     },
 });
 
-export const normalizeDestinationCasing = mutation({
+export const normalizeDestinationCasing = internalMutation({
     args: {},
     handler: async (ctx) => {
         const destinations = await ctx.db.query("destinations").collect();
@@ -486,7 +494,7 @@ export const getAllCountries = query({
 });
 
 // Increment search count when a destination is viewed
-export const incrementSearchCount = mutation({
+export const incrementSearchCount = internalMutation({
     args: { name: v.string() },
     handler: async (ctx, args) => {
         const destination = await ctx.db
@@ -504,6 +512,41 @@ export const incrementSearchCount = mutation({
                 },
             });
         }
+    },
+});
+
+// One-off cleanup: remove "Verified" / "Data Reviewed" tags from destinations.
+// Batched and idempotent: processes one page per call and returns the next cursor.
+// Run repeatedly until `isDone` is true, e.g.
+//   npx convex run destinations:stripTrustTags
+//   npx convex run destinations:stripTrustTags '{"cursor": "<continueCursor>"}'
+export const stripTrustTags = internalMutation({
+    args: {
+        cursor: v.optional(v.string()),
+        batchSize: v.optional(v.number()),
+    },
+    handler: async (ctx, args) => {
+        const numItems = Math.min(Math.max(args.batchSize ?? 100, 1), 200);
+        const page = await ctx.db
+            .query("destinations")
+            .paginate({ cursor: args.cursor ?? null, numItems });
+
+        let updated = 0;
+        for (const destination of page.page) {
+            const tags = destination.tags;
+            if (!tags || !tags.some(isTrustTag)) continue;
+            await ctx.db.patch(destination._id, {
+                tags: tags.filter((tag) => !isTrustTag(tag)),
+            });
+            updated++;
+        }
+
+        return {
+            scanned: page.page.length,
+            updated,
+            isDone: page.isDone,
+            continueCursor: page.continueCursor,
+        };
     },
 });
 
@@ -539,7 +582,7 @@ export const updateTop100Flags = internalMutation({
 });
 
 // Action to gather data and compute scores (UPDATED with new APIs)
-export const gatherDestination = action({
+export const gatherDestination = internalAction({
     args: {
         city: v.string(),
         country: v.string(),
@@ -638,9 +681,9 @@ export const gatherDestination = action({
             cityImage = wikiData.imageUrl;
         }
 
-        // Dynamic tags based on scores and data quality
+        // Dynamic tags derived from computed scores. Never mint trust labels
+        // ("Verified" / "Data Reviewed") here: those require a human verification record.
         const tags: string[] = [];
-        if (dataQuality.hasReliableOverallScore) tags.push("Data Reviewed");
         if (allScores.safety >= 80) tags.push("Safe");
         if (allScores.costAffordability >= 70) tags.push("Budget-Friendly");
         if (allScores.weatherComfort >= 75) tags.push("Great Weather");
@@ -672,8 +715,8 @@ export const gatherDestination = action({
         };
 
         // 7. Save to DB with all new fields
-        console.log(`Saving destination with reviewed data to DB: ${fullName}`);
-        await ctx.runMutation(api.destinations.saveDestination, {
+        console.log(`Saving destination to DB: ${fullName}`);
+        await ctx.runMutation(internal.destinations.saveDestination, {
             name: fullName,
             country,
             coordinates: coords,
@@ -708,12 +751,12 @@ export const gatherDestination = action({
         });
 
         // 8. Increment search count
-        await ctx.runMutation(api.destinations.incrementSearchCount, { name: fullName });
+        await ctx.runMutation(internal.destinations.incrementSearchCount, { name: fullName });
 
         if (!args.skipCountryBackfill) {
             const countryCount = await ctx.runQuery(api.destinations.getCountryDestinationCount, { country });
             if (countryCount < MIN_DESTINATIONS_PER_COUNTRY) {
-                await ctx.runAction(api.destinations.backfillCountryDestinations, {
+                await ctx.runAction(internal.destinations.backfillCountryDestinations, {
                     country,
                     minimum: MIN_DESTINATIONS_PER_COUNTRY,
                 });
@@ -728,7 +771,7 @@ export const gatherDestination = action({
     },
 });
 
-export const backfillCountryDestinations = action({
+export const backfillCountryDestinations = internalAction({
     args: {
         country: v.string(),
         minimum: v.optional(v.number()),
@@ -764,7 +807,7 @@ export const backfillCountryDestinations = action({
         const failures: { city: string; error: string }[] = [];
 
         for (const city of planned) {
-            const result: any = await ctx.runAction(api.destinations.gatherDestination, {
+            const result: any = await ctx.runAction(internal.destinations.gatherDestination, {
                 city,
                 country,
                 skipCountryBackfill: true,
@@ -789,7 +832,7 @@ export const backfillCountryDestinations = action({
 });
 
 // Mutation to update just the image for a destination
-export const updateDestinationImage = mutation({
+export const updateDestinationImage = internalMutation({
     args: {
         name: v.string(),
         image: v.string(),
@@ -823,7 +866,7 @@ const FALLBACK_IMAGE_IDS = [
 ];
 
 // Action to refresh images for destinations with fallback images
-export const refreshDestinationImages = action({
+export const refreshDestinationImages = internalAction({
     args: {
         destinationNames: v.optional(v.array(v.string())), // If empty, refresh all with fallbacks
     },
@@ -871,7 +914,7 @@ export const refreshDestinationImages = action({
                 }
 
                 // Update the image
-                await ctx.runMutation(api.destinations.updateDestinationImage, {
+                await ctx.runMutation(internal.destinations.updateDestinationImage, {
                     name: dest.name,
                     image: finalImage,
                 });
